@@ -4,6 +4,7 @@ export default function CoursesPage() {
       <h1 className="mb-8 text-4xl font-bold">Courses</h1>
 
       <div className="grid gap-6 md:grid-cols-3">
+
         <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-6">
           <h2 className="text-2xl font-semibold">Cardiology</h2>
           <p className="mt-2 text-gray-400">
@@ -33,6 +34,7 @@ export default function CoursesPage() {
             Start Course
           </button>
         </div>
+
       </div>
     </main>
   );

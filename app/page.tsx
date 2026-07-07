@@ -1,23 +1,28 @@
+import Link from "next/link";
+
 export default function Home() {
   const courses = [
     "Acute Pulmonary Edema",
     "iGel Airway & Capnography",
     "Sepsis Recognition",
     "TXA Administration",
-    "Hyperthermia Emergencies",
+    "TXA Administration",
     "Trauma Patient Assessment",
   ];
 
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
       <nav className="sticky top-0 z-50 flex items-center justify-between border-b border-zinc-800 bg-zinc-950/90 px-8 py-5">
-        <div className="text-xl font-bold">GrumpyMedic Education</div>
+        <div className="text-xl font-bold text-red-500">
+          GrumpyMedic Education
+        </div>
+
         <div className="hidden gap-6 text-sm text-zinc-300 md:flex">
-          <a href="/">Home</a>
-          <a href="/courses">Courses</a>
-          <a href="/scenarios">Scenarios</a>
-          <a href="/quizzes">Quizzes</a>
-          <a href="/login">Login</a>
+          <Link href="/">Home</Link>
+          <Link href="/courses">Courses</Link>
+          <a href="#">Scenarios</a>
+          <a href="#">Quizzes</a>
+          <a href="#">Login</a>
         </div>
       </nav>
 
@@ -36,19 +41,19 @@ export default function Home() {
         </p>
 
         <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
-          <a
+          <Link
             className="rounded-xl bg-red-600 px-7 py-4 font-bold hover:bg-red-700"
-            href="#"
+            href="/courses"
           >
             Start Learning
-          </a>
+          </Link>
 
-          <a
+          <Link
             className="rounded-xl border border-zinc-700 px-7 py-4 font-bold hover:bg-zinc-900"
             href="/courses"
           >
             Browse Courses
-          </a>
+          </Link>
         </div>
       </section>
 
@@ -61,16 +66,14 @@ export default function Home() {
               key={course}
               className="rounded-xl border border-zinc-800 bg-zinc-900 p-6"
             >
-              <h3 className="text-xl font-bold">{course}</h3>
-              <p className="mt-2 text-sm text-zinc-400">
-                EMS education module with lessons, review, and quiz content.
-              </p>
-              <a
-                className="mt-4 inline-block rounded-lg bg-red-600 px-4 py-2 font-bold hover:bg-red-700"
+              <h3 className="text-xl font-semibold">{course}</h3>
+
+              <Link
                 href="/courses"
+                className="mt-6 inline-block rounded-lg bg-red-600 px-5 py-2 font-semibold hover:bg-red-700"
               >
                 View Course
-              </a>
+              </Link>
             </div>
           ))}
         </div>
