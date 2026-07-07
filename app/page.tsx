@@ -11,10 +11,14 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
       <nav className="sticky top-0 z-50 flex items-center justify-between border-b border-zinc-800 bg-zinc-950/90 px-8 py-5">
-        <div className="text-xl font-bold">GrumpyMedic Education</div>
+        <div className="text-xl font-bold">GrumpyMedic Education</div>sName="rounded-xl bord border-zinc-700 px-7 py-
         <div className="hidden gap-6 text-sm text-zinc-300 md:flex">
           <a href="#">Home</a>
-          <a href="#">Courses</a>
+          <a href="/courses">Courses</a <a href="#">Home</a>
+<a href="/courses">Courses</a>
+<a href="#">Scenarios</a>
+<a href="#">Quizzes</a>
+<a href="#">Login</a>
           <a href="#">Scenarios</a>
           <a href="#">Quizzes</a>
           <a href="#">Login</a>
@@ -36,14 +40,14 @@ export default function Home() {
         </p>
 
         <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
-          <a className="rounded-xl bg-red-600 px-7 py-4 font-bold hover:bg-red-700" href="#">
-            Start Learning
-          </a>
-          <a className="rounded-xl border border-zinc-700 px-7 py-4 font-bold hover:bg-zinc-900" href="#">
-            Browse Courses
-          </a>
-        </div>
-      </section>
+  <a className="rounded-xl bg-red-600 px-7 py-4 font-bold hover:bg-red-700" href="#">
+    Start Learning
+  </a>
+
+  <a className="rounded-xl border border-zinc-700 px-7 py-4 font-bold hover:bg-zinc-900" href="/courses">
+    Browse Courses
+  </a>
+</div>      </section>
 
       <section className="px-8 pb-20">
         <h2 className="mb-8 text-3xl font-bold">Featured Courses</h2>

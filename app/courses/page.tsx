@@ -13,7 +13,13 @@ export default function CoursesPage() {
           <button className="mt-4 bg-red-600 px-4 py-2 rounded hover:bg-red-700">
             Start Course
           </button>
-        </div>
+          <div className="hidden gap-6 text-sm text-zinc-300 md:flex">
+  <a href="/">Home</a>
+  <a href="/courses">Courses</a>
+  <a href="/scenarios">Scenarios</a>
+  <a href="/quizzes">Quizzes</a>
+  <a href="/login">Login</a>
+</div>
 
         <div className="bg-zinc-900 p-6 rounded-xl border border-zinc-700">
           <h2 className="text-2xl font-semibold">Trauma</h2>
