@@ -3,8 +3,9 @@ import Link from "next/link";
 
 export default function Navbar() {
   return (
-    <nav className="sticky top-0 z-50 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+    <nav className="sticky top-0 z-50 border-b border-zinc-800 bg-zinc-950/95 px-6 py-4 backdrop-blur">
+      <div className="mx-auto flex max-w-7xl items-center justify-between">
+
         {/* Logo */}
         <Link href="/" className="flex items-center gap-4">
           <Image
@@ -22,13 +23,14 @@ export default function Navbar() {
             </div>
 
             <div className="text-xs font-semibold uppercase tracking-widest text-zinc-400">
-              REAL EMS. REAL CRITICAL THINKING.
+              Real EMS. Real Critical Thinking.
             </div>
           </div>
         </Link>
 
         {/* Navigation */}
         <div className="flex items-center gap-6 text-sm font-semibold text-zinc-200">
+
           <Link href="/" className="transition hover:text-red-500">
             Home
           </Link>
@@ -52,12 +54,10 @@ export default function Navbar() {
             Quizzes
           </Link>
 
-          <Link
-            href="/login"
-            className="rounded-lg border border-red-600 px-4 py-2 text-red-500 transition hover:bg-red-600 hover:text-white"
-          >
+          <button className="rounded-lg border border-red-600 px-4 py-2 text-red-500 transition hover:bg-red-600 hover:text-white">
             Login
-          </Link>
+          </button>
+
         </div>
       </div>
     </nav>
