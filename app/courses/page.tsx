@@ -50,14 +50,7 @@ export default function CoursesPage() {
                 Quiz
               </Link>
 
-              <a
-                href="https://www.mass.gov/lists/emergency-medical-services-statewide-treatment-protocols"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-lg border border-zinc-700 px-4 py-2 font-semibold hover:bg-zinc-800"
-              >
-                MA OEMS Protocols
-              </a>
+              
 
             </div>
           </div>
