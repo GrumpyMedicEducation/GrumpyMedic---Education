@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Navbar from "../components/Navbar";
 
 export default function CoursesPage() {
@@ -10,13 +11,17 @@ export default function CoursesPage() {
 
         <div className="grid gap-6 md:grid-cols-3">
           <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-6">
-            <h2 className="text-2xl font-semibold">Cardiology</h2>
+            <h2 className="text-2xl font-semibold">Acute Pulmonary Edema</h2>
             <p className="mt-2 text-gray-400">
-              ECG interpretation, STEMI, dysrhythmias, ACLS review.
+              Recognition, assessment, CPAP, respiratory distress, and EMS
+              treatment priorities.
             </p>
-            <button className="mt-4 rounded bg-red-600 px-4 py-2 hover:bg-red-700">
+            <Link
+              href="/courses/acute-pulmonary-edema"
+              className="mt-4 inline-block rounded bg-red-600 px-4 py-2 hover:bg-red-700"
+            >
               Start Course
-            </button>
+            </Link>
           </div>
 
           <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-6">
@@ -24,9 +29,12 @@ export default function CoursesPage() {
             <p className="mt-2 text-gray-400">
               Shock, bleeding, TXA, chest trauma, burns.
             </p>
-            <button className="mt-4 rounded bg-red-600 px-4 py-2 hover:bg-red-700">
-              Start Course
-            </button>
+            <Link
+              href="#"
+              className="mt-4 inline-block rounded bg-red-600 px-4 py-2 hover:bg-red-700"
+            >
+              Coming Soon
+            </Link>
           </div>
 
           <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-6">
@@ -34,9 +42,12 @@ export default function CoursesPage() {
             <p className="mt-2 text-gray-400">
               BLS and ALS airway management, RSI, capnography.
             </p>
-            <button className="mt-4 rounded bg-red-600 px-4 py-2 hover:bg-red-700">
-              Start Course
-            </button>
+            <Link
+              href="#"
+              className="mt-4 inline-block rounded bg-red-600 px-4 py-2 hover:bg-red-700"
+            >
+              Coming Soon
+            </Link>
           </div>
         </div>
       </section>
