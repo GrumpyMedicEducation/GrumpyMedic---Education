@@ -34,9 +34,9 @@ export default function Navbar() {
             Courses
           </Link>
 
-          <Link href="#" className="hover:text-red-500">
-            Scenarios
-          </Link>
+          <Link href="/scenarios/acute-pulmonary-edema" className="hover:text-red-500">
+  Scenarios
+</Link>
 
           <Link href="/courses/acute-pulmonary-edema/quiz" className="hover:text-red-500">
             Quizzes
