@@ -1,25 +1,39 @@
 "use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Navbar from "../../../components/Navbar";
 
 export default function CertificatePage() {
+  const [score, setScore] = useState("100%");
+
+  useEffect(() => {
+    const savedScore = localStorage.getItem("apeQuizScore");
+    const savedTotal = localStorage.getItem("apeQuizTotal");
+
+    if (savedScore && savedTotal) {
+      const percent = Math.round((Number(savedScore) / Number(savedTotal)) * 100);
+      setScore(`${percent}%`);
+    }
+  }, []);
+
   return (
     <main className="min-h-screen bg-black text-white">
       <Navbar />
 
-      <section className="mx-auto max-w-5xl px-8 py-10">
-        <div className="rounded-2xl border-4 border-red-600 bg-zinc-900 p-10 text-center shadow-2xl">
+      <section className="mx-auto max-w-5xl px-8 py-10 text-center">
+        <div className="rounded-2xl border-4 border-red-600 bg-zinc-900 p-10">
           <img
             src="/grumpy-medic-logo.jpeg"
             alt="GrumpyMedic Logo"
-            className="mx-auto h-28 w-28 rounded-full border-2 border-red-500 object-cover"
+            className="mx-auto h-28 w-28 rounded-full object-cover"
           />
 
-          <p className="mt-6 text-sm font-bold uppercase tracking-[0.35em] text-red-500">
+          <p className="mt-8 text-sm font-bold uppercase tracking-widest text-red-500">
             GrumpyMedic Education
           </p>
 
-          <h1 className="mt-6 text-5xl font-extrabold">
+          <h1 className="mt-4 text-5xl font-extrabold">
             Certificate of Completion
           </h1>
 
@@ -46,7 +60,7 @@ export default function CertificatePage() {
           <div className="mt-10 grid gap-4 md:grid-cols-3">
             <div className="rounded-xl border border-zinc-700 bg-black p-4">
               <p className="text-xs uppercase text-zinc-400">Score</p>
-              <p className="text-2xl font-bold">100%</p>
+              <p className="text-2xl font-bold">{score}</p>
             </div>
 
             <div className="rounded-xl border border-zinc-700 bg-black p-4">
@@ -56,21 +70,21 @@ export default function CertificatePage() {
 
             <div className="rounded-xl border border-zinc-700 bg-black p-4">
               <p className="text-xs uppercase text-zinc-400">Date</p>
-              <p className="text-2xl font-bold">July 8, 2026</p>
+              <p className="text-2xl font-bold">
+                {new Date().toLocaleDateString()}
+              </p>
             </div>
           </div>
 
-          <div className="mt-12 flex justify-center gap-16">
+          <div className="mt-10 grid gap-8 md:grid-cols-2">
             <div>
-              <div className="border-t border-zinc-500 px-10 pt-3">
-                Student
-              </div>
+              <div className="mx-auto h-px w-40 bg-zinc-400" />
+              <p className="mt-2 text-sm text-zinc-400">Student</p>
             </div>
 
             <div>
-              <div className="border-t border-zinc-500 px-10 pt-3">
-                GrumpyMedic Education
-              </div>
+              <div className="mx-auto h-px w-40 bg-zinc-400" />
+              <p className="mt-2 text-sm text-zinc-400">GrumpyMedic Education</p>
             </div>
           </div>
         </div>
