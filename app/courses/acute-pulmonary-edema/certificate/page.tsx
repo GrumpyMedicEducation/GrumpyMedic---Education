@@ -46,7 +46,7 @@ export default function CertificatePage() {
           <div className="mt-10 grid gap-4 md:grid-cols-3">
             <div className="rounded-xl border border-zinc-700 bg-black p-4">
               <p className="text-xs uppercase text-zinc-400">Score</p>
-              <p className="text-2xl font-bold">80%</p>
+              <p className="text-2xl font-bold">100%</p>
             </div>
 
             <div className="rounded-xl border border-zinc-700 bg-black p-4">
