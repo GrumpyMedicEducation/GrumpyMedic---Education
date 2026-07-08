@@ -3,8 +3,8 @@ import Link from "next/link";
 
 export default function Navbar() {
   return (
-    <nav className="sticky top-0 z-50 border-b border-zinc-800 bg-zinc-950/95 px-6 py-4 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between">
+    <nav className="sticky top-0 z-50 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-4">
@@ -23,19 +23,25 @@ export default function Navbar() {
             </div>
 
             <div className="text-xs font-semibold uppercase tracking-widest text-zinc-400">
-              Real EMS. Real Critical Thinking.
+              REAL EMS. REAL CRITICAL THINKING.
             </div>
           </div>
         </Link>
 
         {/* Navigation */}
-        <div className="flex items-center gap-6 text-sm font-semibold text-zinc-200">
+        <div className="flex flex-wrap items-center gap-6 text-sm font-semibold text-zinc-200">
 
-          <Link href="/" className="transition hover:text-red-500">
+          <Link
+            href="/"
+            className="transition hover:text-red-500"
+          >
             Home
           </Link>
 
-          <Link href="/courses" className="transition hover:text-red-500">
+          <Link
+            href="/courses"
+            className="transition hover:text-red-500"
+          >
             Courses
           </Link>
 
@@ -46,17 +52,33 @@ export default function Navbar() {
             Scenarios
           </Link>
 
-          <Link href="/resources" className="transition hover:text-red-500">
-            Resources
-          </Link>
-
-          <Link href="/quizzes" className="transition hover:text-red-500">
+          <Link
+            href="/quizzes"
+            className="transition hover:text-red-500"
+          >
             Quizzes
           </Link>
 
-          <button className="rounded-lg border border-red-600 px-4 py-2 text-red-500 transition hover:bg-red-600 hover:text-white">
+          <Link
+            href="/resources"
+            className="transition hover:text-red-500"
+          >
+            Resources
+          </Link>
+
+          <Link
+            href="/nremt-exam-prep"
+            className="transition hover:text-red-500"
+          >
+            NREMT Prep
+          </Link>
+
+          <Link
+            href="/login"
+            className="rounded-lg border border-red-600 px-4 py-2 text-red-500 transition hover:bg-red-600 hover:text-white"
+          >
             Login
-          </button>
+          </Link>
 
         </div>
       </div>
