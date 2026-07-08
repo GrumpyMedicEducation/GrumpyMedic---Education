@@ -3,63 +3,48 @@ import Link from "next/link";
 
 export default function Navbar() {
   return (
-    <nav className="bg-zinc-900 border-b border-zinc-800 px-8 py-4">
+    <nav className="sticky top-0 z-50 border-b border-zinc-800 bg-zinc-950/95 px-6 py-4 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between">
-
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-3">
+        <Link href="/" className="flex items-center gap-4">
           <Image
-            src="/grumpymedic-logo.jpeg"
+            src="/grumpy-medic-logo.jpeg"
             alt="GrumpyMedic24 Logo"
-            width={55}
-            height={55}
-            className="rounded-full"
+            width={75}
+            height={75}
+            className="rounded-full object-cover"
             priority
           />
 
-          <span className="text-2xl font-bold text-red-500">
-            GrumpyMedic Education
-          </span>
+          <div>
+            <div className="text-2xl font-extrabold text-red-500">
+              GrumpyMedic Education
+            </div>
+            <div className="text-xs font-semibold uppercase tracking-widest text-zinc-400">
+              Real EMS. Real Critical Thinking.
+            </div>
+          </div>
         </Link>
 
-        {/* Navigation */}
-        <div className="flex items-center gap-6 text-white font-medium">
-
-          <Link
-            href="/"
-            className="hover:text-red-500 transition"
-          >
+        <div className="flex items-center gap-6 text-sm font-semibold text-zinc-200">
+          <Link href="/" className="hover:text-red-500">
             Home
           </Link>
 
-          <Link
-            href="/courses"
-            className="hover:text-red-500 transition"
-          >
+          <Link href="/courses" className="hover:text-red-500">
             Courses
           </Link>
 
-          <Link
-            href="#"
-            className="hover:text-red-500 transition"
-          >
+          <Link href="#" className="hover:text-red-500">
             Scenarios
           </Link>
 
-          <Link
-            href="#"
-            className="hover:text-red-500 transition"
-          >
+          <Link href="/courses/acute-pulmonary-edema/quiz" className="hover:text-red-500">
             Quizzes
           </Link>
 
-          <Link
-            href="#"
-            className="hover:text-red-500 transition"
-          >
+          <Link href="#" className="rounded-lg border border-red-600 px-4 py-2 text-red-500 hover:bg-red-600 hover:text-white">
             Login
           </Link>
-
         </div>
       </div>
     </nav>
