@@ -48,7 +48,8 @@ export default function ResourcesPage() {
               XABC, ABC & MARCH
             </h2>
             <p className="mt-3 text-zinc-400">
-              Trauma and assessment priority algorithms for EMS providers.
+              Visual assessment algorithms for trauma, airway, breathing,
+              circulation, and major hemorrhage priorities.
             </p>
           </Link>
 
@@ -66,21 +67,35 @@ export default function ResourcesPage() {
             </p>
           </a>
 
-          <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-6">
+          <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-6 opacity-80">
             <h2 className="text-2xl font-bold text-red-500">ECG Library</h2>
             <p className="mt-3 text-zinc-400">Coming soon.</p>
           </div>
 
-          <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-6">
+          <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-6 opacity-80">
             <h2 className="text-2xl font-bold text-red-500">
               Stroke Scale Reference
             </h2>
             <p className="mt-3 text-zinc-400">Coming soon.</p>
           </div>
 
-          <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-6">
+          <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-6 opacity-80">
             <h2 className="text-2xl font-bold text-red-500">
               Drug Calculator
+            </h2>
+            <p className="mt-3 text-zinc-400">Coming soon.</p>
+          </div>
+
+          <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-6 opacity-80">
+            <h2 className="text-2xl font-bold text-red-500">
+              Burn Calculator
+            </h2>
+            <p className="mt-3 text-zinc-400">Coming soon.</p>
+          </div>
+
+          <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-6 opacity-80">
+            <h2 className="text-2xl font-bold text-red-500">
+              GCS Calculator
             </h2>
             <p className="mt-3 text-zinc-400">Coming soon.</p>
           </div>

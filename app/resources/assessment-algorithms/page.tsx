@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import Navbar from "../../components/Navbar";
 
@@ -7,10 +8,7 @@ export default function AssessmentAlgorithmsPage() {
       <Navbar />
 
       <section className="mx-auto max-w-6xl px-8 py-10">
-        <Link
-          href="/resources"
-          className="text-sm font-semibold text-red-500 hover:text-red-400"
-        >
+        <Link href="/resources" className="text-sm font-semibold text-red-500">
           ← Back to Resources
         </Link>
 
@@ -19,85 +17,57 @@ export default function AssessmentAlgorithmsPage() {
         </h1>
 
         <p className="mt-3 text-zinc-400">
-          Quick-reference trauma and patient assessment priorities for EMS providers.
+          Visual EMS assessment algorithms for trauma and patient assessment.
         </p>
 
-        <div className="mt-10 grid gap-6 lg:grid-cols-3">
-          <AlgorithmCard
+        <div className="mt-10 grid gap-8">
+          <AlgorithmImage
             title="XABC"
-            subtitle="Life-threatening bleeding first"
-            items={[
-              "X — Exsanguinating hemorrhage",
-              "A — Airway",
-              "B — Breathing",
-              "C — Circulation",
-            ]}
+            image="/images/XABC.png"
+            description="Use XABC when life-threatening external hemorrhage must be controlled before airway, breathing, and circulation."
           />
 
-          <AlgorithmCard
+          <AlgorithmImage
             title="ABC"
-            subtitle="Traditional patient assessment"
-            items={[
-              "A — Airway",
-              "B — Breathing",
-              "C — Circulation",
-            ]}
+            image="/images/abc.png"
+            description="Use ABC for standard patient assessment: airway, breathing, and circulation."
           />
 
-          <AlgorithmCard
+          <AlgorithmImage
             title="MARCH"
-            subtitle="Tactical / trauma priority sequence"
-            items={[
-              "M — Massive hemorrhage",
-              "A — Airway",
-              "R — Respirations",
-              "C — Circulation",
-              "H — Hypothermia / Head injury",
-            ]}
+            image="/images/MARCH.png"
+            description="Use MARCH for major trauma and tactical-style assessment priorities."
           />
-        </div>
-
-        <div className="mt-10 rounded-2xl border border-zinc-700 bg-zinc-900 p-6">
-          <h2 className="text-2xl font-bold text-red-500">
-            Field Reminder
-          </h2>
-
-          <p className="mt-3 text-zinc-300">
-            In major trauma, uncontrolled life-threatening bleeding can kill before
-            airway or breathing problems are corrected. That is why many modern EMS
-            and trauma systems teach XABC or MARCH instead of simple ABCs alone.
-          </p>
         </div>
       </section>
     </main>
   );
 }
 
-function AlgorithmCard({
+function AlgorithmImage({
   title,
-  subtitle,
-  items,
+  image,
+  description,
 }: {
   title: string;
-  subtitle: string;
-  items: string[];
+  image: string;
+  description: string;
 }) {
   return (
     <div className="rounded-2xl border border-zinc-700 bg-zinc-900 p-6">
-      <h2 className="text-4xl font-extrabold text-red-500">{title}</h2>
+      <h2 className="text-3xl font-bold text-red-500">{title}</h2>
 
-      <p className="mt-2 text-zinc-400">{subtitle}</p>
+      <p className="mt-3 text-zinc-400">{description}</p>
 
-      <ul className="mt-6 space-y-3">
-        {items.map((item) => (
-          <li
-            key={item}
-            className="rounded-lg border border-zinc-700 bg-black p-3 text-zinc-200"
-          >
-            {item}
-          </li>
-        ))}
-      </ul>
+      <div className="mt-6 overflow-hidden rounded-xl border border-zinc-700 bg-black">
+        <Image
+          src={image}
+          alt={`${title} EMS Algorithm`}
+          width={1000}
+          height={1000}
+          className="h-auto w-full object-contain"
+        />
+      </div>
     </div>
   );
 }
