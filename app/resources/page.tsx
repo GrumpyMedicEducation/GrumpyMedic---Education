@@ -22,8 +22,7 @@ export default function ResourcesPage() {
               Medication Reference
             </h2>
             <p className="mt-3 text-zinc-400">
-              EMS medication indications, contraindications, dosing, and field
-              pearls.
+              EMS medication indications, contraindications, dosing, and field pearls.
             </p>
           </Link>
 
@@ -35,8 +34,7 @@ export default function ResourcesPage() {
               NREMT Exam Prep
             </h2>
             <p className="mt-3 text-zinc-400">
-              EMT and Paramedic exam breakdowns, question ranges, time limits,
-              and study focus areas.
+              EMT and Paramedic exam breakdowns, time limits, and practice questions.
             </p>
           </Link>
 
@@ -48,8 +46,7 @@ export default function ResourcesPage() {
               XABC, ABC & MARCH
             </h2>
             <p className="mt-3 text-zinc-400">
-              Visual assessment algorithms for trauma, airway, breathing,
-              circulation, and major hemorrhage priorities.
+              Trauma and assessment priority algorithms for EMS providers.
             </p>
           </Link>
 
@@ -82,20 +79,6 @@ export default function ResourcesPage() {
           <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-6 opacity-80">
             <h2 className="text-2xl font-bold text-red-500">
               Drug Calculator
-            </h2>
-            <p className="mt-3 text-zinc-400">Coming soon.</p>
-          </div>
-
-          <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-6 opacity-80">
-            <h2 className="text-2xl font-bold text-red-500">
-              Burn Calculator
-            </h2>
-            <p className="mt-3 text-zinc-400">Coming soon.</p>
-          </div>
-
-          <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-6 opacity-80">
-            <h2 className="text-2xl font-bold text-red-500">
-              GCS Calculator
             </h2>
             <p className="mt-3 text-zinc-400">Coming soon.</p>
           </div>
