@@ -30,7 +30,7 @@ export default function ResourcesPage() {
 
           <ResourceCard
           href="/resources/lung-sounds"
-          title="Lung Sounds Reference"
+          title="lung Sounds Reference"
           description="Review normal and abnormal lung sounds and what they may indicate."
 />
 
