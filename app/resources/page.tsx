@@ -29,6 +29,12 @@ export default function ResourcesPage() {
           />
 
           <ResourceCard
+          href="/resources/lung-sounds"
+          title="Lung Sounds Reference"
+          description="Review normal and abnormal lung sounds and what they may indicate."
+/>
+
+          <ResourceCard
             href="/resources/drug-calculator"
             title="Drug Calculator"
             description="Weight-based medication dose and volume calculator."
