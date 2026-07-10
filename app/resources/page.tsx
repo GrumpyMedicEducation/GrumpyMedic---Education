@@ -29,10 +29,10 @@ export default function ResourcesPage() {
           />
 
           <ResourceCard
-          href="/resources/lung-sounds"
-          title="lung Sounds Reference"
-          description="Review normal and abnormal lung sounds and what they may indicate."
-/>
+            href="/resources/lung-sounds"
+            title="Lung Sounds Reference"
+            description="Review normal and abnormal lung sounds and what they may indicate."
+          />
 
           <ResourceCard
             href="/resources/drug-calculator"
@@ -77,8 +77,13 @@ function ResourceCard({
       href={href}
       className="block rounded-xl border border-zinc-700 bg-zinc-900 p-6 transition hover:border-red-500 hover:bg-zinc-800"
     >
-      <h2 className="text-2xl font-bold text-red-500">{title}</h2>
-      <p className="mt-3 text-zinc-400">{description}</p>
+      <h2 className="text-2xl font-bold text-red-500">
+        {title}
+      </h2>
+
+      <p className="mt-3 text-zinc-400">
+        {description}
+      </p>
     </Link>
   );
 }
