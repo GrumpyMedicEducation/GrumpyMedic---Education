@@ -75,16 +75,18 @@ export default function ResourcesPage() {
             </p>
           </Link>
 
-          {/* Burn Calculator */}
-          <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-6 opacity-80">
-            <h2 className="text-2xl font-bold text-red-500">
-              Burn Calculator
-            </h2>
+          <Link
+  href="/resources/burn-calculator"
+  className="rounded-xl border border-zinc-700 bg-zinc-900 p-6 transition hover:border-red-500 hover:bg-zinc-800"
+>
+  <h2 className="text-2xl font-bold text-red-500">
+    Burn Calculator
+  </h2>
 
-            <p className="mt-3 text-zinc-400">
-              Coming soon.
-            </p>
-          </div>
+  <p className="mt-3 text-zinc-400">
+    Estimate adult burn surface area using the Rule of Nines.
+  </p>
+</Link>
 
           {/* Stroke Scale */}
           <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-6 opacity-80">
