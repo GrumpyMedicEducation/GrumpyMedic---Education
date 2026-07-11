@@ -1,218 +1,219 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import Navbar from "../../../components/Navbar";
 
-const questions = [
-  {
-    question: "Acute pulmonary edema is most commonly caused by:",
-    answers: [
-      "Right-sided heart failure",
-      "Left ventricular failure",
-      "Asthma exacerbation",
-      "Pulmonary embolism",
-    ],
-    correct: 1,
-    explanation:
-      "Acute pulmonary edema is most often related to left ventricular failure, causing fluid to back up into the lungs.",
-  },
-  {
-    question:
-      "Which assessment finding is most consistent with acute pulmonary edema?",
-    answers: [
-      "Clear lung sounds",
-      "Bradycardia",
-      "Diffuse crackles or rales",
-      "Absent peripheral pulses",
-    ],
-    correct: 2,
-    explanation:
-      "Diffuse crackles or rales suggest fluid in the alveoli and are commonly heard in pulmonary edema.",
-  },
-  {
-    question: "What is the primary benefit of CPAP in pulmonary edema?",
-    answers: [
-      "It lowers blood glucose",
-      "It improves oxygenation and reduces work of breathing",
-      "It causes bronchodilation only",
-      "It increases afterload",
-    ],
-    correct: 1,
-    explanation:
-      "CPAP helps recruit alveoli, improves oxygenation, and can reduce preload and work of breathing.",
-  },
-  {
-    question: "Nitroglycerin is used because it:",
-    answers: [
-      "Reduces preload and cardiac workload",
-      "Raises blood pressure",
-      "Causes fluid retention",
-      "Slows respirations",
-    ],
-    correct: 0,
-    explanation:
-      "Nitroglycerin causes vasodilation, helping reduce preload and cardiac workload.",
-  },
-  {
-    question: "Which patient finding should make you concerned about failure?",
-    answers: [
-      "Patient speaking full sentences",
-      "Improving oxygen saturation",
-      "Decreasing mental status and tiring out",
-      "Mild anxiety only",
-    ],
-    correct: 2,
-    explanation:
-      "A patient who is tiring out or becoming altered may be progressing toward respiratory failure.",
-  },
-];
+export default function AcutePulmonaryEdemaCertificatePage() {
+  const [studentName, setStudentName] = useState("");
+  const [certificateName, setCertificateName] =
+    useState("Course Participant");
+  const [score, setScore] = useState("80");
+  const [completionDate, setCompletionDate] = useState("");
 
-export default function AcutePulmonaryEdemaQuizPage() {
-  const [answers, setAnswers] = useState<number[]>([]);
-  const [submitted, setSubmitted] = useState(false);
+  useEffect(() => {
+    const parameters = new URLSearchParams(window.location.search);
+    const quizScore = parameters.get("score");
 
-  const score = answers.reduce((total, answer, index) => {
-    return answer === questions[index].correct ? total + 1 : total;
-  }, 0);
+    if (quizScore) {
+      setScore(quizScore);
+    }
 
-  const percent = Math.round((score / questions.length) * 100);
-  const passed = percent >= 80;
+    setCompletionDate(
+      new Date().toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      })
+    );
+  }, []);
 
-  function resetQuiz() {
-    setAnswers([]);
-    setSubmitted(false);
+  function updateCertificateName() {
+    const cleanedName = studentName.trim();
+
+    if (!cleanedName) {
+      window.alert("Please enter the participant's full name.");
+      return;
+    }
+
+    setCertificateName(cleanedName);
+  }
+
+  function printCertificate() {
+    if (certificateName === "Course Participant") {
+      window.alert(
+        "Please enter the participant's name and select Update Certificate before printing."
+      );
+      return;
+    }
+
+    window.print();
   }
 
   return (
     <main className="min-h-screen bg-black text-white">
-      <Navbar />
+      <div className="print:hidden">
+        <Navbar />
+      </div>
 
-      <section className="mx-auto max-w-5xl px-8 py-10">
+      <section className="mx-auto max-w-5xl px-6 py-10 print:hidden">
         <Link
-          href="/courses/acute-pulmonary-edema"
-          className="text-sm font-semibold text-red-500 hover:text-red-400"
+          href="/courses/acute-pulmonary-edema/quiz"
+          className="font-semibold text-red-500 transition hover:text-red-400"
         >
-          ← Back to Course
+          ← Back to Quiz
         </Link>
 
-        <div className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-900 p-8">
-          <p className="text-sm font-bold uppercase tracking-widest text-red-500">
-            Quiz
-          </p>
-
-          <h1 className="mt-3 text-4xl font-extrabold">
-            Acute Pulmonary Edema Quiz
+        <div className="mt-8 rounded-2xl border border-zinc-700 bg-zinc-900 p-6">
+          <h1 className="text-3xl font-extrabold text-red-500">
+            Acute Pulmonary Edema Course Certificate
           </h1>
 
-          <p className="mt-4 text-zinc-300">
-            Passing score: 80%. Select the best answer for each question.
+          <p className="mt-3 text-zinc-400">
+            Enter the participant&apos;s full name, update the certificate, and
+            then print or save it as a PDF.
           </p>
+
+          <div className="mt-6 flex flex-col gap-4 sm:flex-row">
+            <input
+              type="text"
+              value={studentName}
+              onChange={(event) => setStudentName(event.target.value)}
+              placeholder="Participant's full name"
+              className="flex-1 rounded-xl border border-zinc-700 bg-black px-4 py-3 text-white outline-none transition focus:border-red-500"
+            />
+
+            <button
+              type="button"
+              onClick={updateCertificateName}
+              className="rounded-xl bg-red-600 px-6 py-3 font-bold transition hover:bg-red-500"
+            >
+              Update Certificate
+            </button>
+
+            <button
+              type="button"
+              onClick={printCertificate}
+              className="rounded-xl border border-red-500 px-6 py-3 font-bold text-red-400 transition hover:bg-red-500 hover:text-white"
+            >
+              Print Certificate
+            </button>
+          </div>
         </div>
+      </section>
 
-        <div className="mt-8 space-y-6">
-          {questions.map((q, index) => {
-            const selected = answers[index];
+      <section className="mx-auto max-w-5xl px-6 pb-12 print:max-w-none print:p-0">
+        <div className="certificate relative overflow-hidden border-[12px] border-double border-zinc-800 bg-white px-10 py-14 text-center text-black shadow-2xl print:min-h-screen print:border-black print:shadow-none">
+          <div className="absolute left-0 top-0 h-3 w-full bg-red-600" />
+          <div className="absolute bottom-0 left-0 h-3 w-full bg-red-600" />
 
-            return (
-              <div
-                key={q.question}
-                className="rounded-xl border border-zinc-800 bg-zinc-900 p-6"
-              >
-                <h2 className="text-xl font-semibold">
-                  {index + 1}. {q.question}
-                </h2>
+          <p className="text-sm font-bold uppercase tracking-[0.35em] text-red-700">
+            GrumpyMedic Education
+          </p>
 
-                <div className="mt-4 space-y-3">
-                  {q.answers.map((answer, answerIndex) => {
-                    const isSelected = selected === answerIndex;
-                    const isCorrect = q.correct === answerIndex;
-                    const showCorrect = submitted && isCorrect;
-                    const showWrong =
-                      submitted && isSelected && selected !== q.correct;
+          <h1 className="mt-6 text-5xl font-extrabold uppercase tracking-wide">
+            Certificate of Completion
+          </h1>
 
-                    return (
-                      <button
-                        key={answer}
-                        disabled={submitted}
-                        onClick={() => {
-                          const newAnswers = [...answers];
-                          newAnswers[index] = answerIndex;
-                          setAnswers(newAnswers);
-                        }}
-                        className={`block w-full rounded-lg border p-3 text-left transition ${
-                          showCorrect
-                            ? "border-green-500 bg-green-950"
-                            : showWrong
-                            ? "border-red-500 bg-red-950"
-                            : isSelected
-                            ? "border-red-500 bg-red-950"
-                            : "border-zinc-700 hover:bg-zinc-800"
-                        }`}
-                      >
-                        {answer}
-                      </button>
-                    );
-                  })}
-                </div>
+          <p className="mt-8 text-lg text-zinc-600">
+            This certificate is presented to
+          </p>
 
-                {submitted && (
-                  <p className="mt-4 rounded-lg bg-zinc-800 p-4 text-zinc-300">
-                    <span className="font-bold text-white">Explanation: </span>
-                    {q.explanation}
-                  </p>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {!submitted ? (
-          <button
-            onClick={() => setSubmitted(true)}
-            className="mt-8 rounded-lg bg-red-600 px-6 py-3 font-semibold hover:bg-red-700"
-          >
-            Submit Quiz
-          </button>
-        ) : (
-          <div className="mt-8 rounded-xl border border-zinc-800 bg-zinc-900 p-6">
-            <h2 className="text-3xl font-bold">Quiz Result</h2>
-
-            <p className="mt-3 text-xl text-zinc-300">
-              You scored {score} out of {questions.length} ({percent}%).
+          <div className="mx-auto mt-5 max-w-3xl border-b-2 border-black pb-3">
+            <p className="text-4xl font-bold italic text-red-700">
+              {certificateName}
             </p>
+          </div>
 
-            <p className="mt-4 text-2xl font-bold">
-              {passed ? "Pass ✅" : "Not yet — review and try again."}
-            </p>
+          <p className="mt-8 text-lg text-zinc-700">
+            for successfully completing the educational course
+          </p>
 
-            <div className="mt-6 flex flex-wrap gap-4">
-              <button
-                onClick={resetQuiz}
-                className="rounded-lg border border-zinc-700 px-5 py-3 font-semibold hover:bg-zinc-800"
-              >
-                Retake Quiz
-              </button>
+          <h2 className="mt-5 text-4xl font-extrabold">
+            Acute Pulmonary Edema
+          </h2>
 
-              <Link
-                href="/courses/acute-pulmonary-edema"
-                className="rounded-lg border border-zinc-700 px-5 py-3 font-semibold hover:bg-zinc-800"
-              >
-                Return to Course
-              </Link>
+          <p className="mt-3 text-xl font-semibold text-zinc-700">
+            Recognition and Prehospital Management
+          </p>
 
-              {passed && (
-                <Link
-                  href="/courses/acute-pulmonary-edema/certificate"
-                  className="rounded-lg bg-red-600 px-5 py-3 font-semibold hover:bg-red-700"
-                >
-                  View Certificate
-                </Link>
-              )}
+          <p className="mx-auto mt-8 max-w-3xl leading-7 text-zinc-600">
+            This course reviewed recognition of acute pulmonary edema,
+            respiratory assessment, CPAP, oxygenation and ventilation,
+            nitroglycerin considerations, reassessment, and EMS treatment
+            priorities.
+          </p>
+
+          <div className="mx-auto mt-10 grid max-w-3xl gap-6 sm:grid-cols-2">
+            <div className="rounded-xl border border-zinc-300 p-5">
+              <p className="text-sm font-bold uppercase tracking-wide text-zinc-500">
+                Quiz Score
+              </p>
+
+              <p className="mt-2 text-3xl font-extrabold text-red-700">
+                {score}%
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-zinc-300 p-5">
+              <p className="text-sm font-bold uppercase tracking-wide text-zinc-500">
+                Completion Date
+              </p>
+
+              <p className="mt-2 text-2xl font-bold">
+                {completionDate || "________________"}
+              </p>
             </div>
           </div>
-        )}
+
+          <div className="mx-auto mt-14 grid max-w-3xl gap-10 sm:grid-cols-2">
+            <div>
+              <div className="border-b border-black pb-2 text-xl font-semibold">
+                Lt. William Howard, NRP
+              </div>
+
+              <p className="mt-2 text-sm text-zinc-500">
+                Course Instructor
+              </p>
+            </div>
+
+            <div>
+              <div className="border-b border-black pb-2 text-xl font-semibold">
+                GrumpyMedic Education
+              </div>
+
+              <p className="mt-2 text-sm text-zinc-500">
+                Education Provider
+              </p>
+            </div>
+          </div>
+
+          <p className="mx-auto mt-12 max-w-3xl text-xs leading-5 text-zinc-500">
+            This is an educational completion certificate only. It does not
+            replace current state and local protocols, service training,
+            medical-director authorization, or demonstrated competency
+            requirements.
+          </p>
+        </div>
       </section>
+
+      <style jsx global>{`
+        @media print {
+          @page {
+            size: landscape;
+            margin: 0.35in;
+          }
+
+          html,
+          body {
+            background: white !important;
+          }
+
+          .certificate {
+            break-inside: avoid;
+          }
+        }
+      `}</style>
     </main>
   );
 }
