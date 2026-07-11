@@ -23,7 +23,7 @@ const questions: QuizQuestion[] = [
     ],
     correctAnswer: 1,
     explanation:
-      "Glucagon is indicated when hypoglycemia is suspected or confirmed, the patient has altered mental status, and the patient cannot safely swallow oral glucose.",
+      "Glucagon is appropriate when hypoglycemia is suspected or confirmed, the patient has altered mental status, and the patient cannot safely swallow oral glucose.",
   },
   {
     question: "What is the adult dose of glucagon?",
@@ -69,7 +69,7 @@ const questions: QuizQuestion[] = [
     ],
     correctAnswer: 2,
     explanation:
-      "A pediatric patient weighing 20 kg or more receives 1 mg IM or IN.",
+      "A pediatric patient weighing 20 kg or greater receives 1 mg IM or IN.",
   },
   {
     question:
@@ -78,24 +78,19 @@ const questions: QuizQuestion[] = [
       "AHMD approval only",
       "Annual mandatory retraining only",
       "Initial training only, with no competency documentation",
-      "AHMD approval, initial training and oversight, demonstrated hands-on competency, and service training records",
+      "AHMD approval, initial training and oversight, demonstrated hands-on competency, and service-maintained training records",
     ],
     correctAnswer: 3,
     explanation:
-      "Participation requires Affiliate Hospital Medical Director approval, initial training and oversight, demonstrated hands-on competency, and service-maintained training records.",
+      "Participation requires Affiliate Hospital Medical Director approval, initial training and oversight, documented hands-on competency, and service-maintained training records.",
   },
   {
     question:
       "Which routes are approved for glucagon administration in this course?",
-    options: [
-      "IV only",
-      "IM only",
-      "IN only",
-      "IM or IN",
-    ],
+    options: ["IV only", "IM only", "IN only", "IM or IN"],
     correctAnswer: 3,
     explanation:
-      "The approved routes presented in this course are intramuscular and intranasal.",
+      "The routes presented in this course are intramuscular and intranasal.",
   },
   {
     question:
@@ -112,7 +107,7 @@ const questions: QuizQuestion[] = [
     ],
     correctAnswer: 1,
     explanation:
-      "The patient is hypoglycemic, has altered mental status, and cannot swallow. Administer 1 mg glucagon IM or IN while managing the airway and continuing transport preparations.",
+      "The patient is hypoglycemic, has altered mental status, and cannot swallow. Administer 1 mg glucagon IM or IN while protecting the airway and preparing for transport.",
   },
   {
     question:
@@ -122,7 +117,7 @@ const questions: QuizQuestion[] = [
       "The patient remains confused.",
     ],
     options: [
-      "Transport without further treatment or reassessment",
+      "Transport without further reassessment",
       "Give oral glucose immediately despite the confusion",
       "Repeat glucagon 1 mg IM or IN according to protocol",
       "Wait another 30 minutes before reassessing",
@@ -168,7 +163,7 @@ const questions: QuizQuestion[] = [
     ],
     correctAnswer: 1,
     explanation:
-      "Nausea and vomiting are common. Position the patient appropriately, prepare suction, and continuously monitor the airway.",
+      "Nausea and vomiting are common. Position the patient appropriately, prepare suction, and continue airway monitoring.",
   },
 ];
 
@@ -233,16 +228,14 @@ export default function GlucagonQuizPage() {
 
           <p className="mt-4 max-w-3xl text-zinc-400">
             Answer all 12 questions. A score of 80% or higher is required to
-            pass.
+            pass and unlock the completion certificate.
           </p>
         </div>
 
         {!submitted && (
           <div className="mt-8 rounded-2xl border border-zinc-700 bg-zinc-900 p-5">
             <div className="flex items-center justify-between gap-4">
-              <span className="font-semibold text-zinc-300">
-                Progress
-              </span>
+              <span className="font-semibold text-zinc-300">Progress</span>
 
               <span className="font-bold text-red-400">
                 {answeredCount} of {questions.length} answered
@@ -273,9 +266,7 @@ export default function GlucagonQuizPage() {
             </p>
 
             <div className="mt-3 flex flex-wrap items-end gap-4">
-              <span className="text-6xl font-extrabold">
-                {percentage}%
-              </span>
+              <span className="text-6xl font-extrabold">{percentage}%</span>
 
               <span className="pb-2 text-xl font-bold">
                 {score} of {questions.length} correct
@@ -292,8 +283,8 @@ export default function GlucagonQuizPage() {
 
             <p className="mt-2 text-zinc-300">
               {passed
-                ? "You achieved the required passing score."
-                : "Review the explanations below and try the quiz again."}
+                ? "You achieved the required passing score. Your certificate is now available below."
+                : "Review the explanations below and retake the quiz."}
             </p>
           </section>
         )}
@@ -301,8 +292,7 @@ export default function GlucagonQuizPage() {
         <div className="mt-10 space-y-8">
           {questions.map((question, questionIndex) => {
             const selectedAnswer = answers[questionIndex];
-            const isCorrect =
-              selectedAnswer === question.correctAnswer;
+            const isCorrect = selectedAnswer === question.correctAnswer;
 
             return (
               <section
@@ -333,10 +323,8 @@ export default function GlucagonQuizPage() {
                   {question.options.map((option, optionIndex) => {
                     const selected = selectedAnswer === optionIndex;
                     const correct =
-                      submitted &&
-                      optionIndex === question.correctAnswer;
-                    const incorrect =
-                      submitted && selected && !correct;
+                      submitted && optionIndex === question.correctAnswer;
+                    const incorrect = submitted && selected && !correct;
 
                     return (
                       <button
@@ -366,9 +354,7 @@ export default function GlucagonQuizPage() {
                           {String.fromCharCode(65 + optionIndex)}
                         </span>
 
-                        <span className="pt-1 text-zinc-200">
-                          {option}
-                        </span>
+                        <span className="pt-1 text-zinc-200">{option}</span>
                       </button>
                     );
                   })}
@@ -417,20 +403,27 @@ export default function GlucagonQuizPage() {
 
               {passed && (
                 <Link
-                  href="/courses"
-                  className="rounded-xl bg-emerald-600 px-8 py-4 font-bold transition hover:bg-emerald-500"
+                  href={`/courses/glucagon-hypoglycemia/certificate?score=${percentage}`}
+                  className="rounded-xl bg-emerald-600 px-8 py-4 font-bold text-white transition hover:bg-emerald-500"
                 >
-                  Return to Courses
+                  View Certificate
                 </Link>
               )}
+
+              <Link
+                href="/courses"
+                className="rounded-xl border border-zinc-600 px-8 py-4 font-bold text-zinc-300 transition hover:border-zinc-400 hover:text-white"
+              >
+                Return to Courses
+              </Link>
             </>
           )}
         </div>
 
         <p className="mt-10 text-center text-sm text-zinc-500">
-          Educational content only. Follow your current state and local
-          protocols, medical-director authorization, and manufacturer
-          instructions.
+          Educational content only. Follow current state and local protocols,
+          medical-director authorization, service requirements, and
+          manufacturer instructions.
         </p>
       </section>
     </main>
