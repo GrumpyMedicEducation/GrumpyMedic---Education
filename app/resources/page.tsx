@@ -58,6 +58,12 @@ export default function ResourcesPage() {
           />
 
           <ResourceCard
+            href="/mental-health"
+            title="Mental Health Awareness"
+            description="Mental health emergencies, crisis intervention, de-escalation techniques, suicide awareness, and responder wellness."
+          />
+
+          <ResourceCard
             href="/resources/stroke-scale"
             title="FAST-ED Stroke Scale"
             description="Interactive FAST-ED stroke assessment and scoring tool."
