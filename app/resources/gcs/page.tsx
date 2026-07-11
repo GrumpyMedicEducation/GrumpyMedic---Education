@@ -245,7 +245,7 @@ function getInterpretation(total: number | null) {
       title: "GCS 9–12",
       description:
         "Traditionally categorized as moderate impairment. Closely monitor airway, breathing, circulation, and neurologic status.",
-      className: "border-amber-500/60 bg-amber-500/10 text-amber-300",
+      className: "border-amber-500/60 bg-amber-500/10 text-amber-300"
     };
   }
 
