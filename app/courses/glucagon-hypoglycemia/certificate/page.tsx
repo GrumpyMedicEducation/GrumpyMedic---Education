@@ -6,7 +6,8 @@ import Navbar from "../../../components/Navbar";
 
 export default function GlucagonCertificatePage() {
   const [studentName, setStudentName] = useState("");
-  const [displayName, setDisplayName] = useState("Course Participant");
+  const [certificateName, setCertificateName] =
+    useState("Course Participant");
   const [score, setScore] = useState("80");
   const [completionDate, setCompletionDate] = useState("");
 
@@ -31,17 +32,17 @@ export default function GlucagonCertificatePage() {
     const cleanedName = studentName.trim();
 
     if (!cleanedName) {
-      window.alert("Please enter the participant's name.");
+      window.alert("Please enter the participant's full name.");
       return;
     }
 
-    setDisplayName(cleanedName);
+    setCertificateName(cleanedName);
   }
 
   function printCertificate() {
-    if (displayName === "Course Participant") {
+    if (certificateName === "Course Participant") {
       window.alert(
-        "Enter the participant's name and select Update Certificate before printing."
+        "Please enter the participant's name and select Update Certificate before printing."
       );
       return;
     }
@@ -55,7 +56,7 @@ export default function GlucagonCertificatePage() {
         <Navbar />
       </div>
 
-      <section className="print:hidden mx-auto max-w-5xl px-6 py-10">
+      <section className="mx-auto max-w-5xl px-6 py-10 print:hidden">
         <Link
           href="/courses/glucagon-hypoglycemia/quiz"
           className="font-semibold text-red-500 transition hover:text-red-400"
@@ -69,8 +70,8 @@ export default function GlucagonCertificatePage() {
           </h1>
 
           <p className="mt-3 text-zinc-400">
-            Enter the participant&apos;s name before printing or saving the
-            certificate as a PDF.
+            Enter the participant&apos;s full name, update the certificate, and
+            then print or save it as a PDF.
           </p>
 
           <div className="mt-6 flex flex-col gap-4 sm:flex-row">
@@ -79,7 +80,7 @@ export default function GlucagonCertificatePage() {
               value={studentName}
               onChange={(event) => setStudentName(event.target.value)}
               placeholder="Participant's full name"
-              className="flex-1 rounded-xl border border-zinc-700 bg-black px-4 py-3 text-white outline-none focus:border-red-500"
+              className="flex-1 rounded-xl border border-zinc-700 bg-black px-4 py-3 text-white outline-none transition focus:border-red-500"
             />
 
             <button
@@ -120,7 +121,7 @@ export default function GlucagonCertificatePage() {
 
           <div className="mx-auto mt-5 max-w-3xl border-b-2 border-black pb-3">
             <p className="text-4xl font-bold italic text-red-700">
-              {displayName}
+              {certificateName}
             </p>
           </div>
 
@@ -128,7 +129,7 @@ export default function GlucagonCertificatePage() {
             for successfully completing the educational course
           </p>
 
-          <h2 className="mt-5 text-4xl font-extrabold text-black">
+          <h2 className="mt-5 text-4xl font-extrabold">
             Glucagon for Hypoglycemia
           </h2>
 
@@ -137,9 +138,10 @@ export default function GlucagonCertificatePage() {
           </p>
 
           <p className="mx-auto mt-8 max-w-3xl leading-7 text-zinc-600">
-            This course reviewed hypoglycemia recognition, patient assessment,
-            glucagon indications, dosing, administration, airway precautions,
-            reassessment, and continuing patient care.
+            This course reviewed recognition and treatment of hypoglycemia,
+            glucagon indications, contraindications, dosing, administration,
+            airway precautions, reassessment, repeat dosing considerations, and
+            continued patient care.
           </p>
 
           <div className="mx-auto mt-10 grid max-w-3xl gap-6 sm:grid-cols-2">
@@ -187,10 +189,11 @@ export default function GlucagonCertificatePage() {
           </div>
 
           <p className="mx-auto mt-12 max-w-3xl text-xs leading-5 text-zinc-500">
-            Educational completion certificate only. This certificate does not
+            This is an educational completion certificate only. It does not
             independently authorize medication administration or replace
-            service training, demonstrated competency, medical-director
-            approval, or current state and local protocol requirements.
+            current state and local protocols, medical-director approval,
+            manufacturer instructions, service training, or demonstrated
+            competency requirements.
           </p>
         </div>
       </section>
@@ -202,6 +205,7 @@ export default function GlucagonCertificatePage() {
             margin: 0.35in;
           }
 
+          html,
           body {
             background: white !important;
           }
