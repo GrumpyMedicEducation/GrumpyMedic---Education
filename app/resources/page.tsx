@@ -34,11 +34,11 @@ export default function ResourcesPage() {
             description="Review normal and abnormal lung sounds and what they may indicate."
           />
 
-<ResourceCard
-  href="/resources/gcs"
-  title="Glasgow Coma Scale"
-  description="Interactive eye, verbal, and motor assessment with automatic scoring."
-/>
+          <ResourceCard
+            href="/resources/gcs"
+            title="Glasgow Coma Scale"
+            description="Interactive eye, verbal, and motor assessment with automatic scoring."
+          />
           <ResourceCard
             href="/resources/drug-calculator"
             title="Drug Calculator"
