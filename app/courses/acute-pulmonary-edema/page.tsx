@@ -13,7 +13,7 @@ type Option = {
 type ScenarioStep = {
   title: string;
   situation: string;
-  findings?: string[];
+  findings: string[];
   question: string;
   options: Option[];
 };
@@ -38,32 +38,32 @@ const scenarioSteps: ScenarioStep[] = [
         text: "Complete a detailed medical history before treating",
         correct: false,
         feedback:
-          "The patient has severe respiratory distress. Immediate airway, breathing, and oxygenation support takes priority over a detailed history.",
+          "The patient has severe respiratory distress. Immediate airway, breathing, and oxygenation support takes priority.",
       },
       {
         text: "Position the patient upright and begin airway and breathing support",
         correct: true,
         feedback:
-          "Correct. Positioning the patient upright can reduce respiratory effort while you immediately assess and support airway, breathing, and oxygenation.",
+          "Correct. Upright positioning and immediate respiratory support are appropriate.",
       },
       {
-        text: "Place the patient supine for a complete physical examination",
+        text: "Place the patient supine for a complete examination",
         correct: false,
         feedback:
-          "Supine positioning may worsen breathing in acute pulmonary edema. Keep the patient upright unless another condition requires different positioning.",
+          "Supine positioning may worsen respiratory distress in pulmonary edema.",
       },
       {
         text: "Have the patient walk to the ambulance",
         correct: false,
         feedback:
-          "Exertion may worsen hypoxia and respiratory distress. Bring equipment and the stretcher to the patient.",
+          "Exertion may worsen hypoxia and respiratory distress.",
       },
     ],
   },
   {
-    title: "Respiratory Findings",
+    title: "Recognition",
     situation:
-      "You begin your respiratory assessment while providing oxygen and preparing additional treatment.",
+      "You continue your respiratory assessment while providing oxygen and preparing additional treatment.",
     findings: [
       "Diffuse crackles are heard bilaterally",
       "The patient has increased work of breathing",
@@ -77,25 +77,25 @@ const scenarioSteps: ScenarioStep[] = [
         text: "Acute pulmonary edema",
         correct: true,
         feedback:
-          "Correct. Severe dyspnea, diffuse crackles, hypoxia, hypertension, and pink frothy sputum strongly suggest acute pulmonary edema.",
+          "Correct. Severe dyspnea, diffuse crackles, hypoxia, hypertension, and frothy sputum are strongly suggestive of pulmonary edema.",
       },
       {
         text: "Simple anxiety attack",
         correct: false,
         feedback:
-          "Anxiety may be present, but it does not explain the crackles, frothy sputum, and severe hypoxia.",
+          "Anxiety does not explain diffuse crackles, severe hypoxia, and frothy sputum.",
       },
       {
         text: "Isolated upper-airway obstruction",
         correct: false,
         feedback:
-          "An upper-airway obstruction would not usually produce diffuse bilateral crackles and frothy sputum.",
+          "Upper-airway obstruction would not usually produce diffuse bilateral crackles.",
       },
       {
-        text: "Uncomplicated hyperventilation syndrome",
+        text: "Uncomplicated hyperventilation",
         correct: false,
         feedback:
-          "The abnormal lung sounds, hypoxia, hypertension, and frothy sputum indicate a serious cardiopulmonary emergency.",
+          "The lung findings and hypoxia indicate a serious cardiopulmonary emergency.",
       },
     ],
   },
@@ -107,7 +107,7 @@ const scenarioSteps: ScenarioStep[] = [
       "Respiratory rate: 34 breaths/min",
       "SpO₂: 87% with supplemental oxygen",
       "Blood pressure: 190/108 mmHg",
-      "The patient can maintain their own airway",
+      "The patient can maintain their airway",
       "No vomiting or facial trauma is present",
     ],
     question: "What treatment should be considered next?",
@@ -116,64 +116,64 @@ const scenarioSteps: ScenarioStep[] = [
         text: "Apply CPAP according to protocol",
         correct: true,
         feedback:
-          "Correct. This patient has severe respiratory distress, remains conscious, can protect the airway, and has adequate blood pressure. CPAP should be considered early according to protocol.",
+          "Correct. This patient appears to be an appropriate candidate for early CPAP.",
       },
       {
-        text: "Delay CPAP until the patient becomes unresponsive",
+        text: "Wait until the patient becomes unresponsive",
         correct: false,
         feedback:
-          "CPAP is most useful when applied early to an appropriate conscious patient before respiratory failure occurs.",
+          "CPAP should be considered before respiratory failure occurs.",
       },
       {
-        text: "Give the patient water and reassess in 20 minutes",
+        text: "Give the patient water and reassess later",
         correct: false,
         feedback:
-          "This patient requires immediate respiratory support and rapid transport, not oral fluids or delayed reassessment.",
+          "The patient requires immediate respiratory support and transport.",
       },
       {
-        text: "Place the patient flat and apply a nasal cannula",
+        text: "Place the patient flat and use only a nasal cannula",
         correct: false,
         feedback:
-          "Flat positioning may worsen breathing, and a nasal cannula alone is unlikely to provide sufficient support for severe pulmonary edema.",
+          "Flat positioning may worsen breathing, and low-flow oxygen alone may be inadequate.",
       },
     ],
   },
   {
     title: "Medication Considerations",
     situation:
-      "The patient tolerates CPAP. Oxygen saturation begins to improve, but the patient remains hypertensive and dyspneic.",
+      "The patient tolerates CPAP. Oxygen saturation improves, but the patient remains hypertensive and dyspneic.",
     findings: [
       "SpO₂: 92% on CPAP",
       "Blood pressure: 186/104 mmHg",
-      "The patient denies taking erectile-dysfunction medication",
-      "No medication allergy is reported",
+      "No reported medication allergy",
+      "The patient denies recent erectile-dysfunction medication use",
       "Local protocol permits nitroglycerin for this presentation",
     ],
-    question: "What medication should be considered according to protocol?",
+    question: "Which medication should be considered according to protocol?",
     options: [
       {
         text: "Nitroglycerin",
         correct: true,
         feedback:
-          "Correct. In a hypertensive patient with suspected acute pulmonary edema, nitroglycerin may be indicated according to local protocol after contraindications are assessed.",
+          "Correct. Nitroglycerin may be appropriate after contraindications are evaluated and local protocol is followed.",
       },
       {
         text: "Oral glucose",
         correct: false,
         feedback:
-          "There is no evidence of hypoglycemia in this scenario. Oral glucose does not treat pulmonary edema.",
+          "There is no evidence of hypoglycemia in this scenario.",
       },
       {
         text: "Epinephrine for anaphylaxis",
         correct: false,
         feedback:
-          "The findings are not consistent with anaphylaxis. Epinephrine is not the appropriate medication for this presentation.",
+          "The presentation is not consistent with anaphylaxis.",
       },
       {
-        text: "Withhold all treatment until arrival at the hospital",
+        text: "Withhold all treatment until hospital arrival",
         correct: false,
         feedback:
-          "Appropriate prehospital treatment can improve oxygenation, reduce work of breathing, and prevent deterioration.",
+          "Appropriate prehospital care may reduce respiratory distress and prevent deterioration.",
       },
     ],
   },
@@ -186,33 +186,33 @@ const scenarioSteps: ScenarioStep[] = [
       "SpO₂: 96%",
       "Blood pressure: 164/92 mmHg",
       "The patient can speak in full sentences",
-      "Crackles remain present but respiratory effort has improved",
+      "Crackles remain present, but respiratory effort has improved",
     ],
     question: "What is the best next action?",
     options: [
       {
-        text: "Discontinue all treatment because the patient improved",
+        text: "Discontinue treatment because the patient improved",
         correct: false,
         feedback:
-          "Improvement does not mean the emergency has resolved. Continue treatment, monitoring, reassessment, and transport.",
+          "Improvement does not mean the emergency has resolved.",
       },
       {
-        text: "Continue CPAP and monitoring, reassess frequently, and transport",
+        text: "Continue treatment, reassess frequently, and transport",
         correct: true,
         feedback:
-          "Correct. Continue effective therapy, monitor for deterioration, reassess vital signs and respiratory status, and transport to an appropriate facility.",
+          "Correct. Continue effective treatment, monitor for deterioration, and transport.",
       },
       {
         text: "Allow the patient to refuse because oxygen saturation improved",
         correct: false,
         feedback:
-          "Acute pulmonary edema can recur or deteriorate rapidly. Improvement after treatment does not eliminate the need for evaluation and transport.",
+          "Pulmonary edema can recur or worsen rapidly despite temporary improvement.",
       },
       {
-        text: "Remove CPAP and have the patient walk to the ambulance",
+        text: "Remove CPAP and have the patient walk",
         correct: false,
         feedback:
-          "Unnecessary exertion and early removal of effective treatment may cause deterioration. Continue support and move the patient safely.",
+          "Unnecessary exertion and early removal of treatment may cause deterioration.",
       },
     ],
   },
@@ -226,9 +226,6 @@ export default function AcutePulmonaryEdemaPage() {
   const [complete, setComplete] = useState(false);
 
   const step = scenarioSteps[currentStep];
-  const percentage = Math.round(
-    (correctAnswers / scenarioSteps.length) * 100
-  );
 
   function chooseOption(optionIndex: number) {
     if (answered) return;
@@ -266,26 +263,46 @@ export default function AcutePulmonaryEdemaPage() {
   }
 
   if (complete) {
-    const finalPercentage = Math.round(
+    const percentage = Math.round(
       (correctAnswers / scenarioSteps.length) * 100
     );
+
+    const passed = percentage >= 80;
 
     return (
       <main className="min-h-screen bg-black text-white">
         <Navbar />
 
         <section className="mx-auto max-w-5xl px-6 py-12">
-          <div className="rounded-3xl border-2 border-emerald-500 bg-zinc-900 p-8 text-center shadow-2xl md:p-12">
-            <p className="text-sm font-extrabold uppercase tracking-[0.25em] text-emerald-400">
-              Scenario Complete
+          <div
+            className={`rounded-3xl border-2 bg-zinc-900 p-8 text-center shadow-2xl md:p-12 ${
+              passed ? "border-emerald-500" : "border-amber-500"
+            }`}
+          >
+            <p
+              className={`text-sm font-extrabold uppercase tracking-[0.25em] ${
+                passed ? "text-emerald-400" : "text-amber-400"
+              }`}
+            >
+              {passed ? "Course Passed" : "Additional Review Required"}
             </p>
 
-            <h1 className="mt-5 text-4xl font-extrabold md:text-6xl">
+            <div
+              className={`mx-auto mt-5 inline-flex rounded-full border px-5 py-2 text-sm font-extrabold uppercase tracking-wide ${
+                passed
+                  ? "border-emerald-500 bg-emerald-500/10 text-emerald-300"
+                  : "border-amber-500 bg-amber-500/10 text-amber-300"
+              }`}
+            >
+              {passed ? "🏅 Certificate Unlocked" : "Retake Required"}
+            </div>
+
+            <h1 className="mt-6 text-4xl font-extrabold md:text-6xl">
               Acute Pulmonary Edema
             </h1>
 
             <p className="mt-6 text-6xl font-extrabold text-red-500">
-              {finalPercentage}%
+              {percentage}%
             </p>
 
             <p className="mt-3 text-xl font-semibold text-zinc-300">
@@ -298,12 +315,37 @@ export default function AcutePulmonaryEdemaPage() {
               </h2>
 
               <p className="mt-4 leading-7 text-zinc-300">
-                You assessed respiratory distress, recognized findings
-                consistent with acute pulmonary edema, prioritized airway and
-                breathing, considered early CPAP, evaluated nitroglycerin
-                according to protocol, reassessed the patient, and continued
-                appropriate transport.
+                You assessed respiratory distress, recognized acute pulmonary
+                edema, prioritized airway and breathing, considered early CPAP,
+                evaluated nitroglycerin according to protocol, reassessed the
+                patient, and continued appropriate transport.
               </p>
+            </div>
+
+            <div className="mx-auto mt-8 max-w-3xl rounded-2xl border border-zinc-700 bg-black p-6">
+              <h2 className="text-left text-xl font-extrabold">
+                Course Progress
+              </h2>
+
+              <div className="mt-5 grid gap-4 text-left sm:grid-cols-3">
+                <ProgressItem
+                  title="Course Content"
+                  status="Complete"
+                  complete
+                />
+
+                <ProgressItem
+                  title="Scenario"
+                  status="Complete"
+                  complete
+                />
+
+                <ProgressItem
+                  title="Certificate"
+                  status={passed ? "Unlocked" : "Locked"}
+                  complete={passed}
+                />
+              </div>
             </div>
 
             <div className="mt-8 flex flex-wrap justify-center gap-4">
@@ -322,11 +364,20 @@ export default function AcutePulmonaryEdemaPage() {
                 Return to Courses
               </Link>
 
+              {passed && (
+                <Link
+                  href={`/courses/acute-pulmonary-edema/certificate?score=${percentage}`}
+                  className="rounded-xl bg-emerald-600 px-6 py-3 font-bold text-white transition hover:bg-emerald-500"
+                >
+                  View / Download Certificate
+                </Link>
+              )}
+
               <Link
-                href={`/courses/acute-pulmonary-edema/certificate?score=${finalPercentage}`}
-                className="rounded-xl bg-emerald-600 px-6 py-3 font-bold text-white transition hover:bg-emerald-500"
+                href="/courses/glucagon-hypoglycemia"
+                className="rounded-xl border border-red-500 px-6 py-3 font-bold text-red-400 transition hover:bg-red-500 hover:text-white"
               >
-                View Certificate
+                Next Course →
               </Link>
             </div>
           </div>
@@ -349,7 +400,7 @@ export default function AcutePulmonaryEdemaPage() {
 
         <div className="mt-8">
           <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-red-500">
-            Interactive EMS Scenario
+            Interactive EMS Course
           </p>
 
           <h1 className="mt-3 text-4xl font-extrabold md:text-5xl">
@@ -357,9 +408,9 @@ export default function AcutePulmonaryEdemaPage() {
           </h1>
 
           <p className="mt-4 max-w-3xl leading-7 text-zinc-400">
-            Work through five clinical decisions involving recognition,
-            respiratory support, CPAP, medication considerations, reassessment,
-            and transport.
+            Complete five clinical decisions covering recognition, respiratory
+            support, CPAP, medication considerations, reassessment, and
+            transport.
           </p>
         </div>
 
@@ -404,19 +455,17 @@ export default function AcutePulmonaryEdemaPage() {
 
           <p className="mt-4 leading-7 text-zinc-300">{step.situation}</p>
 
-          {step.findings && (
-            <div className="mt-6 rounded-2xl bg-black p-5">
-              <h3 className="font-extrabold text-zinc-100">
-                Assessment findings
-              </h3>
+          <div className="mt-6 rounded-2xl bg-black p-5">
+            <h3 className="font-extrabold text-zinc-100">
+              Assessment Findings
+            </h3>
 
-              <ul className="mt-3 space-y-2 text-zinc-300">
-                {step.findings.map((finding) => (
-                  <li key={finding}>• {finding}</li>
-                ))}
-              </ul>
-            </div>
-          )}
+            <ul className="mt-3 space-y-2 text-zinc-300">
+              {step.findings.map((finding) => (
+                <li key={finding}>• {finding}</li>
+              ))}
+            </ul>
+          </div>
 
           <h3 className="mt-8 text-xl font-extrabold">{step.question}</h3>
 
@@ -468,8 +517,8 @@ export default function AcutePulmonaryEdemaPage() {
             >
               <h3 className="font-extrabold">
                 {step.options[selectedOption].correct
-                  ? "Correct decision"
-                  : "Review this decision"}
+                  ? "Correct Decision"
+                  : "Review This Decision"}
               </h3>
 
               <p className="mt-2 leading-7 text-zinc-300">
@@ -490,7 +539,7 @@ export default function AcutePulmonaryEdemaPage() {
               }`}
             >
               {currentStep === scenarioSteps.length - 1
-                ? "Complete Scenario"
+                ? "Complete Course"
                 : "Continue →"}
             </button>
           </div>
@@ -503,5 +552,30 @@ export default function AcutePulmonaryEdemaPage() {
         </p>
       </section>
     </main>
+  );
+}
+
+function ProgressItem({
+  title,
+  status,
+  complete,
+}: {
+  title: string;
+  status: string;
+  complete: boolean;
+}) {
+  return (
+    <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-4">
+      <p className="font-bold text-white">{title}</p>
+
+      <p
+        className={`mt-2 text-sm font-semibold ${
+          complete ? "text-emerald-400" : "text-zinc-500"
+        }`}
+      >
+        {complete ? "✓ " : "○ "}
+        {status}
+      </p>
+    </div>
   );
 }
