@@ -1,122 +1,82 @@
-import Link from "next/link";
 import Navbar from "../../components/Navbar";
-
-const massProtocolsUrl =
-  "https://www.mass.gov/doc/emergency-medical-services-statewide-treatment-protocols-version-20262-effective-august-17-2026/download";
-
-const nhProtocolsUrl =
-  "/protocols/nh-patient-care-protocols-v9-3.pdf";
 
 export default function ProtocolsPage() {
   return (
     <main className="min-h-screen bg-black text-white">
       <Navbar />
 
-      <section className="mx-auto max-w-6xl px-6 py-12">
-        <p className="text-sm font-bold uppercase tracking-[0.2em] text-red-500">
-          GrumpyMedic Education
-        </p>
-
-        <h1 className="mt-3 text-4xl font-extrabold sm:text-5xl">
+      <section className="mx-auto max-w-5xl px-6 py-12">
+        <h1 className="text-5xl font-extrabold text-red-500">
           State EMS Protocols
         </h1>
 
-        <p className="mt-5 max-w-3xl text-lg text-zinc-300">
-          Quick access to official statewide EMS treatment protocols for
-          Massachusetts and New Hampshire.
+        <p className="mt-4 text-zinc-400">
+          Access the official statewide EMS treatment protocols for the
+          Northeast. These links are maintained by each state's EMS office to
+          ensure you are always viewing the most current version.
         </p>
 
-        <div className="mt-10 grid gap-8 lg:grid-cols-2">
-          <article className="rounded-2xl border border-red-600 bg-zinc-900 p-8 shadow-xl">
-            <p className="text-sm font-bold uppercase tracking-wider text-red-500">
-              Massachusetts
-            </p>
+        <div className="mt-10 space-y-8">
 
-            <h2 className="mt-3 text-3xl font-extrabold">
-              Massachusetts EMS Statewide Treatment Protocols
+          {/* Massachusetts */}
+          <div className="rounded-xl border border-red-600 bg-zinc-900 p-6">
+            <h2 className="text-3xl font-bold text-red-500">
+              Massachusetts EMS Protocols
             </h2>
 
-            <div className="mt-6 space-y-2 text-zinc-300">
-              <p>
-                <strong>Version:</strong> 2026.2
-              </p>
-
-              <p>
-                <strong>Effective:</strong> August 17, 2026
-              </p>
-
-              <p>
-                Official protocols published by the Massachusetts Office of
-                Emergency Medical Services.
-              </p>
-            </div>
+            <p className="mt-3 text-zinc-400">
+              Official Massachusetts Statewide Treatment Protocols (Version
+              2026.2).
+            </p>
 
             <a
-              href={massProtocolsUrl}
+              href="https://www.mass.gov/doc/emergency-medical-services-statewide-treatment-protocols-version-20262-effective-august-17-2026/download"
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-8 inline-flex rounded-xl bg-red-600 px-6 py-3 font-bold text-white transition hover:bg-red-500"
+              className="mt-6 inline-block rounded-lg bg-red-600 px-6 py-3 font-semibold hover:bg-red-700"
             >
               Open Massachusetts Protocols
             </a>
-          </article>
+          </div>
 
-          <article className="rounded-2xl border border-emerald-600 bg-zinc-900 p-8 shadow-xl">
-            <p className="text-sm font-bold uppercase tracking-wider text-emerald-400">
-              New Hampshire
-            </p>
-
-            <h2 className="mt-3 text-3xl font-extrabold">
-              New Hampshire Patient Care Protocols
+          {/* New Hampshire */}
+          <div className="rounded-xl border border-red-600 bg-zinc-900 p-6">
+            <h2 className="text-3xl font-bold text-red-500">
+              New Hampshire EMS Protocols
             </h2>
 
-            <div className="mt-6 space-y-2 text-zinc-300">
-              <p>
-                <strong>Version:</strong> 9.3
-              </p>
-
-              <p>
-                <strong>Effective:</strong> November 7, 2025
-              </p>
-
-              <p>
-                Official patient-care protocols for New Hampshire prehospital
-                providers, including EMR, EMT, AEMT, Paramedic, and Extended
-                Care guidance.
-              </p>
-            </div>
+            <p className="mt-3 text-zinc-400">
+              Official New Hampshire Patient Care Protocols.
+            </p>
 
             <a
-              href={nhProtocolsUrl}
+              href="https://mm.nh.gov/files/uploads/fstems/documents/patient-care-protocols.pdf"
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-8 inline-flex rounded-xl bg-emerald-700 px-6 py-3 font-bold text-white transition hover:bg-emerald-600"
+              className="mt-6 inline-block rounded-lg bg-red-600 px-6 py-3 font-semibold hover:bg-red-700"
             >
               Open New Hampshire Protocols
             </a>
-          </article>
-        </div>
+          </div>
 
-        <section className="mt-10 rounded-2xl border border-zinc-800 bg-zinc-900 p-7">
-          <h2 className="text-2xl font-bold text-red-500">
-            Important Notice
-          </h2>
+          {/* Maine */}
+          <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-6">
+            <h2 className="text-3xl font-bold text-zinc-300">
+              Maine EMS Protocols
+            </h2>
 
-          <p className="mt-4 leading-7 text-zinc-300">
-            GrumpyMedic Education is an independent educational resource.
-            Always verify that you are using the latest official protocol
-            version and follow your service policies, scope of practice,
-            medical director authorization, and current training.
-          </p>
-        </section>
+            <p className="mt-3 text-zinc-400">
+              Maine EMS protocols will be added soon.
+            </p>
 
-        <div className="mt-10">
-          <Link
-            href="/resources"
-            className="font-bold text-red-500 transition hover:text-red-400"
-          >
-            ← Back to Resources
-          </Link>
+            <button
+              disabled
+              className="mt-6 rounded-lg bg-zinc-700 px-6 py-3 text-zinc-300 cursor-not-allowed"
+            >
+              Coming Soon
+            </button>
+          </div>
+
         </div>
       </section>
     </main>
