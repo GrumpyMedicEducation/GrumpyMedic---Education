@@ -1,84 +1,78 @@
 import Link from "next/link";
-import Navbar from "../components/Navbar";
+import Navbar from "../../components/Navbar";
 
 export default function ScenariosPage() {
   return (
     <main className="min-h-screen bg-black text-white">
       <Navbar />
 
-      <section className="mx-auto max-w-6xl px-6 py-12">
-        <p className="text-sm font-bold uppercase tracking-[0.2em] text-red-500">
-          GrumpyMedic Education
-        </p>
+      <section className="mx-auto max-w-7xl px-6 py-10">
+        <div className="mb-8">
+          <p className="text-sm font-bold uppercase tracking-widest text-red-500">
+            GrumpyMedic Scenarios
+          </p>
 
-        <h1 className="mt-3 text-4xl font-extrabold sm:text-5xl">
-          EMS Scenarios
-        </h1>
+          <h1 className="mt-2 text-5xl font-extrabold">
+            Acute Pulmonary Edema
+          </h1>
 
-        <p className="mt-4 max-w-3xl text-zinc-400">
-          Review EMS patient cases, practice clinical decision-making, and
-          compare your treatment plan with recommended care.
-        </p>
+          <p className="mt-4 max-w-3xl text-zinc-400">
+            Work through a realistic EMS scenario involving acute pulmonary
+            edema. Assess the patient, interpret findings, perform appropriate
+            interventions, and determine transport priorities.
+          </p>
+        </div>
 
-        <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Link
-            href="/scenarios/acute-pulmonary-edema"
-            className="rounded-2xl border border-zinc-700 bg-zinc-900 p-6 transition hover:border-red-500"
-          >
-            <p className="text-sm font-bold uppercase tracking-wide text-red-500">
-              Respiratory Emergency
-            </p>
-
-            <h2 className="mt-2 text-2xl font-bold">
-              Acute Pulmonary Edema
+        <div className="grid gap-8 lg:grid-cols-2">
+          <div className="rounded-2xl border border-red-700 bg-zinc-900 p-6">
+            <h2 className="text-2xl font-bold text-red-500">
+              Interactive Scenario
             </h2>
 
-            <p className="mt-3 text-zinc-400">
-              Review recognition, assessment findings, CPAP, nitroglycerin
-              considerations, reassessment, and transport priorities.
+            <p className="mt-4 text-zinc-300">
+              Launch the full interactive EMS call simulator to begin the
+              patient encounter.
             </p>
 
-            <div className="mt-6 inline-block rounded-lg bg-red-600 px-5 py-3 font-bold">
-              Open Scenario →
-            </div>
-          </Link>
-
-          <Link
-            href="/simulator"
-            className="rounded-2xl border border-zinc-700 bg-zinc-900 p-6 transition hover:border-red-500"
-          >
-            <p className="text-sm font-bold uppercase tracking-wide text-red-500">
-              Interactive Training
-            </p>
-
-            <h2 className="mt-2 text-2xl font-bold">
-              EMS Call Simulator
-            </h2>
-
-            <p className="mt-3 text-zinc-400">
-              Make treatment decisions and watch the patient’s condition change
-              based on your actions.
-            </p>
-
-            <div className="mt-6 inline-block rounded-lg bg-red-600 px-5 py-3 font-bold">
-              Start Simulator →
-            </div>
-          </Link>
-
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6 opacity-70">
-            <p className="text-sm font-bold uppercase tracking-wide text-zinc-500">
-              Coming Soon
-            </p>
-
-            <h2 className="mt-2 text-2xl font-bold">
-              Additional EMS Cases
-            </h2>
-
-            <p className="mt-3 text-zinc-500">
-              Chest pain, stroke, trauma, sepsis, diabetic emergencies, and
-              pediatric scenarios are under development.
-            </p>
+            <Link
+              href="/simulator/acute-pulmonary-edema"
+              className="mt-6 inline-block rounded-lg bg-red-600 px-6 py-3 font-bold transition hover:bg-red-500"
+            >
+              Start Scenario
+            </Link>
           </div>
+
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
+            <h2 className="text-2xl font-bold">
+              Learning Objectives
+            </h2>
+
+            <ul className="mt-4 space-y-3 text-zinc-300">
+              <li>• Recognize Acute Pulmonary Edema</li>
+              <li>• Complete an appropriate patient assessment</li>
+              <li>• Interpret vital signs and ECG findings</li>
+              <li>• Administer appropriate oxygen therapy</li>
+              <li>• Decide when CPAP is indicated</li>
+              <li>• Determine Nitroglycerin eligibility</li>
+              <li>• Reassess after interventions</li>
+              <li>• Determine transport priority</li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-10 rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
+          <p className="text-sm font-bold uppercase tracking-wide text-zinc-500">
+            Coming Soon
+          </p>
+
+          <h2 className="mt-2 text-2xl font-bold">
+            Additional EMS Cases
+          </h2>
+
+          <p className="mt-4 text-zinc-400">
+            Chest pain, stroke, trauma, sepsis, pediatric emergencies, and
+            additional interactive simulations are currently under development.
+          </p>
         </div>
       </section>
     </main>
