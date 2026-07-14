@@ -1,165 +1,86 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
-import Navbar from "../../components/Navbar";
+import Navbar from "../components/Navbar";
 
-export default function ScenarioPage() {
-  const [step, setStep] = useState(0);
-  const [score, setScore] = useState(0);
-
-  const scenario = [
-    {
-      title: "Dispatch",
-      text: "You are dispatched Priority 1 for a 72-year-old male complaining of severe difficulty breathing. Family reports he suddenly became short of breath while watching TV.",
-      choices: [
-        { text: "Respond Priority 1", correct: true },
-        { text: "Respond Routine", correct: false }
-      ]
-    },
-
-    {
-      title: "Arrival",
-      text: "Patient is sitting upright, tripod position, pale, diaphoretic and speaking only 2-word sentences.",
-      vitals: "HR 122 | BP 238/132 | RR 34 | SpO₂ 82% | ETCO₂ 31",
-      choices: [
-        { text: "Apply CPAP immediately", correct: true },
-        { text: "Lay patient flat", correct: false }
-      ]
-    },
-
-    {
-      title: "Medication",
-      text: "Lung sounds reveal diffuse crackles. No chest pain. Severe hypertension.",
-      choices: [
-        { text: "Administer Nitroglycerin", correct: true },
-        { text: "Give Albuterol only", correct: false }
-      ]
-    },
-
-    {
-      title: "Reassessment",
-      text: "Five minutes later:",
-      vitals: "HR 104 | BP 188/100 | RR 24 | SpO₂ 95%",
-      choices: [
-        { text: "Continue CPAP and reassess", correct: true },
-        { text: "Remove CPAP because oxygen improved", correct: false }
-      ]
-    }
-  ];
-
-  const current = scenario[step];
-
-  function answer(correct: boolean) {
-    if (correct) setScore(score + 1);
-
-    if (step < scenario.length - 1) {
-      setStep(step + 1);
-    } else {
-      setStep(step + 1);
-    }
-  }
-
-  if (step === scenario.length) {
-    return (
-      <main className="min-h-screen bg-black text-white">
-        <Navbar />
-
-        <section className="mx-auto max-w-4xl p-10">
-
-          <div className="rounded-2xl border border-green-500 bg-zinc-900 p-10 text-center">
-
-            <h1 className="text-5xl font-bold">
-              Scenario Complete
-            </h1>
-
-            <p className="mt-8 text-2xl">
-              Score: {score} / {scenario.length}
-            </p>
-
-            <div className="mt-10 flex justify-center gap-4">
-
-              <Link
-                href="/courses/acute-pulmonary-edema"
-                className="rounded-lg bg-red-600 px-6 py-3 font-bold hover:bg-red-700"
-              >
-                Return Course
-              </Link>
-
-              <Link
-                href="/courses/acute-pulmonary-edema/quiz"
-                className="rounded-lg border border-zinc-700 px-6 py-3"
-              >
-                Take Quiz
-              </Link>
-
-            </div>
-
-          </div>
-
-        </section>
-
-      </main>
-    );
-  }
-
+export default function ScenariosPage() {
   return (
     <main className="min-h-screen bg-black text-white">
-
       <Navbar />
 
-      <section className="mx-auto max-w-5xl p-10">
-
-        <p className="text-red-500 uppercase tracking-widest font-bold">
-          Interactive Scenario
+      <section className="mx-auto max-w-6xl px-6 py-12">
+        <p className="text-sm font-bold uppercase tracking-[0.2em] text-red-500">
+          GrumpyMedic Education
         </p>
 
-        <h1 className="mt-3 text-5xl font-bold">
-          Acute Pulmonary Edema
+        <h1 className="mt-3 text-4xl font-extrabold sm:text-5xl">
+          EMS Scenarios
         </h1>
 
-        <div className="mt-10 rounded-2xl border border-zinc-700 bg-zinc-900 p-8">
+        <p className="mt-4 max-w-3xl text-zinc-400">
+          Review EMS patient cases, practice clinical decision-making, and
+          compare your treatment plan with recommended care.
+        </p>
 
-          <h2 className="text-3xl font-bold">
-            {current.title}
-          </h2>
+        <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <Link
+            href="/scenarios/acute-pulmonary-edema"
+            className="rounded-2xl border border-zinc-700 bg-zinc-900 p-6 transition hover:border-red-500"
+          >
+            <p className="text-sm font-bold uppercase tracking-wide text-red-500">
+              Respiratory Emergency
+            </p>
 
-          <p className="mt-6 text-xl text-zinc-300">
-            {current.text}
-          </p>
+            <h2 className="mt-2 text-2xl font-bold">
+              Acute Pulmonary Edema
+            </h2>
 
-          {current.vitals && (
-            <div className="mt-6 rounded-lg border border-red-500 bg-black p-4">
-              <h3 className="font-bold text-red-400">
-                Patient Vitals
-              </h3>
+            <p className="mt-3 text-zinc-400">
+              Review recognition, assessment findings, CPAP, nitroglycerin
+              considerations, reassessment, and transport priorities.
+            </p>
 
-              <p className="mt-2">
-                {current.vitals}
-              </p>
+            <div className="mt-6 inline-block rounded-lg bg-red-600 px-5 py-3 font-bold">
+              Open Scenario →
             </div>
-          )}
+          </Link>
 
-          <div className="mt-10 space-y-4">
+          <Link
+            href="/simulator"
+            className="rounded-2xl border border-zinc-700 bg-zinc-900 p-6 transition hover:border-red-500"
+          >
+            <p className="text-sm font-bold uppercase tracking-wide text-red-500">
+              Interactive Training
+            </p>
 
-            {current.choices.map((choice, index) => (
+            <h2 className="mt-2 text-2xl font-bold">
+              EMS Call Simulator
+            </h2>
 
-              <button
-                key={index}
-                onClick={() => answer(choice.correct)}
-                className="block w-full rounded-xl border border-zinc-700 bg-zinc-800 p-5 text-left hover:border-red-500 hover:bg-zinc-700"
-              >
-                {choice.text}
-              </button>
+            <p className="mt-3 text-zinc-400">
+              Make treatment decisions and watch the patient’s condition change
+              based on your actions.
+            </p>
 
-            ))}
+            <div className="mt-6 inline-block rounded-lg bg-red-600 px-5 py-3 font-bold">
+              Start Simulator →
+            </div>
+          </Link>
 
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6 opacity-70">
+            <p className="text-sm font-bold uppercase tracking-wide text-zinc-500">
+              Coming Soon
+            </p>
+
+            <h2 className="mt-2 text-2xl font-bold">
+              Additional EMS Cases
+            </h2>
+
+            <p className="mt-3 text-zinc-500">
+              Chest pain, stroke, trauma, sepsis, diabetic emergencies, and
+              pediatric scenarios are under development.
+            </p>
           </div>
-
         </div>
-
       </section>
-
     </main>
   );
 }
