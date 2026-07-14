@@ -12,10 +12,18 @@ export default function ResourcesPage() {
         </h1>
 
         <p className="mt-4 text-zinc-400">
-          EMS calculators, references, assessment tools, and exam preparation.
+          EMS calculators, references, assessment tools, statewide protocols,
+          and exam preparation.
         </p>
 
         <div className="mt-10 grid gap-6 md:grid-cols-2">
+
+          <ResourceCard
+            href="/resources/protocols"
+            title="State EMS Protocols"
+            description="Current Massachusetts Statewide Treatment Protocols and New Hampshire Patient Care Protocols."
+          />
+
           <ResourceCard
             href="/resources/nremt-exam-prep"
             title="NREMT Exam Prep"
@@ -39,6 +47,7 @@ export default function ResourcesPage() {
             title="Glasgow Coma Scale"
             description="Interactive eye, verbal, and motor assessment with automatic scoring."
           />
+
           <ResourceCard
             href="/resources/drug-calculator"
             title="Drug Calculator"
@@ -58,16 +67,17 @@ export default function ResourcesPage() {
           />
 
           <ResourceCard
+            href="/resources/stroke-scale"
+            title="FAST-ED Stroke Scale"
+            description="Interactive FAST-ED stroke assessment and scoring tool."
+          />
+
+          <ResourceCard
             href="/mental-health"
             title="Mental Health Awareness"
             description="Mental health emergencies, crisis intervention, de-escalation techniques, suicide awareness, and responder wellness."
           />
 
-          <ResourceCard
-            href="/resources/stroke-scale"
-            title="FAST-ED Stroke Scale"
-            description="Interactive FAST-ED stroke assessment and scoring tool."
-          />
         </div>
       </section>
     </main>
