@@ -23,10 +23,20 @@ type TreatmentKey =
   | "capnography"
   | "radioReport";
 
+type ScoreCategory =
+  | "assessment"
+  | "airway"
+  | "medication"
+  | "reassessment"
+  | "transport";
+
+type CategoryScores = Record<ScoreCategory, number>;
+
 type Choice = {
   text: string;
   points: number;
   correct: boolean;
+  category: ScoreCategory;
   feedback: string;
   patientResponse: string;
   vitalChanges: Partial<VitalSigns>;
@@ -48,6 +58,14 @@ type ActionLogItem = {
   positive: boolean;
 };
 
+const MAX_CATEGORY_SCORES: CategoryScores = {
+  assessment: 20,
+  airway: 20,
+  medication: 20,
+  reassessment: 20,
+  transport: 20,
+};
+
 const initialVitals: VitalSigns = {
   heartRate: 118,
   respiratoryRate: 32,
@@ -58,6 +76,16 @@ const initialVitals: VitalSigns = {
   rhythm: "Sinus Tachycardia",
 };
 
+const treatmentLabels: Record<TreatmentKey, string> = {
+  oxygen: "Apply Oxygen",
+  cpap: "Initiate CPAP",
+  nitroglycerin: "Nitroglycerin",
+  iv: "Establish IV",
+  twelveLead: "Obtain 12-Lead",
+  capnography: "Apply Capnography",
+  radioReport: "Hospital Notification",
+};
+
 const scenarioSteps: ScenarioStep[] = [
   {
     phase: "Initial Assessment",
@@ -66,7 +94,7 @@ const scenarioSteps: ScenarioStep[] = [
       "You enter a private residence and find a 72-year-old patient seated upright in a recliner. The patient appears anxious, pale, diaphoretic, and severely short of breath.",
     patientStatement: "I... cannot... catch my breath.",
     findings: [
-      "Patient is alert and follows commands",
+      "Patient is alert and following commands",
       "Speaking in two- to three-word sentences",
       "Diffuse bilateral crackles",
       "Severe accessory-muscle use",
@@ -76,10 +104,11 @@ const scenarioSteps: ScenarioStep[] = [
     choices: [
       {
         text: "Keep the patient upright and begin immediate respiratory support",
-        points: 15,
+        points: 20,
         correct: true,
+        category: "assessment",
         feedback:
-          "Correct. Upright positioning and immediate respiratory support are appropriate priorities.",
+          "Correct. Upright positioning, rapid assessment, and immediate respiratory support are appropriate priorities.",
         patientResponse:
           "The patient remains distressed but cooperates with your assessment.",
         vitalChanges: {
@@ -91,10 +120,11 @@ const scenarioSteps: ScenarioStep[] = [
         text: "Lay the patient flat and obtain a complete medical history first",
         points: 0,
         correct: false,
+        category: "assessment",
         feedback:
           "Laying the patient flat may worsen pulmonary congestion. Respiratory support should not be delayed.",
         patientResponse:
-          "The patient becomes increasingly anxious and says breathing is worse.",
+          "The patient becomes increasingly anxious and reports worsening breathing.",
         vitalChanges: {
           heartRate: 128,
           respiratoryRate: 38,
@@ -105,6 +135,7 @@ const scenarioSteps: ScenarioStep[] = [
         text: "Have the patient walk to the ambulance before treating",
         points: 0,
         correct: false,
+        category: "assessment",
         feedback:
           "Exertion may substantially worsen hypoxia and respiratory distress.",
         patientResponse:
@@ -133,13 +164,14 @@ const scenarioSteps: ScenarioStep[] = [
     ],
     choices: [
       {
-        text: "Initiate noninvasive positive-pressure ventilation and monitor closely",
-        points: 15,
+        text: "Initiate CPAP and monitor closely",
+        points: 20,
         correct: true,
+        category: "airway",
         feedback:
           "Correct. The patient is awake, cooperative, severely hypoxic, and has findings consistent with acute pulmonary edema.",
         patientResponse:
-          "The patient begins taking deeper breaths and appears slightly less anxious.",
+          "The patient begins taking deeper breaths and appears less anxious.",
         vitalChanges: {
           heartRate: 112,
           respiratoryRate: 27,
@@ -151,6 +183,7 @@ const scenarioSteps: ScenarioStep[] = [
         text: "Continue oxygen alone and wait another ten minutes",
         points: 5,
         correct: false,
+        category: "airway",
         feedback:
           "Oxygen alone has not produced adequate improvement. Delaying positive-pressure support may allow deterioration.",
         patientResponse:
@@ -166,6 +199,7 @@ const scenarioSteps: ScenarioStep[] = [
         text: "Immediately perform endotracheal intubation",
         points: 0,
         correct: false,
+        category: "airway",
         feedback:
           "The patient remains awake, cooperative, and able to protect the airway. Noninvasive ventilation should be considered first when appropriate.",
         patientResponse:
@@ -190,15 +224,16 @@ const scenarioSteps: ScenarioStep[] = [
       "No signs of hypotension",
       "No reported recent erectile-dysfunction medication use",
       "No known nitroglycerin allergy",
-      "Positive-pressure ventilation is being tolerated",
+      "CPAP is being tolerated",
     ],
     choices: [
       {
         text: "Administer nitroglycerin according to protocol and reassess",
-        points: 15,
+        points: 20,
         correct: true,
+        category: "medication",
         feedback:
-          "Correct. In hypertensive acute pulmonary edema, nitroglycerin may reduce preload and afterload when permitted by protocol.",
+          "Correct. In hypertensive acute pulmonary edema, nitroglycerin may reduce preload and afterload when permitted by local protocol.",
         patientResponse:
           "The patient reports decreased chest pressure and easier breathing.",
         vitalChanges: {
@@ -214,6 +249,7 @@ const scenarioSteps: ScenarioStep[] = [
         text: "Administer a large normal-saline bolus",
         points: 0,
         correct: false,
+        category: "medication",
         feedback:
           "A large fluid bolus may worsen pulmonary edema unless another specific indication exists.",
         patientResponse:
@@ -227,9 +263,10 @@ const scenarioSteps: ScenarioStep[] = [
         },
       },
       {
-        text: "Remove respiratory support before giving medication",
+        text: "Remove CPAP before giving medication",
         points: 0,
         correct: false,
+        category: "medication",
         feedback:
           "Effective ventilatory support should not be discontinued without a clinical reason.",
         patientResponse:
@@ -259,8 +296,9 @@ const scenarioSteps: ScenarioStep[] = [
     choices: [
       {
         text: "Continue treatment and repeat a complete reassessment",
-        points: 15,
+        points: 20,
         correct: true,
+        category: "reassessment",
         feedback:
           "Correct. Continue effective treatment while reassessing mental status, respiratory effort, blood pressure, oxygenation, and fatigue.",
         patientResponse:
@@ -275,9 +313,10 @@ const scenarioSteps: ScenarioStep[] = [
         },
       },
       {
-        text: "Stop respiratory support because the saturation improved",
+        text: "Stop CPAP because the oxygen saturation improved",
         points: 0,
         correct: false,
+        category: "reassessment",
         feedback:
           "Improvement does not mean the emergency has resolved. Abruptly removing support may cause deterioration.",
         patientResponse:
@@ -292,6 +331,7 @@ const scenarioSteps: ScenarioStep[] = [
         text: "Have the patient stand and walk to test improvement",
         points: 0,
         correct: false,
+        category: "reassessment",
         feedback:
           "The patient remains seriously ill and should not be subjected to unnecessary exertion.",
         patientResponse:
@@ -321,8 +361,9 @@ const scenarioSteps: ScenarioStep[] = [
     choices: [
       {
         text: "Transport promptly while continuing treatment and reassessment",
-        points: 15,
+        points: 20,
         correct: true,
+        category: "transport",
         feedback:
           "Correct. The patient requires hospital evaluation and continued treatment despite improvement.",
         patientResponse:
@@ -340,6 +381,7 @@ const scenarioSteps: ScenarioStep[] = [
         text: "Cancel transport because the patient feels better",
         points: 0,
         correct: false,
+        category: "transport",
         feedback:
           "Temporary improvement does not eliminate the risk of recurrence or deterioration.",
         patientResponse:
@@ -354,6 +396,7 @@ const scenarioSteps: ScenarioStep[] = [
         text: "Remain on scene until every symptom has resolved",
         points: 5,
         correct: false,
+        category: "transport",
         feedback:
           "Treatment should continue during prompt transport. Unnecessary on-scene delay is inappropriate.",
         patientResponse:
@@ -364,35 +407,38 @@ const scenarioSteps: ScenarioStep[] = [
   },
 ];
 
-const treatmentLabels: Record<TreatmentKey, string> = {
-  oxygen: "Apply Oxygen",
-  cpap: "Initiate CPAP",
-  nitroglycerin: "Nitroglycerin",
-  iv: "Establish IV",
-  twelveLead: "Obtain 12-Lead",
-  capnography: "Apply Capnography",
-  radioReport: "Hospital Notification",
-};
-
 export default function AcutePulmonaryEdemaScenarioPage() {
   const [scenarioStarted, setScenarioStarted] = useState(false);
   const [scenarioComplete, setScenarioComplete] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  const [score, setScore] = useState(0);
   const [selectedChoice, setSelectedChoice] = useState<number | null>(null);
+
   const [displayVitals, setDisplayVitals] =
     useState<VitalSigns>(initialVitals);
+
   const [targetVitals, setTargetVitals] =
     useState<VitalSigns>(initialVitals);
+
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [usedTreatments, setUsedTreatments] = useState<TreatmentKey[]>([]);
-  const [actionLog, setActionLog] = useState<ActionLogItem[]>([]);
+
+  const [usedTreatments, setUsedTreatments] =
+    useState<TreatmentKey[]>([]);
+
+  const [actionLog, setActionLog] =
+    useState<ActionLogItem[]>([]);
+
   const [clinicalMessage, setClinicalMessage] = useState(
     "Complete your initial assessment and select treatments when appropriate."
   );
-  const [patientContactTime, setPatientContactTime] = useState<number | null>(
-    null
-  );
+
+  const [categoryScores, setCategoryScores] =
+    useState<CategoryScores>({
+      assessment: 0,
+      airway: 0,
+      medication: 0,
+      reassessment: 0,
+      transport: 0,
+    });
 
   useEffect(() => {
     if (!scenarioStarted || scenarioComplete) {
@@ -414,26 +460,39 @@ export default function AcutePulmonaryEdemaScenarioPage() {
     const monitorAnimation = window.setInterval(() => {
       setDisplayVitals((previous) => ({
         ...previous,
-        heartRate: moveToward(previous.heartRate, targetVitals.heartRate),
+
+        heartRate: moveToward(
+          previous.heartRate,
+          targetVitals.heartRate
+        ),
+
         respiratoryRate: moveToward(
           previous.respiratoryRate,
           targetVitals.respiratoryRate
         ),
+
         oxygenSaturation: moveToward(
           previous.oxygenSaturation,
           targetVitals.oxygenSaturation
         ),
+
         systolicBloodPressure: moveToward(
           previous.systolicBloodPressure,
           targetVitals.systolicBloodPressure,
           3
         ),
+
         diastolicBloodPressure: moveToward(
           previous.diastolicBloodPressure,
           targetVitals.diastolicBloodPressure,
           2
         ),
-        etco2: moveToward(previous.etco2, targetVitals.etco2),
+
+        etco2: moveToward(
+          previous.etco2,
+          targetVitals.etco2
+        ),
+
         rhythm: targetVitals.rhythm,
       }));
     }, 650);
@@ -444,9 +503,17 @@ export default function AcutePulmonaryEdemaScenarioPage() {
   const step = scenarioSteps[currentStep];
 
   const selected =
-    selectedChoice === null ? null : step.choices[selectedChoice];
+    selectedChoice === null
+      ? null
+      : step.choices[selectedChoice];
 
-  const progress = ((currentStep + 1) / scenarioSteps.length) * 100;
+  const progress =
+    ((currentStep + 1) / scenarioSteps.length) * 100;
+
+  const totalScore = Object.values(categoryScores).reduce(
+    (sum, value) => sum + value,
+    0
+  );
 
   const dispatchTimes = useMemo(
     () => ({
@@ -456,197 +523,6 @@ export default function AcutePulmonaryEdemaScenarioPage() {
     }),
     []
   );
-
-  function startScenario() {
-    setScenarioStarted(true);
-    setPatientContactTime(0);
-    addLog(
-      "Patient contact",
-      "72-year-old patient found in severe respiratory distress.",
-      true
-    );
-  }
-
-  function selectChoice(choiceIndex: number) {
-    if (selectedChoice !== null) {
-      return;
-    }
-
-    const choice = step.choices[choiceIndex];
-
-    setSelectedChoice(choiceIndex);
-    setScore((previous) => Math.min(100, previous + choice.points));
-
-    setTargetVitals((previous) => ({
-      ...previous,
-      ...choice.vitalChanges,
-    }));
-
-    setClinicalMessage(choice.feedback);
-
-    addLog(
-      choice.correct ? "Appropriate decision" : "Decision reviewed",
-      choice.patientResponse,
-      choice.correct
-    );
-  }
-
-  function useTreatment(treatment: TreatmentKey) {
-    if (usedTreatments.includes(treatment)) {
-      setClinicalMessage(
-        `${treatmentLabels[treatment]} has already been completed.`
-      );
-      return;
-    }
-
-    const applyTreatment = (
-      message: string,
-      result: string,
-      points: number,
-      changes: Partial<VitalSigns>,
-      positive = true
-    ) => {
-      setUsedTreatments((previous) => [...previous, treatment]);
-      setScore((previous) => Math.min(100, previous + points));
-      setTargetVitals((previous) => ({
-        ...previous,
-        ...changes,
-      }));
-      setClinicalMessage(message);
-      addLog(treatmentLabels[treatment], result, positive);
-    };
-
-    switch (treatment) {
-      case "oxygen":
-        applyTreatment(
-          "Oxygen applied. Continue monitoring respiratory effort and oxygen saturation.",
-          "SpO₂ begins improving, but severe respiratory distress remains.",
-          4,
-          {
-            oxygenSaturation: Math.max(
-              targetVitals.oxygenSaturation,
-              86
-            ),
-            heartRate: 120,
-          }
-        );
-        break;
-
-      case "cpap":
-        applyTreatment(
-          "CPAP initiated. Monitor mental status, mask tolerance, blood pressure, and ventilation.",
-          "Work of breathing decreases and oxygen saturation improves.",
-          6,
-          {
-            oxygenSaturation: 92,
-            respiratoryRate: 27,
-            heartRate: 110,
-            etco2: 33,
-          }
-        );
-        break;
-
-      case "nitroglycerin":
-        if (targetVitals.systolicBloodPressure < 100) {
-          setClinicalMessage(
-            "Nitroglycerin was not administered because the current blood pressure is inadequate. Follow local protocol."
-          );
-
-          addLog(
-            "Nitroglycerin withheld",
-            "Blood pressure did not meet safe administration criteria.",
-            false
-          );
-          return;
-        }
-
-        applyTreatment(
-          "Nitroglycerin administered according to protocol. Reassess blood pressure and symptoms.",
-          "Blood pressure decreases and the patient reports easier breathing.",
-          5,
-          {
-            systolicBloodPressure: 164,
-            diastolicBloodPressure: 94,
-            heartRate: 104,
-            respiratoryRate: 24,
-            oxygenSaturation: 94,
-          }
-        );
-        break;
-
-      case "iv":
-        applyTreatment(
-          "IV access established without delaying respiratory treatment or transport.",
-          "Vascular access is available for further treatment if needed.",
-          2,
-          {},
-          true
-        );
-        break;
-
-      case "twelveLead":
-        applyTreatment(
-          "12-lead ECG obtained. Continue treating the respiratory emergency while evaluating possible cardiac causes.",
-          "The tracing shows sinus tachycardia without an obvious STEMI pattern.",
-          3,
-          {
-            rhythm: "Sinus Tachycardia",
-          }
-        );
-        break;
-
-      case "capnography":
-        applyTreatment(
-          "Continuous waveform capnography applied.",
-          "Ventilation can now be trended during treatment.",
-          2,
-          {
-            etco2: Math.max(targetVitals.etco2, 31),
-          }
-        );
-        break;
-
-      case "radioReport":
-        applyTreatment(
-          "The receiving hospital has been notified of a patient requiring continued respiratory support.",
-          "The emergency department prepares for the patient's arrival.",
-          3,
-          {},
-          true
-        );
-        break;
-    }
-  }
-
-  function continueScenario() {
-    if (currentStep === scenarioSteps.length - 1) {
-      setScenarioComplete(true);
-      return;
-    }
-
-    setCurrentStep((previous) => previous + 1);
-    setSelectedChoice(null);
-    setClinicalMessage(
-      "Continue assessing the patient and select your next treatment or decision."
-    );
-  }
-
-  function restartScenario() {
-    setScenarioStarted(false);
-    setScenarioComplete(false);
-    setCurrentStep(0);
-    setScore(0);
-    setSelectedChoice(null);
-    setDisplayVitals(initialVitals);
-    setTargetVitals(initialVitals);
-    setElapsedSeconds(0);
-    setUsedTreatments([]);
-    setActionLog([]);
-    setClinicalMessage(
-      "Complete your initial assessment and select treatments when appropriate."
-    );
-    setPatientContactTime(null);
-  }
 
   function addLog(
     action: string,
@@ -664,16 +540,272 @@ export default function AcutePulmonaryEdemaScenarioPage() {
     ]);
   }
 
+  function startScenario() {
+    setScenarioStarted(true);
+
+    addLog(
+      "Patient contact",
+      "72-year-old patient found in severe respiratory distress.",
+      true
+    );
+  }
+
+  function selectChoice(choiceIndex: number) {
+    if (selectedChoice !== null) {
+      return;
+    }
+
+    const choice = step.choices[choiceIndex];
+
+    setSelectedChoice(choiceIndex);
+
+    setCategoryScores((previous) => ({
+      ...previous,
+      [choice.category]: Math.min(
+        MAX_CATEGORY_SCORES[choice.category],
+        choice.points
+      ),
+    }));
+
+    setTargetVitals((previous) => ({
+      ...previous,
+      ...choice.vitalChanges,
+    }));
+
+    setClinicalMessage(choice.feedback);
+
+    addLog(
+      choice.correct
+        ? "Appropriate decision"
+        : "Decision reviewed",
+      choice.patientResponse,
+      choice.correct
+    );
+  }
+
+  function useTreatment(treatment: TreatmentKey) {
+    if (usedTreatments.includes(treatment)) {
+      setClinicalMessage(
+        `${treatmentLabels[treatment]} has already been completed.`
+      );
+
+      return;
+    }
+
+    if (
+      treatment === "cpap" &&
+      !usedTreatments.includes("oxygen")
+    ) {
+      setClinicalMessage(
+        "Apply initial oxygen and complete a rapid respiratory assessment before progressing to CPAP."
+      );
+
+      addLog(
+        "CPAP deferred",
+        "Initial oxygen and respiratory assessment should occur first.",
+        false
+      );
+
+      return;
+    }
+
+    if (
+      treatment === "nitroglycerin" &&
+      currentStep < 2
+    ) {
+      setClinicalMessage(
+        "Nitroglycerin is not yet appropriate. Confirm the blood pressure, contraindications, and clinical presentation first."
+      );
+
+      addLog(
+        "Nitroglycerin deferred",
+        "Medication prerequisites were not yet confirmed.",
+        false
+      );
+
+      return;
+    }
+
+    const completeTreatment = (
+      message: string,
+      result: string,
+      changes: Partial<VitalSigns>,
+      positive = true
+    ) => {
+      setUsedTreatments((previous) => [
+        ...previous,
+        treatment,
+      ]);
+
+      setTargetVitals((previous) => ({
+        ...previous,
+        ...changes,
+      }));
+
+      setClinicalMessage(message);
+
+      addLog(
+        treatmentLabels[treatment],
+        result,
+        positive
+      );
+    };
+
+    switch (treatment) {
+      case "oxygen":
+        completeTreatment(
+          "Oxygen applied. Continue monitoring respiratory effort and oxygen saturation.",
+          "SpO₂ begins improving, but severe respiratory distress remains.",
+          {
+            oxygenSaturation: Math.max(
+              targetVitals.oxygenSaturation,
+              86
+            ),
+            heartRate: 120,
+          }
+        );
+        break;
+
+      case "cpap":
+        completeTreatment(
+          "CPAP initiated. Monitor mental status, mask tolerance, blood pressure, and ventilation.",
+          "Work of breathing decreases and oxygen saturation improves.",
+          {
+            oxygenSaturation: 92,
+            respiratoryRate: 27,
+            heartRate: 110,
+            etco2: 33,
+          }
+        );
+        break;
+
+      case "nitroglycerin":
+        if (
+          targetVitals.systolicBloodPressure < 100
+        ) {
+          setClinicalMessage(
+            "Nitroglycerin was withheld because the current blood pressure is inadequate. Follow local protocol."
+          );
+
+          addLog(
+            "Nitroglycerin withheld",
+            "Blood pressure did not meet safe administration criteria.",
+            false
+          );
+
+          return;
+        }
+
+        completeTreatment(
+          "Nitroglycerin administered according to protocol. Reassess blood pressure and symptoms.",
+          "Blood pressure decreases and the patient reports easier breathing.",
+          {
+            systolicBloodPressure: 164,
+            diastolicBloodPressure: 94,
+            heartRate: 104,
+            respiratoryRate: 24,
+            oxygenSaturation: 94,
+          }
+        );
+        break;
+
+      case "iv":
+        completeTreatment(
+          "IV access established without delaying respiratory treatment or transport.",
+          "Vascular access is available for further treatment if needed.",
+          {}
+        );
+        break;
+
+      case "twelveLead":
+        completeTreatment(
+          "12-lead ECG obtained while respiratory care continues.",
+          "Sinus tachycardia is present without an obvious STEMI pattern.",
+          {
+            rhythm: "Sinus Tachycardia",
+          }
+        );
+        break;
+
+      case "capnography":
+        completeTreatment(
+          "Continuous waveform capnography applied.",
+          "Ventilation can now be trended during treatment.",
+          {
+            etco2: Math.max(
+              targetVitals.etco2,
+              31
+            ),
+          }
+        );
+        break;
+
+      case "radioReport":
+        completeTreatment(
+          "The receiving hospital has been notified.",
+          "The emergency department prepares for the patient's arrival.",
+          {}
+        );
+        break;
+    }
+  }
+
+  function continueScenario() {
+    if (
+      currentStep ===
+      scenarioSteps.length - 1
+    ) {
+      setScenarioComplete(true);
+      return;
+    }
+
+    setCurrentStep(
+      (previous) => previous + 1
+    );
+
+    setSelectedChoice(null);
+
+    setClinicalMessage(
+      "Continue assessing the patient and select your next treatment or decision."
+    );
+  }
+
+  function restartScenario() {
+    setScenarioStarted(false);
+    setScenarioComplete(false);
+    setCurrentStep(0);
+    setSelectedChoice(null);
+
+    setDisplayVitals(initialVitals);
+    setTargetVitals(initialVitals);
+
+    setElapsedSeconds(0);
+    setUsedTreatments([]);
+    setActionLog([]);
+
+    setClinicalMessage(
+      "Complete your initial assessment and select treatments when appropriate."
+    );
+
+    setCategoryScores({
+      assessment: 0,
+      airway: 0,
+      medication: 0,
+      reassessment: 0,
+      transport: 0,
+    });
+  }
+
   function getPerformanceMessage() {
-    if (score >= 90) {
-      return "Excellent performance. You rapidly recognized the emergency, supported oxygenation and ventilation, selected appropriate treatment, reassessed the patient, and transported promptly.";
+    if (totalScore >= 90) {
+      return "Excellent performance. You recognized the emergency, supported ventilation, selected appropriate treatment, reassessed the patient, and transported promptly.";
     }
 
-    if (score >= 75) {
-      return "Good performance. Review the action log for opportunities to improve sequencing and reassessment.";
+    if (totalScore >= 75) {
+      return "Good performance. Review the category scores and action log for opportunities to improve sequencing and reassessment.";
     }
 
-    if (score >= 55) {
+    if (totalScore >= 55) {
       return "Developing performance. Review CPAP indications, nitroglycerin considerations, respiratory reassessment, and transport priorities.";
     }
 
@@ -696,12 +828,21 @@ export default function AcutePulmonaryEdemaScenarioPage() {
             </h1>
 
             <div className="mt-8 grid gap-5 md:grid-cols-2">
-              <DispatchDetail label="Unit" value="Medic 1" />
-              <DispatchDetail label="Response" value="Priority 1" />
+              <DispatchDetail
+                label="Unit"
+                value="Medic 1"
+              />
+
+              <DispatchDetail
+                label="Response"
+                value="Priority 1"
+              />
+
               <DispatchDetail
                 label="Patient"
                 value="72-year-old patient"
               />
+
               <DispatchDetail
                 label="Location"
                 value="Private residence"
@@ -714,9 +855,8 @@ export default function AcutePulmonaryEdemaScenarioPage() {
               </p>
 
               <p className="mt-3 text-xl leading-8 text-zinc-200">
-                Caller reports that the patient is gasping for air and
-                unable to speak normally. No additional information is
-                available.
+                Caller reports that the patient is gasping for air and unable
+                to speak normally. No additional information is available.
               </p>
             </div>
 
@@ -743,8 +883,8 @@ export default function AcutePulmonaryEdemaScenarioPage() {
               </p>
 
               <p className="mt-2 text-zinc-300">
-                Assess the patient, select treatments, monitor the
-                response, and determine the transport plan.
+                Assess the patient, select treatments, monitor the response,
+                and determine the transport plan.
               </p>
             </div>
 
@@ -787,13 +927,29 @@ export default function AcutePulmonaryEdemaScenarioPage() {
 
             <div className="mx-auto mt-8 flex h-40 w-40 items-center justify-center rounded-full border-8 border-red-600 bg-black">
               <span className="text-5xl font-extrabold text-red-500">
-                {score}%
+                {totalScore}%
               </span>
             </div>
 
             <p className="mx-auto mt-8 max-w-3xl text-lg leading-8 text-zinc-300">
               {getPerformanceMessage()}
             </p>
+
+            <div className="mt-8 grid gap-4 sm:grid-cols-5">
+              {Object.entries(categoryScores).map(
+                ([category, value]) => (
+                  <SummaryCard
+                    key={category}
+                    label={category}
+                    value={`${value}/${
+                      MAX_CATEGORY_SCORES[
+                        category as ScoreCategory
+                      ]
+                    }`}
+                  />
+                )
+              )}
+            </div>
 
             <div className="mt-8 grid gap-4 sm:grid-cols-4">
               <SummaryCard
@@ -850,36 +1006,33 @@ export default function AcutePulmonaryEdemaScenarioPage() {
 
               <ul className="mt-5 space-y-3 text-zinc-300">
                 <li>
-                  • Position the severely dyspneic patient upright when
-                  tolerated.
+                  • Position the severely dyspneic patient upright when tolerated.
                 </li>
+
                 <li>
-                  • Recognize severe respiratory distress, crackles, and
-                  hypoxia.
+                  • Recognize severe respiratory distress, crackles, and hypoxia.
                 </li>
+
                 <li>
-                  • Consider early positive-pressure ventilation when
-                  indicated.
+                  • Consider early positive-pressure ventilation when indicated.
                 </li>
+
                 <li>
-                  • Follow local protocol before administering
-                  nitroglycerin.
+                  • Follow local protocol before administering nitroglycerin.
                 </li>
+
                 <li>
-                  • Reassess mental status, respiratory effort, blood
-                  pressure, oxygenation, and fatigue.
+                  • Reassess mental status, respiratory effort, blood pressure,
+                  oxygenation, and fatigue.
                 </li>
+
                 <li>
-                  • Continue effective treatment during prompt
-                  transport.
+                  • Continue effective treatment during prompt transport.
                 </li>
               </ul>
             </section>
 
-            <ActionLog
-              items={actionLog}
-              formatTime={formatTime}
-            />
+            <ActionLog items={actionLog} />
           </div>
         </section>
       </main>
@@ -903,18 +1056,14 @@ export default function AcutePulmonaryEdemaScenarioPage() {
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <StatusBox label="Score" value={`${score}`} />
+            <StatusBox
+              label="Score"
+              value={`${totalScore}%`}
+            />
+
             <StatusBox
               label="Time"
               value={formatTime(elapsedSeconds)}
-            />
-            <StatusBox
-              label="Patient Contact"
-              value={
-                patientContactTime === null
-                  ? "Pending"
-                  : formatTime(patientContactTime)
-              }
             />
           </div>
         </div>
@@ -985,8 +1134,7 @@ export default function AcutePulmonaryEdemaScenarioPage() {
               </h3>
 
               <p className="mt-2 text-sm text-zinc-400">
-                Select interventions as they become clinically
-                appropriate.
+                Select interventions as they become clinically appropriate.
               </p>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -996,13 +1144,17 @@ export default function AcutePulmonaryEdemaScenarioPage() {
                   ) as TreatmentKey[]
                 ).map((treatment) => {
                   const completed =
-                    usedTreatments.includes(treatment);
+                    usedTreatments.includes(
+                      treatment
+                    );
 
                   return (
                     <button
                       key={treatment}
                       type="button"
-                      onClick={() => useTreatment(treatment)}
+                      onClick={() =>
+                        useTreatment(treatment)
+                      }
                       className={`rounded-xl border px-4 py-4 text-left font-bold transition ${
                         completed
                           ? "border-green-500 bg-green-950/30 text-green-300"
@@ -1014,7 +1166,9 @@ export default function AcutePulmonaryEdemaScenarioPage() {
                       </span>
 
                       <span className="mt-1 block text-xs font-normal text-zinc-500">
-                        {completed ? "Completed" : "Select treatment"}
+                        {completed
+                          ? "Completed"
+                          : "Select treatment"}
                       </span>
                     </button>
                   );
@@ -1038,41 +1192,52 @@ export default function AcutePulmonaryEdemaScenarioPage() {
               </h3>
 
               <div className="mt-5 space-y-4">
-                {step.choices.map((choice, index) => {
-                  const isSelected =
-                    selectedChoice === index;
+                {step.choices.map(
+                  (choice, index) => {
+                    const isSelected =
+                      selectedChoice === index;
 
-                  let style =
-                    "border-zinc-700 bg-black hover:border-red-500";
+                    let style =
+                      "border-zinc-700 bg-black hover:border-red-500";
 
-                  if (selectedChoice !== null) {
-                    if (isSelected && choice.correct) {
-                      style =
-                        "border-green-500 bg-green-950/40";
-                    } else if (
-                      isSelected &&
-                      !choice.correct
+                    if (
+                      selectedChoice !== null
                     ) {
-                      style =
-                        "border-red-500 bg-red-950/40";
-                    } else {
-                      style =
-                        "border-zinc-800 bg-zinc-950 opacity-60";
+                      if (
+                        isSelected &&
+                        choice.correct
+                      ) {
+                        style =
+                          "border-green-500 bg-green-950/40";
+                      } else if (
+                        isSelected &&
+                        !choice.correct
+                      ) {
+                        style =
+                          "border-red-500 bg-red-950/40";
+                      } else {
+                        style =
+                          "border-zinc-800 bg-zinc-950 opacity-60";
+                      }
                     }
-                  }
 
-                  return (
-                    <button
-                      key={choice.text}
-                      type="button"
-                      disabled={selectedChoice !== null}
-                      onClick={() => selectChoice(index)}
-                      className={`w-full rounded-xl border p-5 text-left font-semibold transition ${style}`}
-                    >
-                      {choice.text}
-                    </button>
-                  );
-                })}
+                    return (
+                      <button
+                        key={choice.text}
+                        type="button"
+                        disabled={
+                          selectedChoice !== null
+                        }
+                        onClick={() =>
+                          selectChoice(index)
+                        }
+                        className={`w-full rounded-xl border p-5 text-left font-semibold transition ${style}`}
+                      >
+                        {choice.text}
+                      </button>
+                    );
+                  }
+                )}
               </div>
             </div>
 
@@ -1119,11 +1284,12 @@ export default function AcutePulmonaryEdemaScenarioPage() {
           </article>
 
           <div className="space-y-6">
-            <PatientMonitor vitals={displayVitals} />
+            <PatientMonitor
+              vitals={displayVitals}
+            />
 
             <ActionLog
               items={actionLog}
-              formatTime={formatTime}
             />
           </div>
         </div>
@@ -1163,8 +1329,9 @@ function PatientMonitor({
   vitals: VitalSigns;
 }) {
   const waveform = [
-    28, 28, 28, 16, 42, 5, 55, 22, 28, 28, 28, 28,
-    28, 16, 42, 5, 55, 22, 28, 28, 28, 28, 28, 16,
+    28, 28, 28, 16, 42, 5, 55, 22,
+    28, 28, 28, 28, 28, 16, 42, 5,
+    55, 22, 28, 28, 28, 28, 28, 16,
     42, 5, 55, 22, 28, 28, 28, 28,
   ];
 
@@ -1222,16 +1389,20 @@ function PatientMonitor({
           <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(34,197,94,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(34,197,94,0.08)_1px,transparent_1px)] bg-[size:18px_18px]" />
 
           <div className="monitor-wave absolute left-0 top-0 flex h-full w-[200%] items-center">
-            {waveform.map((height, index) => (
-              <div
-                key={index}
-                className="w-5 shrink-0 border-t-2 border-green-400"
-                style={{
-                  height: `${height}px`,
-                  transform: `translateY(${28 - height / 2}px)`,
-                }}
-              />
-            ))}
+            {waveform.map(
+              (height, index) => (
+                <div
+                  key={index}
+                  className="w-5 shrink-0 border-t-2 border-green-400"
+                  style={{
+                    height: `${height}px`,
+                    transform: `translateY(${
+                      28 - height / 2
+                    }px)`,
+                  }}
+                />
+              )
+            )}
           </div>
         </div>
       </div>
@@ -1241,10 +1412,8 @@ function PatientMonitor({
 
 function ActionLog({
   items,
-  formatTime,
 }: {
   items: ActionLogItem[];
-  formatTime: (seconds: number) => string;
 }) {
   return (
     <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
@@ -1381,7 +1550,7 @@ function SummaryCard({
         {label}
       </p>
 
-      <p className="mt-2 font-bold text-red-500">
+      <p className="mt-2 font-bold capitalize text-red-500">
         {value}
       </p>
     </div>
@@ -1398,17 +1567,29 @@ function moveToward(
   }
 
   if (current < target) {
-    return Math.min(current + step, target);
+    return Math.min(
+      current + step,
+      target
+    );
   }
 
-  return Math.max(current - step, target);
+  return Math.max(
+    current - step,
+    target
+  );
 }
 
 function formatTime(seconds: number) {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
+  const minutes = Math.floor(
+    seconds / 60
+  );
 
-  return `${minutes.toString().padStart(2, "0")}:${remainingSeconds
+  const remainingSeconds =
+    seconds % 60;
+
+  return `${minutes
+    .toString()
+    .padStart(2, "0")}:${remainingSeconds
     .toString()
     .padStart(2, "0")}`;
 }
