@@ -27,7 +27,8 @@ export default function CoursesPage() {
 
           <p className="mt-4 text-lg leading-8 text-zinc-400">
             Interactive EMS education covering medical emergencies, trauma,
-            airway management, medications, assessment, and critical thinking.
+            airway management, medications, environmental emergencies,
+            assessment, and critical thinking.
           </p>
         </div>
 
@@ -51,6 +52,29 @@ export default function CoursesPage() {
               description="Recognition and treatment of hypoglycemia, glucagon administration, reassessment, and EMT-Basic skills."
               level="EMT-Basic"
               duration="30–45 minutes"
+            />
+          </CourseSection>
+
+          {/* Environmental Emergencies */}
+          <CourseSection
+            title="Environmental Emergencies"
+            description="Recognition and treatment of illness caused by heat, cold, and environmental exposure."
+          >
+            <CourseCard
+              href="/courses/hyperthermia"
+              title="Hyperthermia"
+              description="Recognition of heat cramps, heat exhaustion, and heat stroke, including rapid cooling, fluid considerations, transport, and reassessment."
+              level="EMT and Paramedic"
+              duration="30–45 minutes"
+            />
+
+            <CourseCard
+              href="#"
+              title="Hypothermia"
+              description="Cold exposure, rewarming, cardiac considerations, frostbite, and transport priorities."
+              level="EMT and Paramedic"
+              duration="Coming soon"
+              available={false}
             />
           </CourseSection>
 
@@ -166,12 +190,18 @@ function CourseSection({
   return (
     <section>
       <div>
-        <h2 className="text-3xl font-extrabold text-red-500">{title}</h2>
+        <h2 className="text-3xl font-extrabold text-red-500">
+          {title}
+        </h2>
 
-        <p className="mt-2 text-zinc-400">{description}</p>
+        <p className="mt-2 text-zinc-400">
+          {description}
+        </p>
       </div>
 
-      <div className="mt-6 grid gap-6 md:grid-cols-2">{children}</div>
+      <div className="mt-6 grid gap-6 md:grid-cols-2">
+        {children}
+      </div>
     </section>
   );
 }
@@ -199,16 +229,22 @@ function CourseCard({
 
         <span
           className={`text-sm font-semibold ${
-            available ? "text-red-400" : "text-zinc-500"
+            available
+              ? "text-red-400"
+              : "text-zinc-500"
           }`}
         >
           {duration}
         </span>
       </div>
 
-      <h3 className="mt-5 text-2xl font-bold text-red-500">{title}</h3>
+      <h3 className="mt-5 text-2xl font-bold text-red-500">
+        {title}
+      </h3>
 
-      <p className="mt-3 leading-7 text-zinc-300">{description}</p>
+      <p className="mt-3 leading-7 text-zinc-300">
+        {description}
+      </p>
 
       <div className="mt-6">
         {available ? (
@@ -229,7 +265,10 @@ function CourseCard({
   }
 
   return (
-    <Link href={href} className="block h-full">
+    <Link
+      href={href}
+      className="block h-full"
+    >
       {cardContent}
     </Link>
   );
