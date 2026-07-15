@@ -31,6 +31,10 @@ const navigationLinks = [
     name: "Resources",
     href: "/resources",
   },
+  {
+    name: "Announcements",
+    href: "/announcements",
+  },
 ];
 
 export default function Navbar() {
@@ -115,7 +119,7 @@ export default function Navbar() {
           </div>
         </Link>
 
-        <nav className="hidden items-center gap-5 xl:flex">
+        <nav className="hidden items-center gap-4 xl:flex">
           {navigationLinks.map((link) => {
             const active = linkIsActive(link.href);
 
