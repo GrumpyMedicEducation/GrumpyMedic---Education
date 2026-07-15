@@ -1,13 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Navbar from "../../../components/Navbar";
 
 const PASSING_SCORE = 80;
 
 export default function HyperthermiaCertificatePage() {
+  return (
+    <Suspense fallback={<CertificateLoading />}>
+      <CertificateContent />
+    </Suspense>
+  );
+}
+
+function CertificateContent() {
   const searchParams = useSearchParams();
 
   const name = searchParams.get("name")?.trim() || "";
@@ -221,6 +229,22 @@ export default function HyperthermiaCertificatePage() {
           }
         }
       `}</style>
+    </main>
+  );
+}
+
+function CertificateLoading() {
+  return (
+    <main className="min-h-screen bg-black text-white">
+      <Navbar />
+
+      <section className="mx-auto max-w-4xl px-6 py-16">
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-10 text-center">
+          <p className="text-xl font-bold text-red-500">
+            Loading certificate...
+          </p>
+        </div>
+      </section>
     </main>
   );
 }
