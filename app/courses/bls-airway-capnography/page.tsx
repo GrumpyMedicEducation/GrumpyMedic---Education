@@ -157,8 +157,9 @@ export default function BLSAirwayCapnographyCoursePage() {
               </p>
 
               <p>
-                The uploaded training identifies EMT use during cardiac arrest
-                when basic airway maneuvers and BVM ventilation are inadequate.
+                EMT use is limited to cardiac arrest when basic airway maneuvers
+                and BVM ventilation are inadequate, and the provider is trained
+                and authorized.
               </p>
             </InfoCard>
 
@@ -287,12 +288,15 @@ export default function BLSAirwayCapnographyCoursePage() {
                     <td className="px-5 py-4 font-bold text-red-400">
                       {item.size}
                     </td>
+
                     <td className="px-5 py-4 text-zinc-300">
                       {item.weight}
                     </td>
+
                     <td className="px-5 py-4 text-zinc-300">
                       {item.color}
                     </td>
+
                     <td className="px-5 py-4 text-zinc-300">
                       {item.patient}
                     </td>
@@ -304,7 +308,7 @@ export default function BLSAirwayCapnographyCoursePage() {
 
           <AlertBox
             title="Check the Packaging"
-            text="Always verify the manufacturer's current sizing chart and the device packaging before insertion."
+            text="Always verify the manufacturer's current sizing chart and device packaging before insertion."
           />
         </CourseSection>
 
@@ -469,13 +473,13 @@ export default function BLSAirwayCapnographyCoursePage() {
         <CourseSection
           number="14"
           title="ETCO₂ Values"
-          description="Interpret ETCO₂ in the context of the entire patient and the waveform."
+          description="Interpret ETCO₂ in the context of the entire patient and waveform."
         >
           <div className="space-y-5">
             <ValueCard
               range="35–45 mmHg"
               title="Typical Normal Range"
-              description="Often considered a normal ETCO₂ range in a ventilating patient, though the clinical context remains essential."
+              description="Often considered a normal ETCO₂ range in a ventilating patient, though clinical context remains essential."
             />
 
             <ValueCard
