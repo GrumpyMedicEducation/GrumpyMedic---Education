@@ -1,9 +1,10 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import Navbar from "../../components/Navbar";
 
 const objectives = [
   "Identify indications and contraindications for supraglottic airway placement.",
-  "Select the correct iGel size.",
+  "Select the appropriate iGel size.",
   "Describe proper iGel preparation and insertion.",
   "Confirm airway placement using waveform capnography.",
   "Interpret common ETCO₂ values and waveform changes.",
@@ -55,24 +56,6 @@ const iGelSizes = [
   },
 ];
 
-const confirmationFindings = [
-  "Continuous waveform capnography",
-  "Visible and symmetrical chest rise",
-  "Bilateral breath sounds",
-  "No sounds over the epigastrium",
-  "Improving oxygen saturation",
-  "Appropriate resistance and compliance during ventilation",
-];
-
-const capnographyUses = [
-  "Confirms placement of an advanced airway",
-  "Continuously monitors ventilation",
-  "Helps assess CPR quality",
-  "May provide early indication of ROSC",
-  "Detects airway dislodgement or obstruction",
-  "Helps identify hyperventilation or hypoventilation",
-];
-
 export default function BLSAirwayCapnographyCoursePage() {
   return (
     <main className="min-h-screen bg-black text-white">
@@ -85,13 +68,13 @@ export default function BLSAirwayCapnographyCoursePage() {
           </p>
 
           <h1 className="mt-4 text-4xl font-extrabold sm:text-6xl">
-            BLS Airway & Capnography
+            BLS Airway &amp; Capnography
           </h1>
 
           <p className="mt-5 max-w-4xl text-lg leading-8 text-zinc-300">
-            Focused EMT-level training covering supraglottic airway placement,
-            iGel selection and insertion, ventilation, and continuous waveform
-            capnography.
+            EMT-level training covering supraglottic airway use, iGel
+            preparation and insertion, ventilation, continuous waveform
+            capnography, and airway troubleshooting.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
@@ -133,7 +116,7 @@ export default function BLSAirwayCapnographyCoursePage() {
       >
         <CourseSection
           number="01"
-          title="Training Objectives"
+          title="Learning Objectives"
           description="By the end of this course, the learner should be able to:"
         >
           <div className="grid gap-4 md:grid-cols-2">
@@ -146,36 +129,32 @@ export default function BLSAirwayCapnographyCoursePage() {
         <CourseSection
           number="02"
           title="Scope of Practice"
-          description="This course focuses on EMT-level airway care."
+          description="This course focuses on EMT-level airway care during cardiac arrest."
         >
           <div className="grid gap-6 lg:grid-cols-2">
-            <InfoCard title="EMT-Level Use">
-              <p>
-                Supraglottic airway placement must be consistent with the
-                provider&apos;s current statewide protocol, local authorization,
-                service policy, and completed training.
-              </p>
-
-              <p>
-                EMT use is limited to cardiac arrest when basic airway maneuvers
-                and BVM ventilation are inadequate, and the provider is trained
-                and authorized.
-              </p>
+            <InfoCard title="When EMTs May Consider an SGA">
+              <ul className="space-y-3">
+                <li>• The patient is in cardiac arrest.</li>
+                <li>• Basic airway maneuvers are ineffective.</li>
+                <li>• BVM ventilation is inadequate or difficult.</li>
+                <li>• The provider is trained and authorized.</li>
+                <li>• Waveform capnography is immediately available.</li>
+              </ul>
             </InfoCard>
 
-            <InfoCard title="Important Requirements">
+            <InfoCard title="Important Priorities">
               <ul className="space-y-3">
-                <li>• The provider must be trained and authorized.</li>
-                <li>• Waveform capnography must be immediately available.</li>
-                <li>• Airway placement must not interrupt high-quality CPR.</li>
-                <li>• Basic airway care and BVM ventilation remain priorities.</li>
+                <li>• High-quality CPR remains the top priority.</li>
+                <li>• Do not delay compressions for airway placement.</li>
+                <li>• Continue basic airway care when it is effective.</li>
+                <li>• Follow current statewide and local protocols.</li>
               </ul>
             </InfoCard>
           </div>
 
           <AlertBox
-            title="Follow the Current Protocol"
-            text="The exact timing and indications for EMT supraglottic-airway placement may change with statewide and local protocols. Always follow your current authorization and medical direction."
+            title="Training and Authorization Required"
+            text="A supraglottic airway may only be used within the provider’s current training, authorization, service policy, medical direction, and statewide scope of practice."
           />
         </CourseSection>
 
@@ -187,17 +166,17 @@ export default function BLSAirwayCapnographyCoursePage() {
           <div className="grid gap-6 lg:grid-cols-3">
             <FeatureCard
               title="Placement"
-              text="The device is inserted through the mouth and seats above the laryngeal opening."
+              text="The device is inserted through the mouth and rests above the laryngeal opening."
             />
 
             <FeatureCard
               title="Examples"
-              text="Common supraglottic airways include the iGel, King airway, and laryngeal mask airway."
+              text="Common supraglottic airway devices include the iGel, King airway, and laryngeal mask airway."
             />
 
             <FeatureCard
               title="Purpose"
-              text="It can provide more consistent ventilation when basic airway maneuvers and BVM ventilation are inadequate."
+              text="An SGA can provide more consistent ventilation when basic airway maneuvers and BVM ventilation are inadequate."
             />
           </div>
         </CourseSection>
@@ -211,20 +190,20 @@ export default function BLSAirwayCapnographyCoursePage() {
             <InfoCard title="Key Features">
               <ul className="space-y-3">
                 <li>• Non-inflatable anatomical cuff</li>
-                <li>• Designed to form a seal around the laryngeal inlet</li>
-                <li>• Rapid device preparation</li>
+                <li>• Designed to seal around the laryngeal inlet</li>
                 <li>• No cuff inflation step</li>
+                <li>• Rapid preparation and insertion</li>
                 <li>• Available in pediatric and adult sizes</li>
               </ul>
             </InfoCard>
 
-            <InfoCard title="Clinical Advantages">
+            <InfoCard title="Benefits">
               <ul className="space-y-3">
-                <li>• Fast insertion</li>
+                <li>• Fast placement</li>
                 <li>• Minimal interruption in compressions</li>
-                <li>• Consistent airway connection</li>
-                <li>• Can be confirmed continuously with capnography</li>
                 <li>• Does not require direct laryngoscopy</li>
+                <li>• Works with waveform capnography</li>
+                <li>• Provides a secure connection for ventilation</li>
               </ul>
             </InfoCard>
           </div>
@@ -233,19 +212,18 @@ export default function BLSAirwayCapnographyCoursePage() {
         <CourseSection
           number="05"
           title="Indications and Contraindications"
-          description="Select the device only when the patient and clinical situation meet protocol requirements."
+          description="Use the device only when the patient and clinical situation meet protocol requirements."
         >
           <div className="grid gap-6 lg:grid-cols-2">
             <ChecklistCard
-              title="Consider an SGA When"
+              title="Consider an iGel When"
               items={[
                 "The patient is in cardiac arrest.",
                 "Basic airway maneuvers are ineffective.",
-                "BVM ventilation is inadequate or difficult.",
+                "BVM ventilation is inadequate.",
                 "The patient has no intact gag reflex.",
                 "The provider is trained and authorized.",
                 "Capnography is immediately available.",
-                "Placement will not delay or interrupt CPR.",
               ]}
             />
 
@@ -255,8 +233,8 @@ export default function BLSAirwayCapnographyCoursePage() {
                 "The patient has an intact gag reflex.",
                 "A foreign-body obstruction has not been relieved.",
                 "The provider lacks training or authorization.",
-                "Severe airway or facial trauma prevents safe placement.",
-                "BVM ventilation is effective and an advanced airway is unnecessary.",
+                "Severe facial or airway trauma prevents placement.",
+                "BVM ventilation is effective.",
                 "The device cannot be confirmed or ventilated effectively.",
               ]}
             />
@@ -266,7 +244,7 @@ export default function BLSAirwayCapnographyCoursePage() {
         <CourseSection
           number="06"
           title="iGel Size Selection"
-          description="Select the device according to the manufacturer's weight-based recommendations."
+          description="Select the device using the manufacturer’s weight-based sizing recommendations."
         >
           <div className="overflow-x-auto rounded-2xl border border-zinc-800">
             <table className="w-full min-w-[700px] bg-zinc-900 text-left">
@@ -307,26 +285,26 @@ export default function BLSAirwayCapnographyCoursePage() {
           </div>
 
           <AlertBox
-            title="Check the Packaging"
-            text="Always verify the manufacturer's current sizing chart and device packaging before insertion."
+            title="Verify Before Use"
+            text="Always confirm the current manufacturer sizing chart and inspect the device packaging before insertion."
           />
         </CourseSection>
 
         <CourseSection
           number="07"
           title="Preparation"
-          description="Prepare the device and monitoring equipment before attempting placement."
+          description="Prepare the airway device, ventilation equipment, and capnography before attempting placement."
         >
           <NumberedSteps
             steps={[
               "Select the correct iGel size.",
               "Inspect the device for damage or contamination.",
-              "Apply water-based lubricant to the posterior surface of the cuff.",
+              "Apply water-based lubricant to the posterior surface.",
               "Avoid placing lubricant inside the airway opening.",
               "Prepare the BVM and oxygen source.",
-              "Place the capnography adapter between the BVM and airway device.",
+              "Prepare the capnography adapter and sampling line.",
               "Position the patient according to training and protocol.",
-              "Continue CPR and minimize pauses.",
+              "Continue CPR and minimize interruptions.",
             ]}
           />
         </CourseSection>
@@ -339,7 +317,7 @@ export default function BLSAirwayCapnographyCoursePage() {
           <NumberedSteps
             steps={[
               "Open the patient’s mouth.",
-              "Hold the lubricated iGel along the integral bite block.",
+              "Hold the iGel by the integral bite block.",
               "Insert the device in the midline.",
               "Glide the cuff along the hard palate.",
               "Advance until firm resistance is felt.",
@@ -347,36 +325,39 @@ export default function BLSAirwayCapnographyCoursePage() {
               "Connect the BVM and capnography adapter.",
               "Begin ventilation and immediately assess placement.",
               "Secure the airway after confirmation.",
-              "Resume or continue uninterrupted compressions.",
+              "Continue uninterrupted compressions.",
             ]}
           />
 
           <AlertBox
-            title="Never Force the Device"
-            text="If the iGel does not advance normally, stop. Reassess size, position, obstruction, and technique."
+            title="Never Force the iGel"
+            text="If the device does not advance normally, stop and reassess the patient’s position, airway, device size, and insertion technique."
           />
         </CourseSection>
 
         <CourseSection
           number="09"
           title="Confirming Placement"
-          description="Waveform capnography is the most important confirmation method and must be evaluated continuously."
+          description="Waveform capnography is the most important method for confirming and continuously monitoring placement."
         >
           <div className="grid gap-4 md:grid-cols-2">
-            {confirmationFindings.map((finding) => (
-              <InfoTile key={finding} text={finding} />
-            ))}
+            <InfoTile text="Continuous waveform capnography" />
+            <InfoTile text="Visible and symmetrical chest rise" />
+            <InfoTile text="Bilateral breath sounds" />
+            <InfoTile text="No sounds over the epigastrium" />
+            <InfoTile text="Improving oxygen saturation" />
+            <InfoTile text="Appropriate ventilation compliance" />
           </div>
 
           <div className="mt-7 rounded-2xl border border-green-600 bg-green-950/20 p-7">
             <h3 className="text-2xl font-bold text-green-400">
-              Continuous Confirmation
+              Confirmation Is Continuous
             </h3>
 
             <p className="mt-4 leading-7 text-zinc-200">
-              Placement confirmation is not a one-time event. Continuously
-              assess the capnography waveform, ventilation compliance, chest
-              rise, breath sounds, oxygen saturation, and device position.
+              Continue assessing the waveform, ETCO₂ value, chest rise, breath
+              sounds, device position, oxygen saturation, and ventilation
+              compliance throughout patient care.
             </p>
           </div>
         </CourseSection>
@@ -384,7 +365,7 @@ export default function BLSAirwayCapnographyCoursePage() {
         <CourseSection
           number="10"
           title="If the SGA Fails"
-          description="An ineffective supraglottic airway must not remain in place."
+          description="An ineffective supraglottic airway should not remain in place."
         >
           <ChecklistCard
             title="Troubleshooting Priorities"
@@ -395,9 +376,9 @@ export default function BLSAirwayCapnographyCoursePage() {
               "Reposition the head and airway when appropriate.",
               "Check device depth and securement.",
               "Suction when indicated.",
-              "If ventilation remains ineffective, remove the device.",
+              "Remove the device if ventilation remains ineffective.",
               "Immediately return to BVM ventilation.",
-              "Reattempt placement only when appropriate and without interrupting CPR.",
+              "Reattempt only when appropriate and without delaying CPR.",
             ]}
           />
         </CourseSection>
@@ -415,21 +396,21 @@ export default function BLSAirwayCapnographyCoursePage() {
               </p>
 
               <p>
-                It reflects ventilation and is also influenced by circulation,
-                metabolism, airway integrity, and equipment function.
+                ETCO₂ is affected by ventilation, circulation, metabolism,
+                airway integrity, and equipment function.
               </p>
             </InfoCard>
 
             <InfoCard title="Waveform">
               <p>
-                The waveform shows exhaled carbon dioxide breath by breath. A
-                consistent waveform is essential for confirming and monitoring
-                airway placement.
+                The waveform displays exhaled carbon dioxide breath by breath.
+                A consistent waveform supports proper airway placement and
+                ventilation.
               </p>
 
               <p>
-                Trending the waveform and values is usually more useful than
-                interpreting a single number.
+                Trends are usually more important than a single isolated
+                number.
               </p>
             </InfoCard>
           </div>
@@ -438,34 +419,37 @@ export default function BLSAirwayCapnographyCoursePage() {
         <CourseSection
           number="12"
           title="Why Capnography Matters"
-          description="Capnography provides immediate information about airway placement, ventilation, circulation, and CPR."
+          description="Capnography provides real-time information about airway placement, ventilation, circulation, and CPR."
         >
           <div className="grid gap-4 md:grid-cols-2">
-            {capnographyUses.map((use) => (
-              <InfoTile key={use} text={use} />
-            ))}
+            <InfoTile text="Confirms advanced-airway placement" />
+            <InfoTile text="Continuously monitors ventilation" />
+            <InfoTile text="Helps assess CPR quality" />
+            <InfoTile text="May provide an early indication of ROSC" />
+            <InfoTile text="Detects airway dislodgement or obstruction" />
+            <InfoTile text="Identifies hyperventilation or hypoventilation" />
           </div>
         </CourseSection>
 
         <CourseSection
           number="13"
           title="Understanding the Waveform"
-          description="A normal waveform has a recognizable square-like appearance with a consistent expiratory plateau."
+          description="A normal waveform has a square-like appearance with a consistent expiratory plateau."
         >
           <div className="grid gap-6 lg:grid-cols-3">
             <FeatureCard
               title="Normal Waveform"
-              text="A consistent waveform with a clear expiratory upstroke and plateau suggests exhaled carbon dioxide is being detected."
+              text="A consistent waveform with a clear expiratory upstroke and plateau indicates detected exhaled carbon dioxide."
             />
 
             <FeatureCard
               title="Irregular Waveform"
-              text="An irregular or changing waveform may indicate poor seal, airway movement, obstruction, altered ventilation, or equipment problems."
+              text="An irregular waveform may indicate poor seal, movement, obstruction, altered ventilation, or equipment problems."
             />
 
             <FeatureCard
               title="Flat Line"
-              text="A flat waveform indicates no detected carbon dioxide. Immediately assess airway placement, circulation, ventilation, and equipment."
+              text="A flat waveform means no carbon dioxide is detected. Immediately assess the airway, circulation, ventilation, and equipment."
             />
           </div>
         </CourseSection>
@@ -473,31 +457,31 @@ export default function BLSAirwayCapnographyCoursePage() {
         <CourseSection
           number="14"
           title="ETCO₂ Values"
-          description="Interpret ETCO₂ in the context of the entire patient and waveform."
+          description="Interpret ETCO₂ together with the waveform and the patient’s overall clinical condition."
         >
           <div className="space-y-5">
             <ValueCard
               range="35–45 mmHg"
               title="Typical Normal Range"
-              description="Often considered a normal ETCO₂ range in a ventilating patient, though clinical context remains essential."
+              description="This is commonly considered a normal ETCO₂ range in a ventilating patient."
             />
 
             <ValueCard
-              range="Below 10 mmHg during CPR"
+              range="Below 10 mmHg During CPR"
               title="Poor Perfusion or Compression Concern"
-              description="Consistently low ETCO₂ during CPR may indicate poor perfusion, inadequate compressions, excessive ventilation, or another problem."
+              description="Persistently low ETCO₂ may indicate poor perfusion, inadequate compressions, or excessive ventilation."
             />
 
             <ValueCard
               range="Sudden Sustained Increase"
               title="Possible ROSC"
-              description="A sudden sustained rise in ETCO₂ during CPR may be an early sign of return of spontaneous circulation."
+              description="A sudden sustained rise in ETCO₂ during CPR may indicate return of spontaneous circulation."
             />
 
             <ValueCard
               range="Above 45 mmHg"
               title="Possible Hypoventilation"
-              description="A high ETCO₂ may indicate inadequate ventilation, increased carbon-dioxide production, rebreathing, or another clinical issue."
+              description="A high ETCO₂ may indicate inadequate ventilation, rebreathing, or increased carbon-dioxide production."
             />
 
             <ValueCard
@@ -521,12 +505,12 @@ export default function BLSAirwayCapnographyCoursePage() {
 
             <FeatureCard
               title="Continuous Compressions"
-              text="Once an advanced airway is in place, continue compressions without pausing for ventilations."
+              text="Continue chest compressions without pausing for ventilations after the advanced airway is placed."
             />
 
             <FeatureCard
               title="Avoid Overventilation"
-              text="Excessive ventilation can increase intrathoracic pressure, reduce venous return, and decrease coronary and cerebral perfusion."
+              text="Excessive ventilation can decrease venous return and reduce coronary and cerebral perfusion."
             />
           </div>
         </CourseSection>
@@ -542,13 +526,13 @@ export default function BLSAirwayCapnographyCoursePage() {
               "Indication for SGA placement",
               "Device type and size",
               "Number of placement attempts",
-              "Confirmation findings",
+              "Placement-confirmation findings",
               "Initial and trending ETCO₂ values",
               "Waveform presence and quality",
               "Ventilation rate",
               "Patient response",
-              "Any troubleshooting or device removal",
-              "ROSC-related ETCO₂ changes",
+              "Troubleshooting or device removal",
+              "ETCO₂ changes associated with possible ROSC",
             ]}
           />
         </CourseSection>
@@ -560,13 +544,13 @@ export default function BLSAirwayCapnographyCoursePage() {
         >
           <div className="grid gap-4 md:grid-cols-2">
             <Takeaway text="High-quality CPR remains the top priority." />
-            <Takeaway text="Do not delay or interrupt compressions for airway placement." />
+            <Takeaway text="Do not delay compressions for airway placement." />
             <Takeaway text="Use an SGA only within current training and authorization." />
-            <Takeaway text="Select the correct device size." />
+            <Takeaway text="Select the correct iGel size." />
             <Takeaway text="Never force the iGel during insertion." />
-            <Takeaway text="Waveform capnography is required for confirmation and monitoring." />
-            <Takeaway text="If ventilation is ineffective, remove the SGA and return to BVM ventilation." />
-            <Takeaway text="Trend the waveform and ETCO₂ rather than relying on one number." />
+            <Takeaway text="Use waveform capnography for confirmation and monitoring." />
+            <Takeaway text="Remove the SGA and return to BVM if ventilation is ineffective." />
+            <Takeaway text="Trend the waveform and ETCO₂ values continuously." />
           </div>
         </CourseSection>
 
@@ -580,8 +564,8 @@ export default function BLSAirwayCapnographyCoursePage() {
           </h2>
 
           <p className="mx-auto mt-4 max-w-3xl leading-7 text-zinc-300">
-            Complete the BLS Airway & Capnography quiz to review indications,
-            iGel placement, ventilation, capnography, ETCO₂ interpretation,
+            Complete the BLS Airway &amp; Capnography quiz to review
+            indications, iGel placement, ventilation, waveform interpretation,
             troubleshooting, and CPR priorities.
           </p>
 
@@ -603,10 +587,10 @@ export default function BLSAirwayCapnographyCoursePage() {
         </section>
 
         <div className="mt-8 rounded-xl border border-zinc-800 bg-zinc-950 p-5 text-sm leading-6 text-zinc-500">
-          This course is intended for education and review. Always follow the
-          current statewide protocols, device manufacturer instructions, local
-          service policies, medical-control direction, and your authorized
-          scope of practice.
+          This course is provided for education and review. Always follow
+          current statewide protocols, manufacturer instructions, local service
+          policies, medical-control direction, and your authorized scope of
+          practice.
         </div>
       </section>
     </main>
@@ -630,7 +614,7 @@ function CourseSection({
   number: string;
   title: string;
   description: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <section className="mb-16 scroll-mt-24">
@@ -658,7 +642,7 @@ function InfoCard({
   children,
 }: {
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <article className="rounded-2xl border border-zinc-800 bg-zinc-900 p-7">
