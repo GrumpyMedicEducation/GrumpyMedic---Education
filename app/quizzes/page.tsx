@@ -10,35 +10,96 @@ export default function QuizzesPage() {
         <h1 className="text-5xl font-extrabold">EMS Quizzes</h1>
 
         <p className="mt-3 text-zinc-400">
-          Test your EMS knowledge and earn completion credit.
+          Test your EMS knowledge and earn completion certificates.
         </p>
 
         <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-6">
-            <h2 className="text-2xl font-bold">Acute Pulmonary Edema</h2>
+
+          {/* Acute Pulmonary Edema */}
+          <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-6 hover:border-red-600 transition">
+            <h2 className="text-2xl font-bold text-red-500">
+              Acute Pulmonary Edema
+            </h2>
 
             <p className="mt-3 text-zinc-400">
-              Review CPAP, nitroglycerin, assessment findings, and treatment
-              priorities.
+              Review CPAP, nitroglycerin, assessment findings, respiratory
+              distress, and treatment priorities.
             </p>
 
             <Link
               href="/courses/acute-pulmonary-edema/quiz"
               className="mt-6 inline-block rounded-lg bg-red-600 px-5 py-2 font-semibold hover:bg-red-700"
             >
-              Start Quiz
+              Start Quiz →
             </Link>
           </div>
 
-          <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-6 opacity-70">
-            <h2 className="text-2xl font-bold">Trauma</h2>
-            <p className="mt-3 text-zinc-400">Coming soon.</p>
+          {/* Hyperthermia */}
+          <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-6 hover:border-red-600 transition">
+            <h2 className="text-2xl font-bold text-red-500">
+              Hyperthermia
+            </h2>
+
+            <p className="mt-3 text-zinc-400">
+              Test your knowledge of heat cramps, heat exhaustion, heat stroke,
+              rapid cooling, and transport decisions.
+            </p>
+
+            <Link
+              href="/courses/hyperthermia/quiz"
+              className="mt-6 inline-block rounded-lg bg-red-600 px-5 py-2 font-semibold hover:bg-red-700"
+            >
+              Start Quiz →
+            </Link>
           </div>
 
-          <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-6 opacity-70">
-            <h2 className="text-2xl font-bold">Airway</h2>
-            <p className="mt-3 text-zinc-400">Coming soon.</p>
+          {/* BLS Airway & Capnography */}
+          <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-6 hover:border-red-600 transition">
+            <h2 className="text-2xl font-bold text-red-500">
+              BLS Airway & Capnography
+            </h2>
+
+            <p className="mt-3 text-zinc-400">
+              Airway positioning, suction, airway adjuncts, iGel,
+              supraglottic airways, waveform capnography, ventilation,
+              and confirmation of airway placement.
+            </p>
+
+            <Link
+              href="/courses/bls-airway-capnography/quiz"
+              className="mt-6 inline-block rounded-lg bg-red-600 px-5 py-2 font-semibold hover:bg-red-700"
+            >
+              Start Quiz →
+            </Link>
           </div>
+
+          {/* Trauma */}
+          <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-6 opacity-70">
+            <h2 className="text-2xl font-bold">Trauma</h2>
+
+            <p className="mt-3 text-zinc-400">
+              Coming soon.
+            </p>
+          </div>
+
+          {/* Cardiology */}
+          <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-6 opacity-70">
+            <h2 className="text-2xl font-bold">Cardiology</h2>
+
+            <p className="mt-3 text-zinc-400">
+              Coming soon.
+            </p>
+          </div>
+
+          {/* Pediatrics */}
+          <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-6 opacity-70">
+            <h2 className="text-2xl font-bold">Pediatrics</h2>
+
+            <p className="mt-3 text-zinc-400">
+              Coming soon.
+            </p>
+          </div>
+
         </div>
       </section>
     </main>
