@@ -74,7 +74,7 @@ export default function BLSAirwayCapnographyCoursePage() {
           <p className="mt-5 max-w-4xl text-lg leading-8 text-zinc-300">
             EMT-level training covering supraglottic airway use, iGel
             preparation and insertion, ventilation, continuous waveform
-            capnography, and airway troubleshooting.
+            capnography, ETCO₂ interpretation, and airway troubleshooting.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
@@ -456,6 +456,81 @@ export default function BLSAirwayCapnographyCoursePage() {
 
         <CourseSection
           number="14"
+          title="Common Capnography Patterns"
+          description="The waveform and trend often provide more useful information than a single ETCO₂ value."
+        >
+          <div className="grid gap-6 lg:grid-cols-2">
+            <WaveformCard
+              title="Normal Waveform"
+              range="35–45 mmHg"
+              pattern="Sharp rise, flat plateau, and rapid return to baseline."
+              meaning="Consistent ventilation with a recognizable expiratory plateau."
+              action="Know the patient’s baseline and continue trending."
+              waveform="normal"
+            />
+
+            <WaveformCard
+              title="Shark-Fin Pattern"
+              range="Obstructive pattern"
+              pattern="Sloping expiratory rise with no clear flat plateau."
+              meaning="Commonly associated with bronchospasm, asthma, COPD, or expiratory obstruction."
+              action="Assess breath sounds, ventilation resistance, and response to treatment."
+              waveform="shark"
+            />
+
+            <WaveformCard
+              title="Falling ETCO₂"
+              range="Downward trend"
+              pattern="The waveform remains present, but the value decreases over time."
+              meaning="May indicate worsening perfusion, shock, excessive ventilation, or declining cardiac output."
+              action="Reassess circulation, ventilation rate, CPR quality, and the patient’s overall condition."
+              waveform="falling"
+            />
+
+            <WaveformCard
+              title="Flat Line"
+              range="No detected CO₂"
+              pattern="No measurable waveform is present."
+              meaning="May indicate airway displacement, apnea, absent perfusion, disconnected tubing, or equipment failure."
+              action="Immediately check the airway, patient, ventilation circuit, and monitor."
+              waveform="flat"
+            />
+
+            <WaveformCard
+              title="Low ETCO₂"
+              range="Below expected range"
+              pattern="Small waveform with low numeric values."
+              meaning="May be caused by hyperventilation, poor perfusion, shock, pulmonary embolism, or poor-quality CPR."
+              action="Correct excessive ventilation and reassess perfusion and compression quality."
+              waveform="low"
+            />
+
+            <WaveformCard
+              title="Rising ETCO₂"
+              range="Upward trend"
+              pattern="Waveform height or numeric value rises over time."
+              meaning="May indicate hypoventilation, CO₂ retention, respiratory fatigue, rebreathing, or increased metabolism."
+              action="Assess ventilation adequacy, respiratory effort, equipment, and clinical deterioration."
+              waveform="rising"
+            />
+          </div>
+
+          <div className="mt-8 rounded-2xl border border-yellow-600 bg-yellow-950/20 p-7">
+            <h3 className="text-2xl font-bold text-yellow-400">
+              The Power Is in the Trend
+            </h3>
+
+            <p className="mt-4 leading-7 text-zinc-200">
+              A single ETCO₂ number provides limited information. Watch the
+              waveform, compare values over time, and correlate changes with the
+              patient’s airway, ventilation, circulation, treatment response,
+              and overall clinical condition.
+            </p>
+          </div>
+        </CourseSection>
+
+        <CourseSection
+          number="15"
           title="ETCO₂ Values"
           description="Interpret ETCO₂ together with the waveform and the patient’s overall clinical condition."
         >
@@ -493,7 +568,7 @@ export default function BLSAirwayCapnographyCoursePage() {
         </CourseSection>
 
         <CourseSection
-          number="15"
+          number="16"
           title="Ventilation During CPR"
           description="Avoid excessive ventilation after an advanced airway has been placed."
         >
@@ -516,7 +591,7 @@ export default function BLSAirwayCapnographyCoursePage() {
         </CourseSection>
 
         <CourseSection
-          number="16"
+          number="17"
           title="Documentation"
           description="Document the airway procedure and capnography findings thoroughly."
         >
@@ -538,7 +613,7 @@ export default function BLSAirwayCapnographyCoursePage() {
         </CourseSection>
 
         <CourseSection
-          number="17"
+          number="18"
           title="Key Takeaways"
           description="Remember these priorities during BLS airway management."
         >
@@ -792,5 +867,101 @@ function Takeaway({ text }: { text: string }) {
         {text}
       </p>
     </div>
+  );
+}
+
+function WaveformCard({
+  title,
+  range,
+  pattern,
+  meaning,
+  action,
+  waveform,
+}: {
+  title: string;
+  range: string;
+  pattern: string;
+  meaning: string;
+  action: string;
+  waveform: "normal" | "shark" | "falling" | "flat" | "low" | "rising";
+}) {
+  const paths = {
+    normal: "M10 70 H35 V25 H90 V70 H120 V25 H175 V70 H205",
+    shark:
+      "M10 70 H35 Q60 65 90 25 V70 H120 Q145 65 175 25 V70 H205",
+    falling:
+      "M10 70 H35 V25 H75 V70 H105 V35 H145 V70 H175 V48 H205",
+    flat: "M10 70 H205",
+    low: "M10 70 H35 V55 H70 V70 H100 V58 H135 V70 H165 V60 H205",
+    rising:
+      "M10 70 H35 V55 H70 V70 H100 V45 H135 V70 H165 V30 H205",
+  };
+
+  return (
+    <article className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h3 className="text-2xl font-bold text-red-500">
+            {title}
+          </h3>
+
+          <p className="mt-2 text-sm font-bold uppercase tracking-wide text-green-400">
+            {range}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-5 rounded-xl border border-zinc-700 bg-black p-4">
+        <svg
+          viewBox="0 0 215 90"
+          className="h-28 w-full"
+          role="img"
+          aria-label={`${title} capnography waveform`}
+        >
+          <line
+            x1="10"
+            y1="70"
+            x2="205"
+            y2="70"
+            stroke="currentColor"
+            strokeWidth="1"
+            className="text-zinc-700"
+          />
+
+          <path
+            d={paths[waveform]}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-green-400"
+          />
+        </svg>
+      </div>
+
+      <div className="mt-5 space-y-4 leading-7 text-zinc-300">
+        <p>
+          <span className="font-bold text-white">
+            Pattern:{" "}
+          </span>
+          {pattern}
+        </p>
+
+        <p>
+          <span className="font-bold text-white">
+            What it may mean:{" "}
+          </span>
+          {meaning}
+        </p>
+
+        <p>
+          <span className="font-bold text-white">
+            What to do:{" "}
+          </span>
+          {action}
+        </p>
+      </div>
+    </article>
   );
 }
