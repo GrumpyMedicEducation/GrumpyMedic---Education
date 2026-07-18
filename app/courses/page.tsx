@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import Navbar from "../components/Navbar";
 
@@ -54,6 +55,20 @@ export default function CoursesPage() {
             href="/courses/glucagon-hypoglycemia"
             available
           />
+
+          <CourseCard
+            title="Sepsis Recognition"
+            description="Recognition of sepsis, shock assessment, treatment priorities, and hospital notification."
+            certification="EMT and Paramedic"
+            duration="Coming soon"
+          />
+
+          <CourseCard
+            title="Stroke Assessment"
+            description="Stroke recognition, FAST-ED assessment, last-known-well time, transport, and stroke-center notification."
+            certification="EMT and Paramedic"
+            duration="Coming soon"
+          />
         </CourseCategory>
 
         <CourseCategory
@@ -79,18 +94,34 @@ export default function CoursesPage() {
 
         <CourseCategory
           title="Trauma"
-          description="Trauma assessment, hemorrhage control, and transport decisions."
+          description="Trauma assessment, hemorrhage control, medication administration, and transport decisions."
         >
           <CourseCard
+            title="TXA Administration"
+            description="Recognition of significant hemorrhage, Massachusetts 2026.2 dosing, adult multisystem trauma, obstetrical emergencies, medication safety, monitoring, and documentation."
+            certification="Paramedic"
+            duration="35–45 minutes"
+            href="/courses/txa-administration"
+            available
+          />
+
+          <CourseCard
             title="Trauma Assessment"
-            description="Primary assessment, life threats, rapid trauma examination, and transport priorities."
+            description="Primary assessment, life threats, rapid trauma examination, shock recognition, and transport priorities."
             certification="EMT and Paramedic"
             duration="Coming soon"
           />
 
           <CourseCard
-            title="Hemorrhage Control and TXA"
-            description="Tourniquets, wound packing, shock recognition, hemorrhage management, and TXA considerations."
+            title="Hemorrhage Control"
+            description="Direct pressure, tourniquets, wound packing, junctional bleeding, shock management, and reassessment."
+            certification="EMT and Paramedic"
+            duration="Coming soon"
+          />
+
+          <CourseCard
+            title="Prehospital Burn Management"
+            description="Burn-depth assessment, total body surface area, airway concerns, fluid considerations, pain management, and transport."
             certification="EMT and Paramedic"
             duration="Coming soon"
           />
@@ -115,6 +146,20 @@ export default function CoursesPage() {
             certification="Paramedic"
             duration="Coming soon"
           />
+
+          <CourseCard
+            title="Respiratory Emergencies"
+            description="Assessment and management of asthma, COPD, respiratory failure, and respiratory arrest."
+            certification="EMT and Paramedic"
+            duration="Coming soon"
+          />
+
+          <CourseCard
+            title="Mechanical Ventilation"
+            description="Ventilator fundamentals, waveform interpretation, troubleshooting, and transport considerations."
+            certification="Paramedic"
+            duration="Coming soon"
+          />
         </CourseCategory>
 
         <CourseCategory
@@ -123,7 +168,7 @@ export default function CoursesPage() {
         >
           <CourseCard
             title="12-Lead ECG Fundamentals"
-            description="Lead placement, systematic interpretation, ischemia, injury, and infarction."
+            description="Lead placement, systematic interpretation, ischemia, injury, infarction, and clinical correlation."
             certification="Paramedic"
             duration="Coming soon"
           />
@@ -134,6 +179,20 @@ export default function CoursesPage() {
             certification="Paramedic"
             duration="Coming soon"
           />
+
+          <CourseCard
+            title="Bradycardia"
+            description="Patient assessment, symptomatic bradycardia, pacing, medication administration, and reassessment."
+            certification="Paramedic"
+            duration="Coming soon"
+          />
+
+          <CourseCard
+            title="Cardiac Arrest Management"
+            description="High-quality CPR, defibrillation, airway management, medications, team roles, and post-ROSC care."
+            certification="EMT and Paramedic"
+            duration="Coming soon"
+          />
         </CourseCategory>
 
         <CourseCategory
@@ -142,7 +201,7 @@ export default function CoursesPage() {
         >
           <CourseCard
             title="Mental Health Awareness"
-            description="Behavioral emergencies, suicide awareness, crisis intervention, and first-responder wellness."
+            description="Behavioral emergencies, suicide awareness, crisis intervention, communication, and first-responder wellness."
             certification="All EMS Providers"
             duration="20–30 minutes"
             href="/mental-health"
@@ -153,6 +212,25 @@ export default function CoursesPage() {
             title="Verbal De-escalation"
             description="Communication techniques for patients experiencing agitation, anxiety, psychosis, or crisis."
             certification="All EMS Providers"
+            duration="Coming soon"
+          />
+        </CourseCategory>
+
+        <CourseCategory
+          title="Pediatrics"
+          description="Assessment and management of pediatric medical and trauma emergencies."
+        >
+          <CourseCard
+            title="Pediatric Assessment"
+            description="Pediatric Assessment Triangle, age-based vital signs, developmental considerations, and caregiver communication."
+            certification="EMT and Paramedic"
+            duration="Coming soon"
+          />
+
+          <CourseCard
+            title="Pediatric Airway"
+            description="Airway differences, oxygenation, ventilation, adjunct selection, and respiratory-failure recognition."
+            certification="EMT and Paramedic"
             duration="Coming soon"
           />
         </CourseCategory>
@@ -213,7 +291,7 @@ function CourseCategory({
 }: {
   title: string;
   description: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <section className="mb-14">
@@ -247,7 +325,7 @@ function CourseCard({
       className={`flex h-full flex-col rounded-2xl border p-7 transition ${
         available
           ? "border-zinc-600 bg-zinc-900 hover:-translate-y-1 hover:border-red-500 hover:bg-zinc-800"
-          : "border-zinc-700 bg-zinc-900/70"
+          : "border-zinc-700 bg-zinc-900/70 opacity-75"
       }`}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -286,7 +364,7 @@ function CourseCard({
     </article>
   );
 
-  if (!available) {
+  if (!available || href === "#") {
     return cardContent;
   }
 
