@@ -53,6 +53,40 @@ export default function QuizzesPage() {
             </Link>
           </div>
 
+          {/* TXA Administration */}
+<div className="rounded-xl border border-zinc-700 bg-zinc-900 p-6 hover:border-red-600">
+  <h2 className="text-2xl font-bold text-red-500">
+    TXA Administration
+  </h2>
+
+  <p className="mt-3 text-zinc-300">
+    Review TXA indications, Massachusetts 2026.2 adult dosing,
+    multisystem trauma, obstetrical hemorrhage, administration safety,
+    monitoring, contraindications, and documentation.
+  </p>
+
+  <div className="mt-5 flex flex-wrap gap-3 text-sm text-zinc-400">
+    <span className="rounded-full border border-zinc-700 px-3 py-1">
+      15 Questions
+    </span>
+
+    <span className="rounded-full border border-zinc-700 px-3 py-1">
+      Passing Score: 80%
+    </span>
+
+    <span className="rounded-full border border-zinc-700 px-3 py-1">
+      Trauma
+    </span>
+  </div>
+
+  <Link
+    href="/courses/txa-administration/quiz"
+    className="mt-6 inline-block rounded-lg bg-red-600 px-5 py-2 font-semibold hover:bg-red-700"
+  >
+    Start Quiz →
+  </Link>
+</div>
+
           {/* BLS Airway & Capnography */}
           <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-6 hover:border-red-600 transition">
             <h2 className="text-2xl font-bold text-red-500">
