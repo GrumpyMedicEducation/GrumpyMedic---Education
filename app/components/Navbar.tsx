@@ -32,6 +32,10 @@ const navigationLinks = [
     href: "/resources",
   },
   {
+    name: "Ask GrumpyMedic",
+    href: "/ask-grumpymedic",
+  },
+  {
     name: "Announcements",
     href: "/announcements",
   },
