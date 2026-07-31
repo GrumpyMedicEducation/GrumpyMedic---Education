@@ -6,197 +6,374 @@ import { useRouter } from "next/navigation";
 import Navbar from "../components/Navbar";
 import { supabase } from "../../lib/supabase/client";
 
-type Profile = {
-  id: string;
+type StudentProfile = {
   full_name: string | null;
-  email: string | null;
   provider_level: string | null;
-  state: string | null;
   department: string | null;
 };
 
 type CourseProgress = {
-  id: string;
-  user_id: string;
   course_slug: string;
   course_title: string;
-  progress_percent: number;
-  quiz_score: number | null;
-  completed: boolean;
-  certificate_earned: boolean;
-  ce_hours: number;
-  started_at: string;
-  completed_at: string | null;
+  lesson_started: boolean;
+  lesson_completed: boolean;
+  quiz_started: boolean;
+  progress_percentage: number;
+  last_section: string | null;
   updated_at: string;
 };
 
-const courseRoutes: Record<string, string> = {
-  "acute-pulmonary-edema": "/courses/acute-pulmonary-edema",
-  "glucagon-hypoglycemia": "/courses/glucagon-hypoglycemia",
+type CourseCompletion = {
+  course_slug: string;
+  course_title: string;
+  best_score: number;
+  completed_at: string;
+  certificate_id: string;
+  verified: boolean;
 };
 
-export default function DashboardPage() {
+type QuizAttempt = {
+  course_slug: string;
+  course_title: string;
+  score: number;
+  passed: boolean;
+  submitted_at: string;
+};
+
+function getCourseHref(courseSlug: string) {
+  switch (courseSlug) {
+    case "glucagon-hypoglycemia":
+      return "/courses/glucagon-hypoglycemia";
+
+    case "acute-pulmonary-edema":
+      return "/courses/acute-pulmonary-edema";
+
+    case "mental-health-awareness":
+      return "/mental-health";
+
+    default:
+      return "/courses";
+  }
+}
+
+function getCertificateHref(courseSlug: string) {
+  switch (courseSlug) {
+    case "glucagon-hypoglycemia":
+      return "/courses/glucagon-hypoglycemia/certificate";
+
+    case "acute-pulmonary-edema":
+      return "/courses/acute-pulmonary-edema/certificate";
+
+    default:
+      return null;
+  }
+}
+
+function formatDate(dateValue: string) {
+  return new Date(dateValue).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+export default function StudentDashboardPage() {
   const router = useRouter();
 
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [progress, setProgress] = useState<CourseProgress[]>([]);
+  const [profile, setProfile] =
+    useState<StudentProfile | null>(null);
+
+  const [progressRecords, setProgressRecords] = useState<
+    CourseProgress[]
+  >([]);
+
+  const [completionRecords, setCompletionRecords] =
+    useState<CourseCompletion[]>([]);
+
+  const [quizAttempts, setQuizAttempts] = useState<
+    QuizAttempt[]
+  >([]);
+
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState("");
 
   useEffect(() => {
-    async function loadDashboard() {
-      setLoading(true);
-      setPageError("");
+    loadDashboard();
+  }, []);
 
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
+  async function loadDashboard() {
+    setLoading(true);
+    setPageError("");
 
-      if (userError || !user) {
-        router.replace("/login");
-        return;
-      }
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
 
-      const [profileResult, progressResult] = await Promise.all([
-        supabase
-          .from("profiles")
-          .select(
-            "id, full_name, email, provider_level, state, department"
-          )
-          .eq("id", user.id)
-          .maybeSingle(),
-
-        supabase
-          .from("course_progress")
-          .select(
-            `
-              id,
-              user_id,
-              course_slug,
-              course_title,
-              progress_percent,
-              quiz_score,
-              completed,
-              certificate_earned,
-              ce_hours,
-              started_at,
-              completed_at,
-              updated_at
-            `
-          )
-          .eq("user_id", user.id)
-          .order("updated_at", { ascending: false }),
-      ]);
-
-      if (profileResult.error) {
-        console.error("Profile load error:", profileResult.error);
-        setPageError(
-          `Your profile could not be loaded: ${profileResult.error.message}`
-        );
-      }
-
-      if (progressResult.error) {
-        console.error("Progress load error:", progressResult.error);
-        setPageError(
-          `Your course progress could not be loaded: ${progressResult.error.message}`
-        );
-      }
-
-      setProfile(
-        profileResult.data ?? {
-          id: user.id,
-          full_name:
-            user.user_metadata?.full_name ?? "GrumpyMedic Student",
-          email: user.email ?? "",
-          provider_level:
-            user.user_metadata?.provider_level ?? "EMS Provider",
-          state: user.user_metadata?.state ?? "Not provided",
-          department:
-            user.user_metadata?.organization ??
-            user.user_metadata?.department ??
-            "Not provided",
-        }
+    if (sessionError) {
+      console.error(
+        "Unable to verify dashboard session:",
+        sessionError,
       );
 
-      setProgress(
-        (progressResult.data as CourseProgress[] | null) ?? []
+      setPageError(
+        sessionError.message ||
+          "Your account session could not be verified.",
       );
 
       setLoading(false);
+      return;
     }
 
-    loadDashboard();
-  }, [router]);
+    const user = session?.user ?? null;
 
-  const completedCourses = useMemo(
-    () => progress.filter((course) => course.completed),
-    [progress]
-  );
+    if (!user) {
+      router.replace("/login?redirect=/dashboard");
+      return;
+    }
 
-  const certificates = useMemo(
-    () => progress.filter((course) => course.certificate_earned),
-    [progress]
-  );
+    const [
+      profileResult,
+      progressResult,
+      completionsResult,
+      attemptsResult,
+    ] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select(
+          `
+            full_name,
+            provider_level,
+            department
+          `,
+        )
+        .eq("id", user.id)
+        .maybeSingle(),
 
-  const quizScores = useMemo(
-    () =>
-      progress
-        .map((course) => course.quiz_score)
-        .filter((score): score is number => score !== null),
-    [progress]
-  );
+      supabase
+        .from("course_progress")
+        .select(
+          `
+            course_slug,
+            course_title,
+            lesson_started,
+            lesson_completed,
+            quiz_started,
+            progress_percentage,
+            last_section,
+            updated_at
+          `,
+        )
+        .eq("user_id", user.id)
+        .order("updated_at", {
+          ascending: false,
+        }),
 
-  const quizAverage = useMemo(() => {
-    if (quizScores.length === 0) {
+      supabase
+        .from("course_completions")
+        .select(
+          `
+            course_slug,
+            course_title,
+            best_score,
+            completed_at,
+            certificate_id,
+            verified
+          `,
+        )
+        .eq("user_id", user.id)
+        .order("completed_at", {
+          ascending: false,
+        }),
+
+      supabase
+        .from("quiz_attempts")
+        .select(
+          `
+            course_slug,
+            course_title,
+            score,
+            passed,
+            submitted_at
+          `,
+        )
+        .eq("user_id", user.id)
+        .order("submitted_at", {
+          ascending: false,
+        }),
+    ]);
+
+    if (profileResult.error) {
+      console.error(
+        "Unable to load dashboard profile:",
+        profileResult.error,
+      );
+
+      setPageError(
+        profileResult.error.message ||
+          "Your student profile could not be loaded.",
+      );
+
+      setLoading(false);
+      return;
+    }
+
+    if (progressResult.error) {
+      console.error(
+        "Unable to load course progress:",
+        progressResult.error,
+      );
+
+      setPageError(
+        progressResult.error.message ||
+          "Your course progress could not be loaded.",
+      );
+
+      setLoading(false);
+      return;
+    }
+
+    if (completionsResult.error) {
+      console.error(
+        "Unable to load course completions:",
+        completionsResult.error,
+      );
+
+      setPageError(
+        completionsResult.error.message ||
+          "Your completed courses could not be loaded.",
+      );
+
+      setLoading(false);
+      return;
+    }
+
+    if (attemptsResult.error) {
+      console.error(
+        "Unable to load quiz history:",
+        attemptsResult.error,
+      );
+
+      setPageError(
+        attemptsResult.error.message ||
+          "Your quiz history could not be loaded.",
+      );
+
+      setLoading(false);
+      return;
+    }
+
+    setProfile(
+      (profileResult.data ??
+        null) as StudentProfile | null,
+    );
+
+    setProgressRecords(
+      (progressResult.data ?? []) as CourseProgress[],
+    );
+
+    setCompletionRecords(
+      (completionsResult.data ??
+        []) as CourseCompletion[],
+    );
+
+    setQuizAttempts(
+      (attemptsResult.data ?? []) as QuizAttempt[],
+    );
+
+    setLoading(false);
+  }
+
+  const completedCourseSlugs = useMemo(() => {
+    return new Set(
+      completionRecords.map(
+        (completion) => completion.course_slug,
+      ),
+    );
+  }, [completionRecords]);
+
+  const inProgressCourses = useMemo(() => {
+    return progressRecords.filter(
+      (progress) =>
+        !completedCourseSlugs.has(progress.course_slug),
+    );
+  }, [progressRecords, completedCourseSlugs]);
+
+  const averageQuizScore = useMemo(() => {
+    if (quizAttempts.length === 0) {
       return 0;
     }
 
-    const total = quizScores.reduce(
-      (sum, currentScore) => sum + currentScore,
-      0
+    const totalScore = quizAttempts.reduce(
+      (total, attempt) => total + attempt.score,
+      0,
     );
 
-    return Math.round(total / quizScores.length);
-  }, [quizScores]);
+    return Math.round(totalScore / quizAttempts.length);
+  }, [quizAttempts]);
 
-  const totalCeHours = useMemo(
-    () =>
-      completedCourses.reduce(
-        (sum, course) => sum + Number(course.ce_hours ?? 0),
-        0
-      ),
-    [completedCourses]
-  );
+  const latestCompletion =
+    completionRecords.length > 0
+      ? completionRecords[0]
+      : null;
 
-  async function handleLogout() {
-    await supabase.auth.signOut();
-    router.push("/");
-    router.refresh();
-  }
+  const continueCourse =
+    inProgressCourses.length > 0
+      ? inProgressCourses[0]
+      : null;
 
-  function getCourseHref(courseSlug: string) {
-    return courseRoutes[courseSlug] ?? "/courses";
-  }
+  const displayName =
+    profile?.full_name?.trim() || "Student";
 
-  function getCertificateHref(course: CourseProgress) {
-    const score = course.quiz_score ?? 0;
-
-    return `/courses/${course.course_slug}/certificate?score=${score}`;
-  }
+  const providerLevel =
+    profile?.provider_level?.trim() || "";
 
   if (loading) {
     return (
       <main className="min-h-screen bg-black text-white">
         <Navbar />
 
-        <section className="flex min-h-[calc(100vh-80px)] items-center justify-center px-6">
-          <div className="text-center">
-            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-zinc-700 border-t-red-500" />
+        <section className="mx-auto max-w-6xl px-6 py-20 text-center">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-zinc-700 border-t-red-600" />
 
-            <p className="mt-4 text-zinc-400">
-              Loading your dashboard...
+          <h1 className="mt-6 text-3xl font-extrabold">
+            Loading Student Dashboard
+          </h1>
+
+          <p className="mt-3 text-zinc-400">
+            Gathering your courses and education records.
+          </p>
+        </section>
+      </main>
+    );
+  }
+
+  if (pageError) {
+    return (
+      <main className="min-h-screen bg-black text-white">
+        <Navbar />
+
+        <section className="mx-auto max-w-3xl px-6 py-20">
+          <div className="rounded-2xl border border-red-800 bg-red-950/20 p-8 text-center">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-red-500">
+              Dashboard Error
             </p>
+
+            <h1 className="mt-4 text-3xl font-extrabold">
+              Unable to Load Student Records
+            </h1>
+
+            <p className="mt-4 leading-7 text-zinc-300">
+              {pageError}
+            </p>
+
+            <button
+              type="button"
+              onClick={loadDashboard}
+              className="mt-6 rounded-xl bg-red-600 px-7 py-3 font-bold text-white transition hover:bg-red-500"
+            >
+              Try Again
+            </button>
           </div>
         </section>
       </main>
@@ -208,419 +385,437 @@ export default function DashboardPage() {
       <Navbar />
 
       <section className="mx-auto max-w-7xl px-6 py-10">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-500">
-              Student Dashboard
+        <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
+          <aside className="h-fit rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-red-500">
+              Student Portal
             </p>
 
-            <h1 className="mt-3 text-4xl font-extrabold sm:text-5xl">
-              Welcome back,{" "}
-              {profile?.full_name || "GrumpyMedic Student"}
-            </h1>
-
-            <p className="mt-3 max-w-3xl text-zinc-400">
-              Review your EMS course progress, quiz scores,
-              certificates, and continuing-education hours.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="w-fit rounded-xl border border-red-500 px-5 py-3 font-semibold text-red-500 transition hover:bg-red-600 hover:text-white"
-          >
-            Log Out
-          </button>
-        </div>
-
-        {pageError && (
-          <div className="mt-8 rounded-xl border border-red-500/60 bg-red-500/10 p-4 text-red-300">
-            {pageError}
-          </div>
-        )}
-
-        <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          <DashboardStat
-            label="Courses Completed"
-            value={String(completedCourses.length)}
-            detail={
-              completedCourses.length === 1
-                ? "One completed course"
-                : `${completedCourses.length} completed courses`
-            }
-          />
-
-          <DashboardStat
-            label="Certificates Earned"
-            value={String(certificates.length)}
-            detail="Available to view and print"
-          />
-
-          <DashboardStat
-            label="Quiz Average"
-            value={
-              quizScores.length > 0 ? `${quizAverage}%` : "—"
-            }
-            detail={
-              quizScores.length > 0
-                ? `Based on ${quizScores.length} recorded quiz${
-                    quizScores.length === 1 ? "" : "zes"
-                  }`
-                : "No quiz scores recorded yet"
-            }
-          />
-
-          <DashboardStat
-            label="Continuing Education"
-            value={totalCeHours.toFixed(1)}
-            detail="Hours completed"
-          />
-        </div>
-
-        <div className="mt-10 grid gap-8 lg:grid-cols-[1.25fr_0.75fr]">
-          <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm font-bold uppercase tracking-[0.2em] text-red-500">
-                  Course Progress
-                </p>
-
-                <h2 className="mt-2 text-2xl font-bold">
-                  Your Learning Activity
-                </h2>
-              </div>
-
-              <Link
-                href="/courses"
-                className="w-fit rounded-lg border border-zinc-700 px-4 py-2 text-sm font-semibold transition hover:border-red-500 hover:text-red-500"
-              >
-                Browse Courses
-              </Link>
-            </div>
-
-            {progress.length === 0 ? (
-              <div className="mt-6 rounded-xl border border-dashed border-zinc-700 bg-black p-8 text-center">
-                <h3 className="text-lg font-bold text-white">
-                  No course activity yet
-                </h3>
-
-                <p className="mt-2 text-sm text-zinc-400">
-                  Complete a course quiz and your progress will
-                  appear here automatically.
-                </p>
-
-                <Link
-                  href="/courses"
-                  className="mt-5 inline-block rounded-xl bg-red-600 px-5 py-3 font-bold transition hover:bg-red-500"
-                >
-                  Start a Course
-                </Link>
-              </div>
-            ) : (
-              <div className="mt-6 space-y-4">
-                {progress.map((course) => (
-                  <CourseProgressCard
-                    key={course.id}
-                    course={course}
-                    href={getCourseHref(course.course_slug)}
-                  />
-                ))}
-              </div>
-            )}
-          </section>
-
-          <section className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-red-500">
-              Profile
-            </p>
-
-            <h2 className="mt-2 text-2xl font-bold">
-              Student Information
+            <h2 className="mt-3 text-xl font-extrabold">
+              GrumpyMedic Education
             </h2>
 
-            <div className="mt-6 space-y-4">
-              <ProfileRow
-                label="Name"
-                value={
-                  profile?.full_name || "Not provided"
-                }
+            <nav className="mt-6 space-y-2">
+              <DashboardLink
+                href="/dashboard"
+                label="Dashboard"
+                active
               />
 
-              <ProfileRow
-                label="Email"
-                value={profile?.email || "Not provided"}
+              <DashboardLink
+                href="/courses"
+                label="Course Library"
               />
 
-              <ProfileRow
-                label="Provider Level"
-                value={
-                  profile?.provider_level || "Not provided"
-                }
+              <DashboardLink
+                href="/dashboard/profile"
+                label="Student Profile"
               />
+            </nav>
 
-              <ProfileRow
-                label="Department"
-                value={
-                  profile?.department || "Not provided"
-                }
-              />
-
-              <ProfileRow
-                label="State"
-                value={profile?.state || "Not provided"}
-              />
-            </div>
-          </section>
-        </div>
-
-        <section className="mt-10 rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-red-500">
-            Quick Access
-          </p>
-
-          <h2 className="mt-2 text-2xl font-bold">
-            Continue Learning
-          </h2>
-
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <QuickLink
-              href="/scenarios/acute-pulmonary-edema"
-              title="Start a Scenario"
-              description="Practice clinical decision-making."
-            />
-
-            <QuickLink
-              href="/quizzes"
-              title="Take a Quiz"
-              description="Review EMS knowledge and test readiness."
-            />
-
-            <QuickLink
-              href="/resources/drug-calculator"
-              title="Drug Calculator"
-              description="Calculate weight-based medication dosing."
-            />
-
-            <QuickLink
-              href="/resources"
-              title="EMS Resources"
-              description="Protocols, references, and assessment tools."
-            />
-          </div>
-        </section>
-
-        <section className="mt-10 rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-red-500">
-            Certificates
-          </p>
-
-          <h2 className="mt-2 text-2xl font-bold">
-            Earned Certificates
-          </h2>
-
-          {certificates.length === 0 ? (
-            <div className="mt-6 rounded-xl border border-dashed border-zinc-700 bg-black p-8 text-center">
-              <p className="text-zinc-400">
-                Pass a course assessment to earn your first
-                certificate.
+            <div className="mt-8 rounded-xl border border-zinc-800 bg-black p-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-zinc-500">
+                Account
               </p>
+
+              <p className="mt-2 font-bold text-white">
+                {displayName}
+              </p>
+
+              {providerLevel && (
+                <p className="mt-1 text-sm text-zinc-400">
+                  {providerLevel}
+                </p>
+              )}
             </div>
-          ) : (
-            <div className="mt-6 grid gap-4 md:grid-cols-2">
-              {certificates.map((course) => (
-                <CertificateCard
-                  key={course.id}
-                  title={course.course_title}
-                  score={course.quiz_score}
-                  completedAt={course.completed_at}
-                  href={getCertificateHref(course)}
-                />
-              ))}
-            </div>
-          )}
-        </section>
+          </aside>
+
+          <div>
+            <header className="rounded-3xl border border-zinc-800 bg-gradient-to-br from-red-950/30 to-zinc-950 p-8">
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-red-500">
+                Student Dashboard
+              </p>
+
+              <h1 className="mt-3 text-4xl font-extrabold md:text-5xl">
+                Welcome back, {displayName}
+              </h1>
+
+              <p className="mt-4 max-w-3xl leading-7 text-zinc-300">
+                Review your course progress, quiz results,
+                completion records, and available
+                certificates.
+              </p>
+
+              {providerLevel && (
+                <p className="mt-3 font-semibold text-red-400">
+                  {providerLevel}
+                </p>
+              )}
+            </header>
+
+            <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <StatisticCard
+                label="Courses Completed"
+                value={completionRecords.length}
+                description="Passing course records"
+              />
+
+              <StatisticCard
+                label="Certificates Earned"
+                value={completionRecords.length}
+                description="Available certificates"
+              />
+
+              <StatisticCard
+                label="Courses In Progress"
+                value={inProgressCourses.length}
+                description="Started but not completed"
+              />
+
+              <StatisticCard
+                label="Average Quiz Score"
+                value={`${averageQuizScore}%`}
+                description={`${quizAttempts.length} saved attempt${
+                  quizAttempts.length === 1 ? "" : "s"
+                }`}
+              />
+            </section>
+
+            {continueCourse && (
+              <section className="mt-8 rounded-2xl border border-red-900 bg-zinc-950 p-6">
+                <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
+                  <div>
+                    <p className="text-sm font-bold uppercase tracking-[0.2em] text-red-500">
+                      Continue Learning
+                    </p>
+
+                    <h2 className="mt-3 text-2xl font-extrabold">
+                      {continueCourse.course_title}
+                    </h2>
+
+                    <p className="mt-2 text-zinc-400">
+                      Your progress is saved. Continue where
+                      you left off.
+                    </p>
+
+                    <div className="mt-5 max-w-xl">
+                      <div className="flex justify-between text-sm font-semibold">
+                        <span className="text-zinc-400">
+                          Course Progress
+                        </span>
+
+                        <span className="text-red-400">
+                          {
+                            continueCourse.progress_percentage
+                          }
+                          %
+                        </span>
+                      </div>
+
+                      <div className="mt-2 h-3 overflow-hidden rounded-full bg-zinc-800">
+                        <div
+                          className="h-full bg-red-600"
+                          style={{
+                            width: `${continueCourse.progress_percentage}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <Link
+                    href={getCourseHref(
+                      continueCourse.course_slug,
+                    )}
+                    className="inline-flex justify-center rounded-xl bg-red-600 px-7 py-3 font-bold text-white transition hover:bg-red-500"
+                  >
+                    Continue Course →
+                  </Link>
+                </div>
+              </section>
+            )}
+
+            <section className="mt-8 grid gap-8 xl:grid-cols-2">
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-6">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-bold uppercase tracking-[0.2em] text-red-500">
+                      Completed Courses
+                    </p>
+
+                    <h2 className="mt-2 text-2xl font-extrabold">
+                      Education Records
+                    </h2>
+                  </div>
+
+                  <span className="rounded-full border border-zinc-700 bg-black px-4 py-2 text-sm font-bold text-zinc-300">
+                    {completionRecords.length}
+                  </span>
+                </div>
+
+                {completionRecords.length === 0 ? (
+                  <EmptyState
+                    title="No completed courses yet"
+                    description="Complete a course and pass its quiz to create your first education record."
+                    href="/courses"
+                    linkLabel="Browse Courses"
+                  />
+                ) : (
+                  <div className="mt-6 space-y-4">
+                    {completionRecords
+                      .slice(0, 4)
+                      .map((completion) => {
+                        const certificateHref =
+                          getCertificateHref(
+                            completion.course_slug,
+                          );
+
+                        return (
+                          <div
+                            key={completion.course_slug}
+                            className="rounded-xl border border-zinc-800 bg-black p-5"
+                          >
+                            <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+                              <div>
+                                <p className="font-bold text-white">
+                                  {
+                                    completion.course_title
+                                  }
+                                </p>
+
+                                <p className="mt-2 text-sm text-zinc-400">
+                                  Completed{" "}
+                                  {formatDate(
+                                    completion.completed_at,
+                                  )}
+                                </p>
+
+                                <p className="mt-2 font-semibold text-emerald-400">
+                                  Best score:{" "}
+                                  {completion.best_score}%
+                                </p>
+                              </div>
+
+                              <div className="flex flex-wrap gap-2">
+                                <Link
+                                  href={getCourseHref(
+                                    completion.course_slug,
+                                  )}
+                                  className="rounded-lg border border-zinc-700 px-4 py-2 text-sm font-bold text-zinc-300 transition hover:border-zinc-500 hover:text-white"
+                                >
+                                  Review
+                                </Link>
+
+                                {certificateHref && (
+                                  <Link
+                                    href={
+                                      certificateHref
+                                    }
+                                    className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-emerald-500"
+                                  >
+                                    Certificate
+                                  </Link>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                )}
+              </div>
+
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-6">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-bold uppercase tracking-[0.2em] text-red-500">
+                      Quiz History
+                    </p>
+
+                    <h2 className="mt-2 text-2xl font-extrabold">
+                      Recent Attempts
+                    </h2>
+                  </div>
+
+                  <span className="rounded-full border border-zinc-700 bg-black px-4 py-2 text-sm font-bold text-zinc-300">
+                    {quizAttempts.length}
+                  </span>
+                </div>
+
+                {quizAttempts.length === 0 ? (
+                  <EmptyState
+                    title="No quiz attempts yet"
+                    description="Your submitted quiz scores will appear here."
+                    href="/courses"
+                    linkLabel="Start Learning"
+                  />
+                ) : (
+                  <div className="mt-6 space-y-4">
+                    {quizAttempts
+                      .slice(0, 5)
+                      .map((attempt, index) => (
+                        <div
+                          key={`${attempt.course_slug}-${attempt.submitted_at}-${index}`}
+                          className="flex items-center justify-between gap-4 rounded-xl border border-zinc-800 bg-black p-5"
+                        >
+                          <div>
+                            <p className="font-bold text-white">
+                              {attempt.course_title}
+                            </p>
+
+                            <p className="mt-1 text-sm text-zinc-500">
+                              {formatDate(
+                                attempt.submitted_at,
+                              )}
+                            </p>
+                          </div>
+
+                          <div className="text-right">
+                            <p
+                              className={`text-2xl font-extrabold ${
+                                attempt.passed
+                                  ? "text-emerald-400"
+                                  : "text-red-400"
+                              }`}
+                            >
+                              {attempt.score}%
+                            </p>
+
+                            <p className="mt-1 text-xs font-bold uppercase tracking-wide text-zinc-500">
+                              {attempt.passed
+                                ? "Passed"
+                                : "Not Passed"}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {latestCompletion && (
+              <section className="mt-8 rounded-2xl border border-emerald-900 bg-emerald-950/10 p-6">
+                <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-400">
+                  Latest Achievement
+                </p>
+
+                <div className="mt-4 flex flex-col justify-between gap-6 md:flex-row md:items-center">
+                  <div>
+                    <h2 className="text-2xl font-extrabold">
+                      {latestCompletion.course_title}
+                    </h2>
+
+                    <p className="mt-2 text-zinc-300">
+                      Completed{" "}
+                      {formatDate(
+                        latestCompletion.completed_at,
+                      )}{" "}
+                      with a best score of{" "}
+                      {latestCompletion.best_score}%.
+                    </p>
+                  </div>
+
+                  {getCertificateHref(
+                    latestCompletion.course_slug,
+                  ) && (
+                    <Link
+                      href={
+                        getCertificateHref(
+                          latestCompletion.course_slug,
+                        ) as string
+                      }
+                      className="inline-flex justify-center rounded-xl bg-emerald-600 px-7 py-3 font-bold text-white transition hover:bg-emerald-500"
+                    >
+                      View Certificate
+                    </Link>
+                  )}
+                </div>
+              </section>
+            )}
+          </div>
+        </div>
       </section>
     </main>
   );
 }
 
-function DashboardStat({
+function StatisticCard({
   label,
   value,
-  detail,
+  description,
 }: {
   label: string;
-  value: string;
-  detail: string;
+  value: string | number;
+  description: string;
 }) {
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
-      <p className="text-sm font-semibold text-zinc-400">
-        {label}
-      </p>
-
-      <p className="mt-3 text-4xl font-extrabold text-red-500">
-        {value}
-      </p>
-
-      <p className="mt-2 text-sm text-zinc-500">
-        {detail}
-      </p>
-    </div>
-  );
-}
-
-function CourseProgressCard({
-  course,
-  href,
-}: {
-  course: CourseProgress;
-  href: string;
-}) {
-  const status = course.completed
-    ? "Completed"
-    : course.progress_percent > 0
-      ? "In Progress"
-      : "Not Started";
-
-  return (
-    <Link
-      href={href}
-      className="block rounded-xl border border-zinc-800 bg-black p-5 transition hover:border-red-500"
-    >
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h3 className="font-bold text-white">
-            {course.course_title}
-          </h3>
-
-          <p className="mt-1 text-sm text-zinc-500">
-            {status}
-          </p>
-        </div>
-
-        <span className="rounded-full bg-red-500/10 px-3 py-1 text-sm font-bold text-red-400">
-          {course.quiz_score !== null
-            ? `${course.quiz_score}%`
-            : "No score"}
-        </span>
-      </div>
-
-      <div className="mt-4 h-2 overflow-hidden rounded-full bg-zinc-800">
-        <div
-          className="h-full rounded-full bg-red-600"
-          style={{
-            width: `${Math.min(
-              Math.max(course.progress_percent, 0),
-              100
-            )}%`,
-          }}
-        />
-      </div>
-
-      <div className="mt-2 flex items-center justify-between text-xs text-zinc-500">
-        <span>
-          {Number(course.ce_hours).toFixed(1)} CE hour
-          {Number(course.ce_hours) === 1 ? "" : "s"}
-        </span>
-
-        <span>
-          {course.progress_percent}% complete
-        </span>
-      </div>
-    </Link>
-  );
-}
-
-function ProfileRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-xl border border-zinc-800 bg-black p-4">
+    <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
       <p className="text-xs font-bold uppercase tracking-[0.15em] text-zinc-500">
         {label}
       </p>
 
-      <p className="mt-2 break-words text-zinc-200">
+      <p className="mt-3 text-4xl font-extrabold text-white">
         {value}
+      </p>
+
+      <p className="mt-2 text-sm text-zinc-500">
+        {description}
       </p>
     </div>
   );
 }
 
-function QuickLink({
+function DashboardLink({
   href,
-  title,
-  description,
+  label,
+  active = false,
 }: {
   href: string;
-  title: string;
-  description: string;
+  label: string;
+  active?: boolean;
 }) {
   return (
     <Link
       href={href}
-      className="rounded-xl border border-zinc-800 bg-black p-5 transition hover:border-red-500 hover:bg-zinc-950"
+      className={`block rounded-xl px-4 py-3 font-semibold transition ${
+        active
+          ? "bg-red-600 text-white"
+          : "text-zinc-300 hover:bg-zinc-900 hover:text-white"
+      }`}
     >
-      <h3 className="font-bold text-red-500">
-        {title}
-      </h3>
-
-      <p className="mt-2 text-sm text-zinc-400">
-        {description}
-      </p>
+      {label}
     </Link>
   );
 }
 
-function CertificateCard({
+function EmptyState({
   title,
-  score,
-  completedAt,
+  description,
   href,
+  linkLabel,
 }: {
   title: string;
-  score: number | null;
-  completedAt: string | null;
+  description: string;
   href: string;
+  linkLabel: string;
 }) {
-  const completionDate = completedAt
-    ? new Date(completedAt).toLocaleDateString("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      })
-    : "Completion date unavailable";
-
   return (
-    <Link
-      href={href}
-      className="rounded-xl border border-zinc-800 bg-black p-5 transition hover:border-red-500"
-    >
-      <p className="text-xs font-bold uppercase tracking-[0.15em] text-red-500">
-        Certificate Earned
-      </p>
-
-      <h3 className="mt-2 text-lg font-bold">
+    <div className="mt-6 rounded-xl border border-dashed border-zinc-700 bg-black p-6 text-center">
+      <h3 className="font-bold text-white">
         {title}
       </h3>
 
-      <p className="mt-2 text-sm text-zinc-500">
-        Completed: {completionDate}
+      <p className="mt-2 text-sm leading-6 text-zinc-500">
+        {description}
       </p>
 
-      <p className="mt-1 text-sm text-zinc-500">
-        Quiz score: {score !== null ? `${score}%` : "Not recorded"}
-      </p>
-
-      <p className="mt-4 text-sm font-semibold text-red-400">
-        View Certificate →
-      </p>
-    </Link>
+      <Link
+        href={href}
+        className="mt-5 inline-block rounded-lg bg-red-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-red-500"
+      >
+        {linkLabel}
+      </Link>
+    </div>
   );
 }

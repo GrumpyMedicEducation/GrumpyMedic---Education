@@ -1,8 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "../../../components/Navbar";
+import CourseAccessGate from "../../../components/CourseAccessGate";
+import { supabase } from "../../../../lib/supabase/client";
+
+const COURSE_SLUG = "glucagon-hypoglycemia";
+const COURSE_TITLE = "Glucagon for Hypoglycemia";
+const PASSING_SCORE = 80;
 
 type QuizQuestion = {
   question: string;
@@ -12,9 +18,16 @@ type QuizQuestion = {
   explanation: string;
 };
 
+type ExistingCompletion = {
+  best_score: number;
+  completed_at: string;
+  verified: boolean;
+};
+
 const questions: QuizQuestion[] = [
   {
-    question: "Which condition must be present before administering glucagon?",
+    question:
+      "Which condition must be present before administering glucagon?",
     options: [
       "Blood glucose below 100 mg/dL",
       "Altered mental status with suspected hypoglycemia",
@@ -40,7 +53,12 @@ const questions: QuizQuestion[] = [
   {
     question:
       "When should blood glucose be rechecked after glucagon administration?",
-    options: ["5 minutes", "10 minutes", "15 minutes", "30 minutes"],
+    options: [
+      "5 minutes",
+      "10 minutes",
+      "15 minutes",
+      "30 minutes",
+    ],
     correctAnswer: 2,
     explanation:
       "Blood glucose and mental status should be reassessed after 15 minutes.",
@@ -87,7 +105,12 @@ const questions: QuizQuestion[] = [
   {
     question:
       "Which routes are approved for glucagon administration in this course?",
-    options: ["IV only", "IM only", "IN only", "IM or IN"],
+    options: [
+      "IV only",
+      "IM only",
+      "IN only",
+      "IM or IN",
+    ],
     correctAnswer: 3,
     explanation:
       "The routes presented in this course are intramuscular and intranasal.",
@@ -168,20 +191,84 @@ const questions: QuizQuestion[] = [
 ];
 
 export default function GlucagonQuizPage() {
-  const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [answers, setAnswers] = useState<
+    Record<number, number>
+  >({});
+
   const [submitted, setSubmitted] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [recordSaved, setRecordSaved] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const [bestScore, setBestScore] = useState<number | null>(
+    null,
+  );
 
   const answeredCount = Object.keys(answers).length;
 
-  const score = questions.reduce((total, question, index) => {
-    return total + (answers[index] === question.correctAnswer ? 1 : 0);
-  }, 0);
+  const score = questions.reduce(
+    (total, question, index) => {
+      return (
+        total +
+        (answers[index] === question.correctAnswer ? 1 : 0)
+      );
+    },
+    0,
+  );
 
-  const percentage = Math.round((score / questions.length) * 100);
-  const passed = percentage >= 80;
+  const percentage = Math.round(
+    (score / questions.length) * 100,
+  );
 
-  function selectAnswer(questionIndex: number, optionIndex: number) {
-    if (submitted) return;
+  const passed = percentage >= PASSING_SCORE;
+
+  useEffect(() => {
+    markQuizStarted();
+  }, []);
+
+  async function markQuizStarted() {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    const user = session?.user;
+
+    if (!user) {
+      return;
+    }
+
+    const { error } = await supabase
+      .from("course_progress")
+      .upsert(
+        {
+          user_id: user.id,
+          course_slug: COURSE_SLUG,
+          course_title: COURSE_TITLE,
+          lesson_started: true,
+          lesson_completed: true,
+          quiz_started: true,
+          last_section: "quiz-started",
+          progress_percentage: 75,
+        },
+        {
+          onConflict: "user_id,course_slug",
+        },
+      );
+
+    if (error) {
+      console.error(
+        "Unable to mark quiz as started:",
+        error,
+      );
+    }
+  }
+
+  function selectAnswer(
+    questionIndex: number,
+    optionIndex: number,
+  ) {
+    if (submitted || saving) {
+      return;
+    }
 
     setAnswers((currentAnswers) => ({
       ...currentAnswers,
@@ -189,20 +276,230 @@ export default function GlucagonQuizPage() {
     }));
   }
 
-  function submitQuiz() {
+  async function submitQuiz() {
     if (answeredCount !== questions.length) {
-      window.alert("Please answer every question before submitting the quiz.");
+      window.alert(
+        "Please answer every question before submitting the quiz.",
+      );
       return;
     }
 
+    setSaving(true);
+    setSaveError("");
+    setRecordSaved(false);
+
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+
+    if (sessionError) {
+      console.error(
+        "Unable to verify quiz session:",
+        sessionError,
+      );
+
+      setSaveError(
+        sessionError.message ||
+          "Your quiz submission could not be verified.",
+      );
+
+      setSaving(false);
+      return;
+    }
+
+    const user = session?.user;
+
+    if (!user) {
+      setSaveError(
+        "Please log in before submitting the quiz.",
+      );
+
+      setSaving(false);
+      return;
+    }
+
+    const { error: attemptError } = await supabase
+      .from("quiz_attempts")
+      .insert({
+        user_id: user.id,
+        course_slug: COURSE_SLUG,
+        course_title: COURSE_TITLE,
+        score: percentage,
+        correct_answers: score,
+        total_questions: questions.length,
+        passing_score: PASSING_SCORE,
+        passed,
+        verified: false,
+      });
+
+    if (attemptError) {
+      console.error(
+        "Unable to save quiz attempt:",
+        attemptError,
+      );
+
+      setSaveError(
+        attemptError.message ||
+          "Your quiz attempt could not be saved.",
+      );
+
+      setSaving(false);
+      return;
+    }
+
+    const { error: progressError } = await supabase
+      .from("course_progress")
+      .upsert(
+        {
+          user_id: user.id,
+          course_slug: COURSE_SLUG,
+          course_title: COURSE_TITLE,
+          lesson_started: true,
+          lesson_completed: true,
+          quiz_started: true,
+          last_section: passed
+            ? "quiz-passed"
+            : "quiz-completed",
+          progress_percentage: passed ? 100 : 75,
+        },
+        {
+          onConflict: "user_id,course_slug",
+        },
+      );
+
+    if (progressError) {
+      console.error(
+        "Unable to update course progress:",
+        progressError,
+      );
+
+      setSaveError(
+        progressError.message ||
+          "Your quiz was saved, but course progress could not be updated.",
+      );
+
+      setSubmitted(true);
+      setSaving(false);
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+
+      return;
+    }
+
+    if (passed) {
+      const { data: existingData, error: existingError } =
+        await supabase
+          .from("course_completions")
+          .select(
+            `
+              best_score,
+              completed_at,
+              verified
+            `,
+          )
+          .eq("user_id", user.id)
+          .eq("course_slug", COURSE_SLUG)
+          .maybeSingle();
+
+      if (existingError) {
+        console.error(
+          "Unable to check existing completion:",
+          existingError,
+        );
+
+        setSaveError(
+          existingError.message ||
+            "Your attempt was saved, but the completion record could not be checked.",
+        );
+
+        setSubmitted(true);
+        setSaving(false);
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+
+        return;
+      }
+
+      const existingCompletion =
+        (existingData ?? null) as ExistingCompletion | null;
+
+      const newBestScore = Math.max(
+        existingCompletion?.best_score ?? 0,
+        percentage,
+      );
+
+      const completionPayload = {
+        user_id: user.id,
+        course_slug: COURSE_SLUG,
+        course_title: COURSE_TITLE,
+        best_score: newBestScore,
+        passing_score: PASSING_SCORE,
+        verified: false,
+        completed_at:
+          existingCompletion?.completed_at ??
+          new Date().toISOString(),
+      };
+
+      const { error: completionError } = await supabase
+        .from("course_completions")
+        .upsert(completionPayload, {
+          onConflict: "user_id,course_slug",
+        });
+
+      if (completionError) {
+        console.error(
+          "Unable to save course completion:",
+          completionError,
+        );
+
+        setSaveError(
+          completionError.message ||
+            "Your quiz attempt was saved, but the course completion record could not be created.",
+        );
+
+        setSubmitted(true);
+        setSaving(false);
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+
+        return;
+      }
+
+      setBestScore(newBestScore);
+    }
+
     setSubmitted(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setRecordSaved(true);
+    setSaving(false);
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   }
 
   function resetQuiz() {
     setAnswers({});
     setSubmitted(false);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setSaving(false);
+    setRecordSaved(false);
+    setSaveError("");
+    setBestScore(null);
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   }
 
   return (
@@ -226,205 +523,349 @@ export default function GlucagonQuizPage() {
             Glucagon for Hypoglycemia Quiz
           </h1>
 
-          <p className="mt-4 max-w-3xl text-zinc-400">
-            Answer all 12 questions. A score of 80% or higher is required to
-            pass and unlock the completion certificate.
+          <p className="mt-4 max-w-3xl leading-7 text-zinc-400">
+            Answer all 12 questions. A score of 80% or
+            higher is required to pass and create a course
+            completion record.
           </p>
-        </div>
 
-        {!submitted && (
-          <div className="mt-8 rounded-2xl border border-zinc-700 bg-zinc-900 p-5">
-            <div className="flex items-center justify-between gap-4">
-              <span className="font-semibold text-zinc-300">Progress</span>
+          <div className="mt-6 grid gap-4 sm:grid-cols-3">
+            <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-zinc-500">
+                Questions
+              </p>
 
-              <span className="font-bold text-red-400">
-                {answeredCount} of {questions.length} answered
-              </span>
+              <p className="mt-2 font-bold text-white">
+                12 Questions
+              </p>
             </div>
 
-            <div className="mt-3 h-3 overflow-hidden rounded-full bg-zinc-800">
-              <div
-                className="h-full bg-red-600 transition-all"
-                style={{
-                  width: `${(answeredCount / questions.length) * 100}%`,
-                }}
-              />
+            <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-zinc-500">
+                Passing Score
+              </p>
+
+              <p className="mt-2 font-bold text-white">
+                80%
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-zinc-500">
+                Progress
+              </p>
+
+              <p className="mt-2 font-bold text-white">
+                Saved to Account
+              </p>
             </div>
           </div>
-        )}
+        </div>
 
-        {submitted && (
-          <section
-            className={`mt-8 rounded-2xl border p-6 ${
-              passed
-                ? "border-emerald-500 bg-emerald-500/10"
-                : "border-red-500 bg-red-500/10"
-            }`}
+        <div className="mt-8">
+          <CourseAccessGate
+            accessLevel="login"
+            title="Sign In to Take the Quiz"
+            description="Create a free GrumpyMedic Education account or log in to take the Glucagon for Hypoglycemia quiz and save the result to your student record."
           >
-            <p className="text-sm font-bold uppercase tracking-wide text-zinc-300">
-              Quiz Result
-            </p>
-
-            <div className="mt-3 flex flex-wrap items-end gap-4">
-              <span className="text-6xl font-extrabold">{percentage}%</span>
-
-              <span className="pb-2 text-xl font-bold">
-                {score} of {questions.length} correct
-              </span>
-            </div>
-
-            <h2
-              className={`mt-5 text-2xl font-bold ${
-                passed ? "text-emerald-400" : "text-red-400"
-              }`}
-            >
-              {passed ? "Passed" : "Additional review required"}
-            </h2>
-
-            <p className="mt-2 text-zinc-300">
-              {passed
-                ? "You achieved the required passing score. Your certificate is now available below."
-                : "Review the explanations below and retake the quiz."}
-            </p>
-          </section>
-        )}
-
-        <div className="mt-10 space-y-8">
-          {questions.map((question, questionIndex) => {
-            const selectedAnswer = answers[questionIndex];
-            const isCorrect = selectedAnswer === question.correctAnswer;
-
-            return (
-              <section
-                key={question.question}
-                className="rounded-2xl border border-zinc-700 bg-zinc-900 p-6"
-              >
-                <div className="flex gap-4">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-600 font-extrabold">
-                    {questionIndex + 1}
+            {!submitted && (
+              <div className="rounded-2xl border border-zinc-700 bg-zinc-900 p-5">
+                <div className="flex items-center justify-between gap-4">
+                  <span className="font-semibold text-zinc-300">
+                    Progress
                   </span>
 
-                  <div>
-                    <h2 className="text-xl font-bold leading-8">
-                      {question.question}
-                    </h2>
-
-                    {question.details && (
-                      <ul className="mt-3 space-y-1 text-zinc-400">
-                        {question.details.map((detail) => (
-                          <li key={detail}>• {detail}</li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
+                  <span className="font-bold text-red-400">
+                    {answeredCount} of {questions.length}{" "}
+                    answered
+                  </span>
                 </div>
 
-                <div className="mt-6 space-y-3">
-                  {question.options.map((option, optionIndex) => {
-                    const selected = selectedAnswer === optionIndex;
-                    const correct =
-                      submitted && optionIndex === question.correctAnswer;
-                    const incorrect = submitted && selected && !correct;
-
-                    return (
-                      <button
-                        key={option}
-                        type="button"
-                        disabled={submitted}
-                        onClick={() =>
-                          selectAnswer(questionIndex, optionIndex)
-                        }
-                        className={`flex w-full items-start gap-4 rounded-xl border p-4 text-left transition ${
-                          correct
-                            ? "border-emerald-500 bg-emerald-500/10"
-                            : incorrect
-                              ? "border-red-500 bg-red-500/10"
-                              : selected
-                                ? "border-red-500 bg-red-500/10"
-                                : "border-zinc-700 bg-black hover:border-zinc-500"
-                        }`}
-                      >
-                        <span
-                          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg font-bold ${
-                            selected
-                              ? "bg-red-600 text-white"
-                              : "bg-zinc-800 text-zinc-300"
-                          }`}
-                        >
-                          {String.fromCharCode(65 + optionIndex)}
-                        </span>
-
-                        <span className="pt-1 text-zinc-200">{option}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {submitted && (
+                <div className="mt-3 h-3 overflow-hidden rounded-full bg-zinc-800">
                   <div
-                    className={`mt-5 rounded-xl border p-4 ${
-                      isCorrect
-                        ? "border-emerald-500/60 bg-emerald-500/10"
-                        : "border-amber-500/60 bg-amber-500/10"
-                    }`}
-                  >
-                    <p className="font-bold">
-                      {isCorrect ? "Correct" : "Review this question"}
-                    </p>
+                    className="h-full bg-red-600 transition-all"
+                    style={{
+                      width: `${
+                        (answeredCount / questions.length) *
+                        100
+                      }%`,
+                    }}
+                  />
+                </div>
+              </div>
+            )}
 
-                    <p className="mt-2 text-sm leading-6 text-zinc-300">
-                      {question.explanation}
-                    </p>
-                  </div>
+            {submitted && (
+              <section
+                className={`rounded-2xl border p-6 ${
+                  passed
+                    ? "border-emerald-500 bg-emerald-500/10"
+                    : "border-red-500 bg-red-500/10"
+                }`}
+              >
+                <p className="text-sm font-bold uppercase tracking-wide text-zinc-300">
+                  Quiz Result
+                </p>
+
+                <div className="mt-3 flex flex-wrap items-end gap-4">
+                  <span className="text-6xl font-extrabold">
+                    {percentage}%
+                  </span>
+
+                  <span className="pb-2 text-xl font-bold">
+                    {score} of {questions.length} correct
+                  </span>
+                </div>
+
+                <h2
+                  className={`mt-5 text-2xl font-bold ${
+                    passed
+                      ? "text-emerald-400"
+                      : "text-red-400"
+                  }`}
+                >
+                  {passed
+                    ? "Course Passed"
+                    : "Additional Review Required"}
+                </h2>
+
+                <p className="mt-2 text-zinc-300">
+                  {passed
+                    ? "You achieved the passing score. Your course completion has been saved."
+                    : "Your attempt has been saved. Review the explanations and retake the quiz."}
+                </p>
+
+                {bestScore !== null && (
+                  <p className="mt-3 font-semibold text-emerald-300">
+                    Saved best score: {bestScore}%
+                  </p>
                 )}
               </section>
-            );
-          })}
-        </div>
+            )}
 
-        <div className="mt-10 flex flex-wrap justify-center gap-4">
-          {!submitted ? (
-            <button
-              type="button"
-              onClick={submitQuiz}
-              className="rounded-xl bg-red-600 px-8 py-4 font-bold transition hover:bg-red-500"
-            >
-              Submit Quiz
-            </button>
-          ) : (
-            <>
-              <button
-                type="button"
-                onClick={resetQuiz}
-                className="rounded-xl border border-red-500 px-8 py-4 font-bold text-red-400 transition hover:bg-red-500 hover:text-white"
-              >
-                Retake Quiz
-              </button>
+            {recordSaved && (
+              <div className="mt-6 rounded-xl border border-green-800 bg-green-950/20 p-5">
+                <p className="font-bold text-green-400">
+                  Student Record Updated
+                </p>
 
-              {passed && (
-                <Link
-                  href={`/courses/glucagon-hypoglycemia/certificate?score=${percentage}`}
-                  className="rounded-xl bg-emerald-600 px-8 py-4 font-bold text-white transition hover:bg-emerald-500"
-                >
-                  View Certificate
-                </Link>
+                <p className="mt-2 leading-6 text-zinc-300">
+                  This quiz attempt and your current course
+                  progress were successfully saved.
+                </p>
+              </div>
+            )}
+
+            {saveError && (
+              <div className="mt-6 rounded-xl border border-red-700 bg-red-950/20 p-5">
+                <p className="font-bold text-red-400">
+                  Record-Saving Error
+                </p>
+
+                <p className="mt-2 leading-6 text-zinc-300">
+                  {saveError}
+                </p>
+              </div>
+            )}
+
+            <div className="mt-10 space-y-8">
+              {questions.map(
+                (question, questionIndex) => {
+                  const selectedAnswer =
+                    answers[questionIndex];
+
+                  const isCorrect =
+                    selectedAnswer ===
+                    question.correctAnswer;
+
+                  return (
+                    <section
+                      key={question.question}
+                      className="rounded-2xl border border-zinc-700 bg-zinc-900 p-6"
+                    >
+                      <div className="flex gap-4">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-600 font-extrabold">
+                          {questionIndex + 1}
+                        </span>
+
+                        <div>
+                          <h2 className="text-xl font-bold leading-8">
+                            {question.question}
+                          </h2>
+
+                          {question.details && (
+                            <ul className="mt-3 space-y-1 text-zinc-400">
+                              {question.details.map(
+                                (detail) => (
+                                  <li key={detail}>
+                                    • {detail}
+                                  </li>
+                                ),
+                              )}
+                            </ul>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="mt-6 space-y-3">
+                        {question.options.map(
+                          (option, optionIndex) => {
+                            const selected =
+                              selectedAnswer === optionIndex;
+
+                            const correct =
+                              submitted &&
+                              optionIndex ===
+                                question.correctAnswer;
+
+                            const incorrect =
+                              submitted &&
+                              selected &&
+                              !correct;
+
+                            return (
+                              <button
+                                key={option}
+                                type="button"
+                                disabled={submitted || saving}
+                                onClick={() =>
+                                  selectAnswer(
+                                    questionIndex,
+                                    optionIndex,
+                                  )
+                                }
+                                className={`flex w-full items-start gap-4 rounded-xl border p-4 text-left transition ${
+                                  correct
+                                    ? "border-emerald-500 bg-emerald-500/10"
+                                    : incorrect
+                                      ? "border-red-500 bg-red-500/10"
+                                      : selected
+                                        ? "border-red-500 bg-red-500/10"
+                                        : "border-zinc-700 bg-black hover:border-zinc-500"
+                                }`}
+                              >
+                                <span
+                                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg font-bold ${
+                                    selected
+                                      ? "bg-red-600 text-white"
+                                      : "bg-zinc-800 text-zinc-300"
+                                  }`}
+                                >
+                                  {String.fromCharCode(
+                                    65 + optionIndex,
+                                  )}
+                                </span>
+
+                                <span className="pt-1 text-zinc-200">
+                                  {option}
+                                </span>
+                              </button>
+                            );
+                          },
+                        )}
+                      </div>
+
+                      {submitted && (
+                        <div
+                          className={`mt-5 rounded-xl border p-4 ${
+                            isCorrect
+                              ? "border-emerald-500/60 bg-emerald-500/10"
+                              : "border-amber-500/60 bg-amber-500/10"
+                          }`}
+                        >
+                          <p className="font-bold">
+                            {isCorrect
+                              ? "Correct"
+                              : "Review this question"}
+                          </p>
+
+                          <p className="mt-2 text-sm leading-6 text-zinc-300">
+                            {question.explanation}
+                          </p>
+                        </div>
+                      )}
+                    </section>
+                  );
+                },
               )}
+            </div>
 
-              <Link
-                href="/courses"
-                className="rounded-xl border border-zinc-600 px-8 py-4 font-bold text-zinc-300 transition hover:border-zinc-400 hover:text-white"
-              >
-                Return to Courses
-              </Link>
-            </>
-          )}
+            <div className="mt-10 flex flex-wrap justify-center gap-4">
+              {!submitted ? (
+                <button
+                  type="button"
+                  onClick={submitQuiz}
+                  disabled={saving}
+                  className={`rounded-xl px-8 py-4 font-bold transition ${
+                    saving
+                      ? "cursor-not-allowed bg-zinc-700 text-zinc-400"
+                      : "bg-red-600 text-white hover:bg-red-500"
+                  }`}
+                >
+                  {saving
+                    ? "Saving Quiz..."
+                    : "Submit Quiz"}
+                </button>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={resetQuiz}
+                    className="rounded-xl border border-red-500 px-8 py-4 font-bold text-red-400 transition hover:bg-red-500 hover:text-white"
+                  >
+                    Retake Quiz
+                  </button>
+
+                  <Link
+                    href="/courses"
+                    className="rounded-xl border border-zinc-600 px-8 py-4 font-bold text-zinc-300 transition hover:border-zinc-400 hover:text-white"
+                  >
+                    Return to Courses
+                  </Link>
+                </>
+              )}
+            </div>
+
+            {submitted && passed && recordSaved && (
+              <div className="mt-10">
+                <CourseAccessGate
+                  accessLevel="profile"
+                  title="Complete Your Profile to Access the Certificate"
+                  description="Your full name, provider level, and organization are required before your course certificate can be issued."
+                >
+                  <section className="rounded-2xl border border-emerald-700 bg-emerald-950/20 p-8 text-center">
+                    <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-400">
+                      Course Completion Saved
+                    </p>
+
+                    <h2 className="mt-3 text-3xl font-extrabold">
+                      Your Certificate Is Available
+                    </h2>
+
+                    <p className="mx-auto mt-4 max-w-2xl leading-7 text-zinc-300">
+                      Your passing result is now stored in
+                      your GrumpyMedic Education account.
+                    </p>
+
+                    <Link
+                      href="/courses/glucagon-hypoglycemia/certificate"
+                      className="mt-6 inline-block rounded-xl bg-emerald-600 px-8 py-4 font-bold text-white transition hover:bg-emerald-500"
+                    >
+                      View Certificate
+                    </Link>
+                  </section>
+                </CourseAccessGate>
+              </div>
+            )}
+
+            <p className="mt-10 text-center text-sm leading-6 text-zinc-500">
+              Educational content only. Follow current
+              state and local protocols, medical-director
+              authorization, service requirements, and
+              manufacturer instructions.
+            </p>
+          </CourseAccessGate>
         </div>
-
-        <p className="mt-10 text-center text-sm text-zinc-500">
-          Educational content only. Follow current state and local protocols,
-          medical-director authorization, service requirements, and
-          manufacturer instructions.
-        </p>
       </section>
     </main>
   );

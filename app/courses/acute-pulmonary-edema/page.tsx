@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import Navbar from "../../components/Navbar";
+import CourseAccessGate from "../../components/CourseAccessGate";
 
 type Option = {
   text: string;
@@ -220,7 +221,8 @@ const scenarioSteps: ScenarioStep[] = [
 
 export default function AcutePulmonaryEdemaPage() {
   const [currentStep, setCurrentStep] = useState(0);
-  const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [selectedOption, setSelectedOption] =
+    useState<number | null>(null);
   const [answered, setAnswered] = useState(false);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [complete, setComplete] = useState(false);
@@ -228,7 +230,9 @@ export default function AcutePulmonaryEdemaPage() {
   const step = scenarioSteps[currentStep];
 
   function chooseOption(optionIndex: number) {
-    if (answered) return;
+    if (answered) {
+      return;
+    }
 
     setSelectedOption(optionIndex);
     setAnswered(true);
@@ -239,18 +243,27 @@ export default function AcutePulmonaryEdemaPage() {
   }
 
   function continueScenario() {
-    if (!answered) return;
+    if (!answered) {
+      return;
+    }
 
     if (currentStep === scenarioSteps.length - 1) {
       setComplete(true);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
       return;
     }
 
     setCurrentStep((previous) => previous + 1);
     setSelectedOption(null);
     setAnswered(false);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   }
 
   function restartScenario() {
@@ -259,12 +272,16 @@ export default function AcutePulmonaryEdemaPage() {
     setAnswered(false);
     setCorrectAnswers(0);
     setComplete(false);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   }
 
   if (complete) {
     const percentage = Math.round(
-      (correctAnswers / scenarioSteps.length) * 100
+      (correctAnswers / scenarioSteps.length) * 100,
     );
 
     const passed = percentage >= 80;
@@ -274,113 +291,156 @@ export default function AcutePulmonaryEdemaPage() {
         <Navbar />
 
         <section className="mx-auto max-w-5xl px-6 py-12">
-          <div
-            className={`rounded-3xl border-2 bg-zinc-900 p-8 text-center shadow-2xl md:p-12 ${
-              passed ? "border-emerald-500" : "border-amber-500"
-            }`}
+          <CourseAccessGate
+            accessLevel="login"
+            title="Sign In to View Course Results"
+            description="Log in to review your Acute Pulmonary Edema course results and access any available certificate."
           >
-            <p
-              className={`text-sm font-extrabold uppercase tracking-[0.25em] ${
-                passed ? "text-emerald-400" : "text-amber-400"
-              }`}
-            >
-              {passed ? "Course Passed" : "Additional Review Required"}
-            </p>
-
             <div
-              className={`mx-auto mt-5 inline-flex rounded-full border px-5 py-2 text-sm font-extrabold uppercase tracking-wide ${
+              className={`rounded-3xl border-2 bg-zinc-900 p-8 text-center shadow-2xl md:p-12 ${
                 passed
-                  ? "border-emerald-500 bg-emerald-500/10 text-emerald-300"
-                  : "border-amber-500 bg-amber-500/10 text-amber-300"
+                  ? "border-emerald-500"
+                  : "border-amber-500"
               }`}
             >
-              {passed ? "🏅 Certificate Unlocked" : "Retake Required"}
-            </div>
-
-            <h1 className="mt-6 text-4xl font-extrabold md:text-6xl">
-              Acute Pulmonary Edema
-            </h1>
-
-            <p className="mt-6 text-6xl font-extrabold text-red-500">
-              {percentage}%
-            </p>
-
-            <p className="mt-3 text-xl font-semibold text-zinc-300">
-              Correct decisions: {correctAnswers} / {scenarioSteps.length}
-            </p>
-
-            <div className="mx-auto mt-8 max-w-3xl rounded-2xl bg-black p-6 text-left">
-              <h2 className="text-2xl font-extrabold">
-                GrumpyMedic Debrief
-              </h2>
-
-              <p className="mt-4 leading-7 text-zinc-300">
-                You assessed respiratory distress, recognized acute pulmonary
-                edema, prioritized airway and breathing, considered early CPAP,
-                evaluated nitroglycerin according to protocol, reassessed the
-                patient, and continued appropriate transport.
+              <p
+                className={`text-sm font-extrabold uppercase tracking-[0.25em] ${
+                  passed
+                    ? "text-emerald-400"
+                    : "text-amber-400"
+                }`}
+              >
+                {passed
+                  ? "Course Passed"
+                  : "Additional Review Required"}
               </p>
-            </div>
 
-            <div className="mx-auto mt-8 max-w-3xl rounded-2xl border border-zinc-700 bg-black p-6">
-              <h2 className="text-left text-xl font-extrabold">
-                Course Progress
-              </h2>
-
-              <div className="mt-5 grid gap-4 text-left sm:grid-cols-3">
-                <ProgressItem
-                  title="Course Content"
-                  status="Complete"
-                  complete
-                />
-
-                <ProgressItem
-                  title="Scenario"
-                  status="Complete"
-                  complete
-                />
-
-                <ProgressItem
-                  title="Certificate"
-                  status={passed ? "Unlocked" : "Locked"}
-                  complete={passed}
-                />
+              <div
+                className={`mx-auto mt-5 inline-flex rounded-full border px-5 py-2 text-sm font-extrabold uppercase tracking-wide ${
+                  passed
+                    ? "border-emerald-500 bg-emerald-500/10 text-emerald-300"
+                    : "border-amber-500 bg-amber-500/10 text-amber-300"
+                }`}
+              >
+                {passed
+                  ? "🏅 Certificate Unlocked"
+                  : "Retake Required"}
               </div>
-            </div>
 
-            <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <button
-                type="button"
-                onClick={restartScenario}
-                className="rounded-xl border border-zinc-600 px-6 py-3 font-bold text-zinc-200 transition hover:border-zinc-400 hover:bg-zinc-800"
-              >
-                Retake Scenario
-              </button>
+              <h1 className="mt-6 text-4xl font-extrabold md:text-6xl">
+                Acute Pulmonary Edema
+              </h1>
 
-              <Link
-                href="/courses"
-                className="rounded-xl bg-red-600 px-6 py-3 font-bold text-white transition hover:bg-red-500"
-              >
-                Return to Courses
-              </Link>
+              <p className="mt-6 text-6xl font-extrabold text-red-500">
+                {percentage}%
+              </p>
+
+              <p className="mt-3 text-xl font-semibold text-zinc-300">
+                Correct decisions: {correctAnswers} /{" "}
+                {scenarioSteps.length}
+              </p>
+
+              <div className="mx-auto mt-8 max-w-3xl rounded-2xl bg-black p-6 text-left">
+                <h2 className="text-2xl font-extrabold">
+                  GrumpyMedic Debrief
+                </h2>
+
+                <p className="mt-4 leading-7 text-zinc-300">
+                  You assessed respiratory distress,
+                  recognized acute pulmonary edema,
+                  prioritized airway and breathing,
+                  considered early CPAP, evaluated
+                  nitroglycerin according to protocol,
+                  reassessed the patient, and continued
+                  appropriate transport.
+                </p>
+              </div>
+
+              <div className="mx-auto mt-8 max-w-3xl rounded-2xl border border-zinc-700 bg-black p-6">
+                <h2 className="text-left text-xl font-extrabold">
+                  Course Progress
+                </h2>
+
+                <div className="mt-5 grid gap-4 text-left sm:grid-cols-3">
+                  <ProgressItem
+                    title="Course Content"
+                    status="Complete"
+                    complete
+                  />
+
+                  <ProgressItem
+                    title="Scenario"
+                    status="Complete"
+                    complete
+                  />
+
+                  <ProgressItem
+                    title="Certificate"
+                    status={passed ? "Unlocked" : "Locked"}
+                    complete={passed}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-8 flex flex-wrap justify-center gap-4">
+                <button
+                  type="button"
+                  onClick={restartScenario}
+                  className="rounded-xl border border-zinc-600 px-6 py-3 font-bold text-zinc-200 transition hover:border-zinc-400 hover:bg-zinc-800"
+                >
+                  Retake Scenario
+                </button>
+
+                <Link
+                  href="/courses"
+                  className="rounded-xl bg-red-600 px-6 py-3 font-bold text-white transition hover:bg-red-500"
+                >
+                  Return to Courses
+                </Link>
+
+                <Link
+                  href="/courses/glucagon-hypoglycemia"
+                  className="rounded-xl border border-red-500 px-6 py-3 font-bold text-red-400 transition hover:bg-red-500 hover:text-white"
+                >
+                  Next Course →
+                </Link>
+              </div>
 
               {passed && (
-                <Link
-                  href={`/courses/acute-pulmonary-edema/certificate?score=${percentage}`}
-                  className="rounded-xl bg-emerald-600 px-6 py-3 font-bold text-white transition hover:bg-emerald-500"
-                >
-                  View / Download Certificate
-                </Link>
-              )}
+                <div className="mx-auto mt-8 max-w-3xl text-left">
+                  <CourseAccessGate
+                    accessLevel="profile"
+                    title="Complete Your Profile to Access the Certificate"
+                    description="Your full name, provider level, and department, service, school, or organization are required before your certificate can be issued."
+                  >
+                    <div className="rounded-2xl border border-emerald-700 bg-emerald-950/20 p-6 text-center">
+                      <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-emerald-400">
+                        Certificate Available
+                      </p>
 
-              <Link
-                href="/courses/glucagon-hypoglycemia"
-                className="rounded-xl border border-red-500 px-6 py-3 font-bold text-red-400 transition hover:bg-red-500 hover:text-white"
-              >
-                Next Course →
-              </Link>
+                      <h2 className="mt-3 text-2xl font-extrabold">
+                        Your Certificate Is Ready
+                      </h2>
+
+                      <p className="mt-3 leading-7 text-zinc-300">
+                        Your completed profile will be used
+                        for the name and education
+                        information associated with this
+                        course record.
+                      </p>
+
+                      <Link
+                        href={`/courses/acute-pulmonary-edema/certificate?score=${percentage}`}
+                        className="mt-6 inline-block rounded-xl bg-emerald-600 px-7 py-3 font-bold text-white transition hover:bg-emerald-500"
+                      >
+                        View / Download Certificate
+                      </Link>
+                    </div>
+                  </CourseAccessGate>
+                </div>
+              )}
             </div>
-          </div>
+          </CourseAccessGate>
         </section>
       </main>
     );
@@ -408,148 +468,241 @@ export default function AcutePulmonaryEdemaPage() {
           </h1>
 
           <p className="mt-4 max-w-3xl leading-7 text-zinc-400">
-            Complete five clinical decisions covering recognition, respiratory
-            support, CPAP, medication considerations, reassessment, and
+            Complete five clinical decisions covering
+            recognition, respiratory support, CPAP,
+            medication considerations, reassessment, and
             transport.
           </p>
-        </div>
 
-        <div className="mt-8 rounded-2xl border border-zinc-700 bg-zinc-900 p-5">
-          <div className="flex items-center justify-between gap-4">
-            <span className="font-semibold text-zinc-300">
-              Decision {currentStep + 1} of {scenarioSteps.length}
-            </span>
+          <div className="mt-6 grid gap-4 sm:grid-cols-3">
+            <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-zinc-500">
+                Format
+              </p>
 
-            <span className="font-bold text-red-400">
-              {Math.round(
-                ((currentStep + (answered ? 1 : 0)) /
-                  scenarioSteps.length) *
-                  100
-              )}
-              %
-            </span>
-          </div>
-
-          <div className="mt-3 h-3 overflow-hidden rounded-full bg-zinc-800">
-            <div
-              className="h-full bg-red-600 transition-all"
-              style={{
-                width: `${
-                  ((currentStep + (answered ? 1 : 0)) /
-                    scenarioSteps.length) *
-                  100
-                }%`,
-              }}
-            />
-          </div>
-        </div>
-
-        <article className="mt-8 rounded-3xl border border-zinc-700 bg-zinc-900 p-6 md:p-8">
-          <p className="text-sm font-bold uppercase tracking-wide text-red-400">
-            {step.title}
-          </p>
-
-          <h2 className="mt-3 text-2xl font-extrabold md:text-3xl">
-            Patient Update
-          </h2>
-
-          <p className="mt-4 leading-7 text-zinc-300">{step.situation}</p>
-
-          <div className="mt-6 rounded-2xl bg-black p-5">
-            <h3 className="font-extrabold text-zinc-100">
-              Assessment Findings
-            </h3>
-
-            <ul className="mt-3 space-y-2 text-zinc-300">
-              {step.findings.map((finding) => (
-                <li key={finding}>• {finding}</li>
-              ))}
-            </ul>
-          </div>
-
-          <h3 className="mt-8 text-xl font-extrabold">{step.question}</h3>
-
-          <div className="mt-5 space-y-3">
-            {step.options.map((option, optionIndex) => {
-              const selected = selectedOption === optionIndex;
-              const showCorrect = answered && option.correct;
-              const showIncorrect = answered && selected && !option.correct;
-
-              return (
-                <button
-                  key={option.text}
-                  type="button"
-                  disabled={answered}
-                  onClick={() => chooseOption(optionIndex)}
-                  className={`flex w-full items-start gap-4 rounded-xl border p-4 text-left transition ${
-                    showCorrect
-                      ? "border-emerald-500 bg-emerald-500/10"
-                      : showIncorrect
-                        ? "border-red-500 bg-red-500/10"
-                        : selected
-                          ? "border-red-500 bg-red-500/10"
-                          : "border-zinc-700 bg-black hover:border-red-500"
-                  }`}
-                >
-                  <span
-                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg font-bold ${
-                      selected
-                        ? "bg-red-600 text-white"
-                        : "bg-zinc-800 text-zinc-300"
-                    }`}
-                  >
-                    {String.fromCharCode(65 + optionIndex)}
-                  </span>
-
-                  <span className="pt-1 text-zinc-200">{option.text}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {answered && selectedOption !== null && (
-            <div
-              className={`mt-6 rounded-2xl border p-5 ${
-                step.options[selectedOption].correct
-                  ? "border-emerald-500 bg-emerald-500/10"
-                  : "border-amber-500 bg-amber-500/10"
-              }`}
-            >
-              <h3 className="font-extrabold">
-                {step.options[selectedOption].correct
-                  ? "Correct Decision"
-                  : "Review This Decision"}
-              </h3>
-
-              <p className="mt-2 leading-7 text-zinc-300">
-                {step.options[selectedOption].feedback}
+              <p className="mt-2 font-bold text-white">
+                Interactive Scenario
               </p>
             </div>
-          )}
 
-          <div className="mt-8 flex justify-end">
-            <button
-              type="button"
-              disabled={!answered}
-              onClick={continueScenario}
-              className={`rounded-xl px-7 py-3 font-bold transition ${
-                answered
-                  ? "bg-red-600 text-white hover:bg-red-500"
-                  : "cursor-not-allowed bg-zinc-800 text-zinc-600"
-              }`}
-            >
-              {currentStep === scenarioSteps.length - 1
-                ? "Complete Course"
-                : "Continue →"}
-            </button>
+            <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-zinc-500">
+                Decisions
+              </p>
+
+              <p className="mt-2 font-bold text-white">
+                Five Clinical Steps
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-zinc-500">
+                Passing Score
+              </p>
+
+              <p className="mt-2 font-bold text-white">
+                80%
+              </p>
+            </div>
           </div>
-        </article>
+        </div>
 
-        <p className="mt-8 text-center text-sm leading-6 text-zinc-500">
-          Educational content only. Follow current state and local protocols,
-          medical-director guidance, service policy, and manufacturer
-          instructions.
-        </p>
+        <div className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-950 p-6">
+          <p className="text-sm font-bold uppercase tracking-[0.2em] text-red-500">
+            Course Preview
+          </p>
+
+          <h2 className="mt-3 text-2xl font-extrabold">
+            What You Will Practice
+          </h2>
+
+          <p className="mt-4 leading-7 text-zinc-300">
+            This scenario focuses on recognizing severe
+            acute pulmonary edema, supporting oxygenation
+            and ventilation, considering CPAP and
+            protocol-directed medication, monitoring the
+            patient&apos;s response, and continuing
+            appropriate transport.
+          </p>
+
+          <p className="mt-4 text-sm leading-6 text-zinc-500">
+            The course overview remains public. A free
+            GrumpyMedic Education account is required to
+            begin the interactive scenario.
+          </p>
+        </div>
+
+        <div className="mt-8">
+          <CourseAccessGate
+            accessLevel="login"
+            title="Sign In to Begin the Course"
+            description="Create a free GrumpyMedic Education account or log in to complete the interactive Acute Pulmonary Edema scenario, access your results, and qualify for a certificate."
+          >
+            <div className="rounded-2xl border border-zinc-700 bg-zinc-900 p-5">
+              <div className="flex items-center justify-between gap-4">
+                <span className="font-semibold text-zinc-300">
+                  Decision {currentStep + 1} of{" "}
+                  {scenarioSteps.length}
+                </span>
+
+                <span className="font-bold text-red-400">
+                  {Math.round(
+                    ((currentStep + (answered ? 1 : 0)) /
+                      scenarioSteps.length) *
+                      100,
+                  )}
+                  %
+                </span>
+              </div>
+
+              <div className="mt-3 h-3 overflow-hidden rounded-full bg-zinc-800">
+                <div
+                  className="h-full bg-red-600 transition-all"
+                  style={{
+                    width: `${
+                      ((currentStep +
+                        (answered ? 1 : 0)) /
+                        scenarioSteps.length) *
+                      100
+                    }%`,
+                  }}
+                />
+              </div>
+            </div>
+
+            <article className="mt-8 rounded-3xl border border-zinc-700 bg-zinc-900 p-6 md:p-8">
+              <p className="text-sm font-bold uppercase tracking-wide text-red-400">
+                {step.title}
+              </p>
+
+              <h2 className="mt-3 text-2xl font-extrabold md:text-3xl">
+                Patient Update
+              </h2>
+
+              <p className="mt-4 leading-7 text-zinc-300">
+                {step.situation}
+              </p>
+
+              <div className="mt-6 rounded-2xl bg-black p-5">
+                <h3 className="font-extrabold text-zinc-100">
+                  Assessment Findings
+                </h3>
+
+                <ul className="mt-3 space-y-2 text-zinc-300">
+                  {step.findings.map((finding) => (
+                    <li key={finding}>• {finding}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <h3 className="mt-8 text-xl font-extrabold">
+                {step.question}
+              </h3>
+
+              <div className="mt-5 space-y-3">
+                {step.options.map(
+                  (option, optionIndex) => {
+                    const selected =
+                      selectedOption === optionIndex;
+
+                    const showCorrect =
+                      answered && option.correct;
+
+                    const showIncorrect =
+                      answered &&
+                      selected &&
+                      !option.correct;
+
+                    return (
+                      <button
+                        key={option.text}
+                        type="button"
+                        disabled={answered}
+                        onClick={() =>
+                          chooseOption(optionIndex)
+                        }
+                        className={`flex w-full items-start gap-4 rounded-xl border p-4 text-left transition ${
+                          showCorrect
+                            ? "border-emerald-500 bg-emerald-500/10"
+                            : showIncorrect
+                              ? "border-red-500 bg-red-500/10"
+                              : selected
+                                ? "border-red-500 bg-red-500/10"
+                                : "border-zinc-700 bg-black hover:border-red-500"
+                        }`}
+                      >
+                        <span
+                          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg font-bold ${
+                            selected
+                              ? "bg-red-600 text-white"
+                              : "bg-zinc-800 text-zinc-300"
+                          }`}
+                        >
+                          {String.fromCharCode(
+                            65 + optionIndex,
+                          )}
+                        </span>
+
+                        <span className="pt-1 text-zinc-200">
+                          {option.text}
+                        </span>
+                      </button>
+                    );
+                  },
+                )}
+              </div>
+
+              {answered &&
+                selectedOption !== null && (
+                  <div
+                    className={`mt-6 rounded-2xl border p-5 ${
+                      step.options[selectedOption].correct
+                        ? "border-emerald-500 bg-emerald-500/10"
+                        : "border-amber-500 bg-amber-500/10"
+                    }`}
+                  >
+                    <h3 className="font-extrabold">
+                      {step.options[selectedOption].correct
+                        ? "Correct Decision"
+                        : "Review This Decision"}
+                    </h3>
+
+                    <p className="mt-2 leading-7 text-zinc-300">
+                      {
+                        step.options[selectedOption]
+                          .feedback
+                      }
+                    </p>
+                  </div>
+                )}
+
+              <div className="mt-8 flex justify-end">
+                <button
+                  type="button"
+                  disabled={!answered}
+                  onClick={continueScenario}
+                  className={`rounded-xl px-7 py-3 font-bold transition ${
+                    answered
+                      ? "bg-red-600 text-white hover:bg-red-500"
+                      : "cursor-not-allowed bg-zinc-800 text-zinc-600"
+                  }`}
+                >
+                  {currentStep ===
+                  scenarioSteps.length - 1
+                    ? "Complete Course"
+                    : "Continue →"}
+                </button>
+              </div>
+            </article>
+
+            <p className="mt-8 text-center text-sm leading-6 text-zinc-500">
+              Educational content only. Follow current
+              state and local protocols, medical-director
+              guidance, service policy, and manufacturer
+              instructions.
+            </p>
+          </CourseAccessGate>
+        </div>
       </section>
     </main>
   );
@@ -570,7 +723,9 @@ function ProgressItem({
 
       <p
         className={`mt-2 text-sm font-semibold ${
-          complete ? "text-emerald-400" : "text-zinc-500"
+          complete
+            ? "text-emerald-400"
+            : "text-zinc-500"
         }`}
       >
         {complete ? "✓ " : "○ "}
