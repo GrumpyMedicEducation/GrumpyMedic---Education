@@ -89,10 +89,12 @@ export default function CoursesPage() {
           />
 
           <CourseCard
-            title="Hypothermia"
-            description="Cold exposure, rewarming, cardiac considerations, frostbite, and transport priorities."
-            certification="EMT and Paramedic"
-            duration="Coming soon"
+            title="Environmental Hypothermia"
+            description="Adult and pediatric hypothermia recognition, prevention of further heat loss, prolonged pulse assessment, warmed oxygen and IV fluids, cardiac-arrest considerations, cautions, and documentation."
+            certification="EMT, AEMT & Paramedic"
+            duration="45–60 minutes"
+            href="/courses/hypothermia"
+            available
           />
         </CourseCategory>
 
