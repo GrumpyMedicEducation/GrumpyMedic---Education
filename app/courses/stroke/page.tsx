@@ -140,12 +140,12 @@ export default function StrokeCoursePage() {
           >
             <div className="grid gap-6 lg:grid-cols-2">
               <ProtocolImage
-                src="/mass-stroke-protocol-2-18-page-1.jpeg"
+                src="/images/mass-stroke-protocol-2-18-page-1.jpeg"
                 alt="Massachusetts Stroke Protocol 2.18 standing orders"
               />
 
               <ProtocolImage
-                src="/mass-stroke-protocol-2-18-page-2.jpeg"
+                src="/images/mass-stroke-protocol-2-18-page-2.jpeg"
                 alt="Massachusetts FAST-ED stroke checklist"
               />
             </div>
