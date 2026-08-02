@@ -57,10 +57,12 @@ export default function CoursesPage() {
           />
 
           <CourseCard
-            title="Sepsis Recognition"
-            description="Recognition of sepsis, shock assessment, treatment priorities, and hospital notification."
-            certification="EMT and Paramedic"
-            duration="Coming soon"
+            title="Adult & Pediatric Sepsis"
+            description="Recognition of adult and pediatric septic shock, Massachusetts Protocols 2.17A & 2.17P, Sepsis Alert activation, fluid resuscitation, reassessment, Medical Control options, documentation, and clinical decision-making."
+            certification="EMT, AEMT & Paramedic"
+            duration="45–60 minutes"
+            href="/courses/sepsis"
+            available
           />
 
           <CourseCard
