@@ -64,10 +64,12 @@ export default function CoursesPage() {
           />
 
           <CourseCard
-            title="Stroke Assessment"
-            description="Stroke recognition, FAST-ED assessment, last-known-well time, transport, and stroke-center notification."
+            title="Stroke Recognition & Prehospital Management"
+            description="Stroke recognition, FAST-ED assessment, Last Known Well, stroke mimics, Stroke Alert communication, oxygen guidance, destination decisions, and documentation."
             certification="EMT and Paramedic"
-            duration="Coming soon"
+            duration="45–60 minutes"
+            href="/courses/stroke"
+            available
           />
         </CourseCategory>
 
