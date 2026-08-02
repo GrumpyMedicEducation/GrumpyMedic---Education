@@ -367,9 +367,9 @@ export default function SepsisQuizPage() {
                 <div className="mt-3 h-3 overflow-hidden rounded-full bg-zinc-800">
                   <div
                     className="h-full bg-red-600 transition-all"
-                    style={
+                    style={{
                       width: `${(answeredCount / questions.length) * 100}%`,
-                    }
+                    }}
                   />
                 </div>
               </div>
