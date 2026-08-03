@@ -156,10 +156,12 @@ export default function CoursesPage() {
           />
 
           <CourseCard
-            title="Respiratory Emergencies"
-            description="Assessment and management of asthma, COPD, respiratory failure, and respiratory arrest."
-            certification="EMT and Paramedic"
-            duration="Coming soon"
+            title="Bronchospasm / Respiratory Distress"
+            description="Adult and pediatric respiratory assessment, bronchodilator therapy, epinephrine, CPAP/BiPAP, corticosteroids, magnesium, airway escalation, transport, reassessment, and documentation."
+            certification="EMT, AEMT & Paramedic"
+            duration="45–60 minutes"
+            href="/courses/bronchospasm-respiratory-distress"
+            available
           />
 
           <CourseCard
