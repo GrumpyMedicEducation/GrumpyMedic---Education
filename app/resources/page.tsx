@@ -17,7 +17,6 @@ export default function ResourcesPage() {
         </p>
 
         <div className="mt-10 grid gap-6 md:grid-cols-2">
-
           <ResourceCard
             href="/resources/protocols"
             title="State EMS Protocols"
@@ -55,21 +54,33 @@ export default function ResourcesPage() {
           />
 
           <ResourceCard
-            href="/resources/medications"
-            title="Medication Reference"
-            description="EMS medication information and protocol notes."
-          />
-
-          <ResourceCard
             href="/resources/burn-calculator"
             title="Burn Calculator"
             description="Adult Rule of Nines burn calculator."
           />
 
           <ResourceCard
+            href="/resources/fast-ed-calculator"
+            title="FAST-ED Calculator"
+            description="Interactive FAST-ED stroke calculator with automatic scoring, interpretation, documentation summary, copy, and print features."
+          />
+
+          <ResourceCard
+            href="/resources/stroke"
+            title="Stroke Resources"
+            description="FAST-ED scoring, Last Known Well support, Stroke Alert documentation, LVO reminders, destination guidance, and stroke education."
+          />
+
+          <ResourceCard
             href="/resources/stroke-scale"
-            title="FAST-ED Stroke Scale"
-            description="Interactive FAST-ED stroke assessment and scoring tool."
+            title="FAST-ED Stroke Scale Reference"
+            description="Review FAST-ED scoring criteria and assessment guidance for facial palsy, arm weakness, speech, eye deviation, and neglect."
+          />
+
+          <ResourceCard
+            href="/resources/medications"
+            title="Medication Reference"
+            description="EMS medication information and protocol notes."
           />
 
           <ResourceCard
@@ -77,7 +88,6 @@ export default function ResourcesPage() {
             title="Mental Health Awareness"
             description="Mental health emergencies, crisis intervention, de-escalation techniques, suicide awareness, and responder wellness."
           />
-
         </div>
       </section>
     </main>
