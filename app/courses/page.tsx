@@ -255,8 +255,8 @@ export default function CoursesPage() {
           </h2>
 
           <p className="mx-auto mt-4 max-w-3xl leading-7 text-zinc-300">
-            Apply course concepts through interactive EMS scenarios, quizzes,
-            clinical references, and the call simulator.
+            Apply course concepts through interactive EMS scenarios, clinical
+            references, and the call simulator.
           </p>
 
           <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
@@ -265,13 +265,6 @@ export default function CoursesPage() {
               className="rounded-xl bg-red-600 px-7 py-4 font-bold transition hover:bg-red-500"
             >
               View Scenarios
-            </Link>
-
-            <Link
-              href="/quizzes"
-              className="rounded-xl border border-red-600 px-7 py-4 font-bold text-red-400 transition hover:bg-red-600 hover:text-white"
-            >
-              Browse Quizzes
             </Link>
 
             <Link
@@ -306,18 +299,12 @@ function CourseCategory({
   return (
     <section className="mb-14">
       <div className="mb-7">
-        <h2 className="text-3xl font-extrabold text-red-500">
-          {title}
-        </h2>
+        <h2 className="text-3xl font-extrabold text-red-500">{title}</h2>
 
-        <p className="mt-2 leading-7 text-zinc-300">
-          {description}
-        </p>
+        <p className="mt-2 leading-7 text-zinc-300">{description}</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {children}
-      </div>
+      <div className="grid gap-6 md:grid-cols-2">{children}</div>
     </section>
   );
 }
@@ -356,9 +343,7 @@ function CourseCard({
         {title}
       </h3>
 
-      <p className="mt-4 flex-1 leading-7 text-zinc-300">
-        {description}
-      </p>
+      <p className="mt-4 flex-1 leading-7 text-zinc-300">{description}</p>
 
       <div className="mt-6">
         {available ? (
@@ -379,10 +364,7 @@ function CourseCard({
   }
 
   return (
-    <Link
-      href={href}
-      className="group block h-full"
-    >
+    <Link href={href} className="group block h-full">
       {cardContent}
     </Link>
   );
