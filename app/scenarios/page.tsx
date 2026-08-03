@@ -21,11 +21,17 @@ export default function ScenariosPage() {
         </p>
 
         <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-
           <ScenarioCard
             title="Acute Pulmonary Edema"
             description="Respiratory distress, CPAP, nitroglycerin, reassessment, and transport."
             href="/scenarios/acute-pulmonary-edema"
+            available
+          />
+
+          <ScenarioCard
+            title="Stroke: FAST-ED"
+            description="Assess facial palsy, arm weakness, speech changes, eye deviation, and neglect while identifying a possible large-vessel occlusion."
+            href="/scenarios/stroke-scenario"
             available
           />
 
@@ -35,15 +41,9 @@ export default function ScenariosPage() {
           />
 
           <ScenarioCard
-            title="Stroke"
-            description="FAST-ED assessment, LVO recognition, destination decisions."
-          />
-
-          <ScenarioCard
             title="Trauma"
             description="Primary survey, hemorrhage control, shock recognition, and rapid transport."
           />
-
         </div>
       </section>
     </main>
@@ -65,13 +65,19 @@ function ScenarioCard({
     return (
       <Link
         href={href}
-        className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6 transition hover:border-red-500 hover:bg-zinc-800"
+        className="group rounded-2xl border border-zinc-800 bg-zinc-900 p-6 transition hover:-translate-y-1 hover:border-red-500 hover:bg-zinc-800"
       >
-        <h2 className="text-2xl font-bold text-white">{title}</h2>
+        <div className="flex items-start justify-between gap-4">
+          <h2 className="text-2xl font-bold text-white">{title}</h2>
+
+          <span className="rounded-full bg-green-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-green-400">
+            Available
+          </span>
+        </div>
 
         <p className="mt-3 text-zinc-400">{description}</p>
 
-        <div className="mt-6 inline-flex rounded-lg bg-red-600 px-4 py-2 font-bold">
+        <div className="mt-6 inline-flex rounded-lg bg-red-600 px-4 py-2 font-bold text-white transition group-hover:bg-red-500">
           Start Scenario →
         </div>
       </Link>
@@ -80,7 +86,13 @@ function ScenarioCard({
 
   return (
     <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6 opacity-80">
-      <h2 className="text-2xl font-bold">{title}</h2>
+      <div className="flex items-start justify-between gap-4">
+        <h2 className="text-2xl font-bold">{title}</h2>
+
+        <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs font-bold uppercase tracking-wide text-zinc-500">
+          Coming Soon
+        </span>
+      </div>
 
       <p className="mt-3 text-zinc-400">{description}</p>
 
