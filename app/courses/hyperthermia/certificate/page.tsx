@@ -123,12 +123,15 @@ function CertificateContent() {
           </div>
         </div>
 
-        <article className="relative overflow-hidden border-[10px] border-red-700 bg-white px-8 py-12 text-center text-black shadow-2xl print:min-h-[7.5in] print:border-[8px] print:shadow-none sm:px-16 sm:py-16">
+        <article className="certificate relative overflow-hidden border-[10px] border-red-700 bg-white px-8 py-12 text-center text-black shadow-2xl print:min-h-[7.5in] print:border-[8px] print:shadow-none sm:px-16 sm:py-16">
           <div className="pointer-events-none absolute inset-4 border-2 border-zinc-800" />
 
           <div className="pointer-events-none absolute left-8 top-8 h-16 w-16 border-l-4 border-t-4 border-red-700" />
+
           <div className="pointer-events-none absolute right-8 top-8 h-16 w-16 border-r-4 border-t-4 border-red-700" />
+
           <div className="pointer-events-none absolute bottom-8 left-8 h-16 w-16 border-b-4 border-l-4 border-red-700" />
+
           <div className="pointer-events-none absolute bottom-8 right-8 h-16 w-16 border-b-4 border-r-4 border-red-700" />
 
           <div className="relative z-10 mx-auto max-w-4xl">
@@ -184,16 +187,14 @@ function CertificateContent() {
               />
             </div>
 
-            <div className="mt-14 grid gap-10 sm:grid-cols-2">
-              <SignatureLine
-                label="Course Participant"
-                value={name}
-              />
+            <div className="mx-auto mt-14 max-w-md">
+              <div className="border-b-2 border-zinc-700 pb-2 font-serif text-xl font-bold text-zinc-900">
+                William Howard, NRP
+              </div>
 
-              <SignatureLine
-                label="Training Provider"
-                value="GrumpyMedic Education"
-              />
+              <p className="mt-2 text-xs font-bold uppercase tracking-wider text-zinc-500">
+                Course Instructor
+              </p>
             </div>
 
             <p className="mx-auto mt-12 max-w-3xl text-xs leading-5 text-zinc-500">
@@ -226,6 +227,10 @@ function CertificateContent() {
           body {
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
+          }
+
+          .certificate {
+            break-inside: avoid;
           }
         }
       `}</style>
@@ -265,28 +270,6 @@ function CertificateDetail({
       <p className="mt-2 font-bold text-zinc-900">
         {value}
       </p>
-    </div>
-  );
-}
-
-function SignatureLine({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div>
-      <p className="min-h-8 font-serif text-xl font-bold text-zinc-900">
-        {value}
-      </p>
-
-      <div className="mt-2 border-t-2 border-zinc-700 pt-2">
-        <p className="text-xs font-bold uppercase tracking-wider text-zinc-500">
-          {label}
-        </p>
-      </div>
     </div>
   );
 }

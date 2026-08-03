@@ -131,6 +131,7 @@ export default function AcutePulmonaryEdemaCertificatePage() {
             <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full border-4 border-red-700 bg-zinc-950 text-white">
               <div>
                 <p className="text-2xl font-black text-red-500">GME</p>
+
                 <p className="text-[9px] font-bold uppercase tracking-wide">
                   Education
                 </p>
@@ -188,26 +189,14 @@ export default function AcutePulmonaryEdemaCertificatePage() {
               />
             </div>
 
-            <div className="mx-auto mt-12 grid max-w-4xl gap-10 sm:grid-cols-2">
-              <div>
-                <div className="border-b border-black pb-2 text-xl font-semibold">
-                  Lt. William Howard, NRP
-                </div>
-
-                <p className="mt-2 text-sm text-zinc-500">
-                  Course Instructor
-                </p>
+            <div className="mx-auto mt-12 max-w-md">
+              <div className="border-b border-black pb-2 text-xl font-semibold">
+                William Howard, NRP
               </div>
 
-              <div>
-                <div className="border-b border-black pb-2 text-xl font-semibold">
-                  GrumpyMedic Education
-                </div>
-
-                <p className="mt-2 text-sm text-zinc-500">
-                  Education Provider
-                </p>
-              </div>
+              <p className="mt-2 text-sm text-zinc-500">
+                Course Instructor
+              </p>
             </div>
 
             <p className="mx-auto mt-10 max-w-4xl text-xs leading-5 text-zinc-500">

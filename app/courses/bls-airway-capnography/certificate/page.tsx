@@ -149,8 +149,8 @@ function CertificateContent() {
 
             <p className="mx-auto mt-6 max-w-4xl text-base leading-7 text-zinc-700 sm:text-lg">
               This course reviewed EMT-level supraglottic airway use, iGel
-              sizing and insertion, airway confirmation, ventilation,
-              waveform capnography, ETCO₂ interpretation, CPR monitoring,
+              sizing and insertion, airway confirmation, ventilation, waveform
+              capnography, ETCO₂ interpretation, CPR monitoring,
               troubleshooting, and documentation.
             </p>
 
@@ -160,25 +160,19 @@ function CertificateContent() {
                 value={completionDate || "Loading..."}
               />
 
-              <CertificateDetail
-                label="Quiz Score"
-                value={`${score}%`}
-              />
+              <CertificateDetail label="Quiz Score" value={`${score}%`} />
 
-              <CertificateDetail
-                label="Passing Standard"
-                value="80%"
-              />
+              <CertificateDetail label="Passing Standard" value="80%" />
             </div>
 
-            <div className="mx-auto mt-12 grid max-w-4xl gap-10 sm:grid-cols-2">
-              <SignatureLine
-                label="Course Instructor / Training Officer"
-              />
+            <div className="mx-auto mt-12 max-w-md">
+              <div className="border-b-2 border-zinc-800 pb-3 text-xl font-semibold text-zinc-900">
+                William Howard, NRP
+              </div>
 
-              <SignatureLine
-                label="Medical Director / Department Representative"
-              />
+              <p className="mt-3 text-sm font-semibold text-zinc-600">
+                Course Instructor
+              </p>
             </div>
 
             <div className="mt-12 border-t border-zinc-300 pt-6">
@@ -263,21 +257,7 @@ function CertificateDetail({
         {label}
       </p>
 
-      <p className="mt-2 text-xl font-extrabold text-zinc-900">
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function SignatureLine({ label }: { label: string }) {
-  return (
-    <div>
-      <div className="h-12 border-b-2 border-zinc-800" />
-
-      <p className="mt-3 text-sm font-semibold text-zinc-600">
-        {label}
-      </p>
+      <p className="mt-2 text-xl font-extrabold text-zinc-900">{value}</p>
     </div>
   );
 }

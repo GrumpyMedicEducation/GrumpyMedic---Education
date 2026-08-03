@@ -25,32 +25,24 @@ type CourseCompletion = {
 };
 
 export default function GlucagonCertificatePage() {
-  const [certificateName, setCertificateName] =
-    useState("");
-  const [providerLevel, setProviderLevel] =
-    useState("");
+  const [certificateName, setCertificateName] = useState("");
+  const [providerLevel, setProviderLevel] = useState("");
   const [department, setDepartment] = useState("");
 
-  const [score, setScore] = useState<number | null>(
-    null,
-  );
+  const [score, setScore] = useState<number | null>(null);
 
-  const [completionDate, setCompletionDate] =
-    useState("");
+  const [completionDate, setCompletionDate] = useState("");
 
-  const [certificateId, setCertificateId] =
-    useState("");
+  const [certificateId, setCertificateId] = useState("");
 
-  const [completionVerified, setCompletionVerified] =
-    useState(false);
+  const [completionVerified, setCompletionVerified] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState("");
-  const [completionMissing, setCompletionMissing] =
-    useState(false);
+  const [completionMissing, setCompletionMissing] = useState(false);
 
   useEffect(() => {
-    loadCertificateInformation();
+    void loadCertificateInformation();
   }, []);
 
   async function loadCertificateInformation() {
@@ -66,12 +58,12 @@ export default function GlucagonCertificatePage() {
     if (sessionError) {
       console.error(
         "Unable to verify certificate session:",
-        sessionError,
+        sessionError
       );
 
       setPageError(
         sessionError.message ||
-          "Your account session could not be verified.",
+          "Your account session could not be verified."
       );
 
       setLoading(false);
@@ -85,10 +77,7 @@ export default function GlucagonCertificatePage() {
       return;
     }
 
-    const [
-      profileResult,
-      completionResult,
-    ] = await Promise.all([
+    const [profileResult, completionResult] = await Promise.all([
       supabase
         .from("profiles")
         .select(
@@ -96,7 +85,7 @@ export default function GlucagonCertificatePage() {
             full_name,
             provider_level,
             department
-          `,
+          `
         )
         .eq("id", user.id)
         .maybeSingle(),
@@ -110,7 +99,7 @@ export default function GlucagonCertificatePage() {
             completed_at,
             certificate_id,
             verified
-          `,
+          `
         )
         .eq("user_id", user.id)
         .eq("course_slug", COURSE_SLUG)
@@ -120,12 +109,12 @@ export default function GlucagonCertificatePage() {
     if (profileResult.error) {
       console.error(
         "Unable to load certificate profile:",
-        profileResult.error,
+        profileResult.error
       );
 
       setPageError(
         profileResult.error.message ||
-          "Your student profile could not be loaded.",
+          "Your student profile could not be loaded."
       );
 
       setLoading(false);
@@ -135,12 +124,12 @@ export default function GlucagonCertificatePage() {
     if (completionResult.error) {
       console.error(
         "Unable to load course completion:",
-        completionResult.error,
+        completionResult.error
       );
 
       setPageError(
         completionResult.error.message ||
-          "Your course-completion record could not be loaded.",
+          "Your course-completion record could not be loaded."
       );
 
       setLoading(false);
@@ -148,32 +137,21 @@ export default function GlucagonCertificatePage() {
     }
 
     const profile =
-      (profileResult.data ??
-        null) as StudentProfile | null;
+      (profileResult.data ?? null) as StudentProfile | null;
 
     const completion =
-      (completionResult.data ??
-        null) as CourseCompletion | null;
+      (completionResult.data ?? null) as CourseCompletion | null;
 
-    setCertificateName(
-      profile?.full_name?.trim() ?? "",
-    );
+    setCertificateName(profile?.full_name?.trim() ?? "");
 
-    setProviderLevel(
-      profile?.provider_level?.trim() ?? "",
-    );
+    setProviderLevel(profile?.provider_level?.trim() ?? "");
 
-    setDepartment(
-      profile?.department?.trim() ?? "",
-    );
+    setDepartment(profile?.department?.trim() ?? "");
 
     if (
       !completion ||
       completion.best_score <
-        Math.max(
-          completion.passing_score,
-          PASSING_SCORE,
-        )
+        Math.max(completion.passing_score, PASSING_SCORE)
     ) {
       setCompletionMissing(true);
       setLoading(false);
@@ -183,13 +161,14 @@ export default function GlucagonCertificatePage() {
     setScore(completion.best_score);
 
     setCompletionDate(
-      new Date(
-        completion.completed_at,
-      ).toLocaleDateString("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      }),
+      new Date(completion.completed_at).toLocaleDateString(
+        "en-US",
+        {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        }
+      )
     );
 
     setCertificateId(completion.certificate_id);
@@ -205,7 +184,7 @@ export default function GlucagonCertificatePage() {
       completionMissing
     ) {
       window.alert(
-        "A completed student profile and passing course record are required before printing this certificate.",
+        "A completed student profile and passing course record are required before printing this certificate."
       );
 
       return;
@@ -251,10 +230,9 @@ export default function GlucagonCertificatePage() {
               </h1>
 
               <p className="mt-3 max-w-3xl leading-7 text-zinc-400">
-                This certificate uses your saved student
-                profile and stored course-completion record.
-                The score and completion date cannot be
-                changed through the page URL.
+                This certificate uses your saved student profile and
+                stored course-completion record. The score and
+                completion date cannot be changed through the page URL.
               </p>
 
               {loading ? (
@@ -294,10 +272,9 @@ export default function GlucagonCertificatePage() {
                   </h2>
 
                   <p className="mt-3 leading-7 text-zinc-300">
-                    No passing completion record was found
-                    for this course. Complete the lesson and
-                    pass the quiz with a score of at least{" "}
-                    {PASSING_SCORE}% to unlock the
+                    No passing completion record was found for this
+                    course. Complete the lesson and pass the quiz with a
+                    score of at least {PASSING_SCORE}% to unlock the
                     certificate.
                   </p>
 
@@ -321,16 +298,12 @@ export default function GlucagonCertificatePage() {
 
                     <ProfileItem
                       label="Provider Level"
-                      value={
-                        providerLevel || "Not provided"
-                      }
+                      value={providerLevel || "Not provided"}
                     />
 
                     <ProfileItem
                       label="Organization"
-                      value={
-                        department || "Not provided"
-                      }
+                      value={department || "Not provided"}
                     />
                   </div>
 
@@ -346,9 +319,7 @@ export default function GlucagonCertificatePage() {
 
                     <ProfileItem
                       label="Completion Date"
-                      value={
-                        completionDate || "Unavailable"
-                      }
+                      value={completionDate || "Unavailable"}
                     />
 
                     <ProfileItem
@@ -368,10 +339,9 @@ export default function GlucagonCertificatePage() {
                       </p>
 
                       <p className="mt-2 text-sm leading-6 text-zinc-300">
-                        This completion was saved from the
-                        current browser-based quiz. The
-                        future server-scoring step can mark
-                        records as fully verified.
+                        This completion was saved from the current
+                        browser-based quiz. The future server-scoring
+                        step can mark records as fully verified.
                       </p>
                     </div>
                   )}
@@ -434,8 +404,7 @@ export default function GlucagonCertificatePage() {
                 </div>
 
                 <p className="mt-8 text-lg text-zinc-700">
-                  for successfully completing the
-                  educational course
+                  for successfully completing the educational course
                 </p>
 
                 <h2 className="mt-5 text-4xl font-extrabold">
@@ -459,13 +428,11 @@ export default function GlucagonCertificatePage() {
                 )}
 
                 <p className="mx-auto mt-8 max-w-3xl leading-7 text-zinc-600">
-                  This course reviewed recognition and
-                  treatment of hypoglycemia, glucagon
-                  indications, contraindications, dosing,
-                  administration, airway precautions,
-                  reassessment, repeat-dosing
-                  considerations, and continued patient
-                  care.
+                  This course reviewed recognition and treatment of
+                  hypoglycemia, glucagon indications, contraindications,
+                  dosing, administration, airway precautions,
+                  reassessment, repeat-dosing considerations, and
+                  continued patient care.
                 </p>
 
                 <div className="mx-auto mt-10 grid max-w-3xl gap-6 sm:grid-cols-2">
@@ -490,26 +457,14 @@ export default function GlucagonCertificatePage() {
                   </div>
                 </div>
 
-                <div className="mx-auto mt-14 grid max-w-3xl gap-10 sm:grid-cols-2">
-                  <div>
-                    <div className="border-b border-black pb-2 text-xl font-semibold">
-                      Lt. William Howard, NRP
-                    </div>
-
-                    <p className="mt-2 text-sm text-zinc-500">
-                      Course Instructor
-                    </p>
+                <div className="mx-auto mt-14 max-w-md">
+                  <div className="border-b border-black pb-2 text-xl font-semibold">
+                    William Howard, NRP
                   </div>
 
-                  <div>
-                    <div className="border-b border-black pb-2 text-xl font-semibold">
-                      GrumpyMedic Education
-                    </div>
-
-                    <p className="mt-2 text-sm text-zinc-500">
-                      Education Provider
-                    </p>
-                  </div>
+                  <p className="mt-2 text-sm text-zinc-500">
+                    Course Instructor
+                  </p>
                 </div>
 
                 {certificateId && (
@@ -519,13 +474,12 @@ export default function GlucagonCertificatePage() {
                 )}
 
                 <p className="mx-auto mt-8 max-w-3xl text-xs leading-5 text-zinc-500">
-                  This is an educational completion
-                  certificate only. It does not independently
-                  authorize medication administration or
-                  replace current state and local protocols,
-                  medical-director approval, manufacturer
-                  instructions, service training, or
-                  demonstrated competency requirements.
+                  This is an educational completion certificate only. It
+                  does not independently authorize medication
+                  administration or replace current state and local
+                  protocols, medical-director approval, manufacturer
+                  instructions, service training, or demonstrated
+                  competency requirements.
                 </p>
               </div>
             </section>
@@ -543,6 +497,11 @@ export default function GlucagonCertificatePage() {
           html,
           body {
             background: white !important;
+          }
+
+          body {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
           }
 
           .certificate {
@@ -567,9 +526,7 @@ function ProfileItem({
         {label}
       </p>
 
-      <p className="mt-2 font-bold text-white">
-        {value}
-      </p>
+      <p className="mt-2 font-bold text-white">{value}</p>
     </div>
   );
 }
