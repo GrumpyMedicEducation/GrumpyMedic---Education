@@ -24,10 +24,6 @@ const navigationLinks = [
     href: "/simulator",
   },
   {
-    name: "Quizzes",
-    href: "/quizzes",
-  },
-  {
     name: "Resources",
     href: "/resources",
   },
