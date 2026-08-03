@@ -112,10 +112,12 @@ export default function CoursesPage() {
           />
 
           <CourseCard
-            title="Trauma Assessment"
-            description="Primary assessment, life threats, rapid trauma examination, shock recognition, and transport priorities."
-            certification="EMT and Paramedic"
-            duration="Coming soon"
+            title="Multisystem Trauma"
+            description="Adult and pediatric trauma assessment, catastrophic hemorrhage control, pelvic stabilization, vascular access, airway management, TXA administration, shock recognition, transport, and documentation."
+            certification="EMT, AEMT & Paramedic"
+            duration="45–60 minutes"
+            href="/courses/multisystem-trauma"
+            available
           />
 
           <CourseCard
