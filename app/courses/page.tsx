@@ -245,6 +245,18 @@ export default function CoursesPage() {
           />
         </CourseCategory>
 
+        <CourseCategory
+          title="Professional & Compliance Education"
+          description="Official training and educational resources for Massachusetts public employees."
+        >
+          <ExternalCourseCard
+            title="Conflict of Interest Law Education"
+            description="Complete the Commonwealth of Massachusetts conflict-of-interest law education requirements for public employees."
+            organization="Commonwealth of Massachusetts"
+            href="https://www.mass.gov/how-to/complete-the-conflict-of-interest-law-education-requirements"
+          />
+        </CourseCategory>
+
         <section className="rounded-2xl border border-red-700 bg-gradient-to-br from-red-950/30 to-zinc-900 p-8 text-center">
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-red-500">
             Continue Learning
@@ -339,9 +351,7 @@ function CourseCard({
         </span>
       </div>
 
-      <h3 className="mt-5 text-2xl font-extrabold text-red-500">
-        {title}
-      </h3>
+      <h3 className="mt-5 text-2xl font-extrabold text-red-500">{title}</h3>
 
       <p className="mt-4 flex-1 leading-7 text-zinc-300">{description}</p>
 
@@ -367,5 +377,53 @@ function CourseCard({
     <Link href={href} className="group block h-full">
       {cardContent}
     </Link>
+  );
+}
+
+function ExternalCourseCard({
+  title,
+  description,
+  organization,
+  href,
+}: {
+  title: string;
+  description: string;
+  organization: string;
+  href: string;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group block h-full"
+    >
+      <article className="flex h-full flex-col rounded-2xl border border-zinc-600 bg-zinc-900 p-7 transition hover:-translate-y-1 hover:border-red-500 hover:bg-zinc-800">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <span className="rounded-full border border-zinc-500 bg-zinc-950 px-3 py-1 text-xs font-bold uppercase tracking-wide text-zinc-200">
+            {organization}
+          </span>
+
+          <span className="text-sm font-semibold text-red-400">
+            External Course
+          </span>
+        </div>
+
+        <h3 className="mt-5 text-2xl font-extrabold text-red-500">{title}</h3>
+
+        <p className="mt-4 flex-1 leading-7 text-zinc-300">{description}</p>
+
+        <p className="mt-3 text-sm leading-6 text-zinc-400">
+          This official course is hosted on Mass.gov and will open in a new
+          browser tab.
+        </p>
+
+        <div className="mt-6">
+          <span className="inline-flex rounded-lg bg-red-600 px-5 py-3 font-bold text-white transition group-hover:bg-red-500">
+            Open Official Course →
+          </span>
+        </div>
+      </article>
+    </a>
   );
 }
