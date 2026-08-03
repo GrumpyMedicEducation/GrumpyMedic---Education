@@ -246,6 +246,20 @@ export default function CoursesPage() {
         </CourseCategory>
 
         <CourseCategory
+          title="Obstetrics"
+          description="Assessment and management of pregnancy-related and postpartum emergencies."
+        >
+          <CourseCard
+            title="Obstetrical Emergencies"
+            description="Massachusetts Protocol 2.10 covering obstetrical assessment, prolapsed cord, postpartum hemorrhage, oxytocin, TXA, eclamptic seizures, and maternal cardiac-arrest considerations."
+            certification="EMT, AEMT & Paramedic"
+            duration="30–45 minutes"
+            href="/courses/obstetrical-emergencies"
+            available
+          />
+        </CourseCategory>
+
+        <CourseCategory
           title="Professional & Compliance Education"
           description="Official training and educational resources for Massachusetts public employees."
         >
