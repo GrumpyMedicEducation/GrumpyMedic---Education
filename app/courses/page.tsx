@@ -191,10 +191,12 @@ export default function CoursesPage() {
           />
 
           <CourseCard
-            title="Bradycardia"
-            description="Patient assessment, symptomatic bradycardia, pacing, medication administration, and reassessment."
-            certification="Paramedic"
-            duration="Coming soon"
+            title="Adult & Pediatric Bradycardia"
+            description="Recognition and treatment of symptomatic adult and pediatric bradycardia, including patient assessment, atropine, epinephrine, transcutaneous pacing, vasopressor infusions, Medical Control options, reassessment, and clinical decision-making."
+            certification="EMT, AEMT & Paramedic"
+            duration="45–60 minutes"
+            href="/courses/bradycardia"
+            available
           />
 
           <CourseCard
