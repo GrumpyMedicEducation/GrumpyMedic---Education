@@ -59,6 +59,19 @@ export default function SimulatorPage() {
           />
 
           <SimulatorCard
+            title="Trauma"
+            description="Manage a critically injured patient following a head-on collision, including hemorrhage control, shock recognition, pelvic stabilization, and trauma-center transport."
+            href="/simulator/trauma"
+            available
+            features={[
+              "Primary trauma survey",
+              "Tourniquet application",
+              "Hemorrhagic shock recognition",
+              "Pelvic binder and trauma-center destination",
+            ]}
+          />
+
+          <SimulatorCard
             title="Chest Pain"
             description="Evaluate a patient with possible acute coronary syndrome and make treatment and transport decisions."
             features={[
@@ -66,17 +79,6 @@ export default function SimulatorPage() {
               "Aspirin administration",
               "Nitroglycerin considerations",
               "STEMI activation",
-            ]}
-          />
-
-          <SimulatorCard
-            title="Trauma"
-            description="Manage a seriously injured patient using a structured trauma assessment and rapid transport priorities."
-            features={[
-              "Primary trauma survey",
-              "Hemorrhage control",
-              "Shock recognition",
-              "Trauma-center destination",
             ]}
           />
         </div>
