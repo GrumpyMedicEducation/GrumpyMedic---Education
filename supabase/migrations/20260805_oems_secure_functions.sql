@@ -136,3 +136,146 @@ $$;
 
 revoke all on function public.start_course_session(uuid, text) from public;
 grant execute on function public.start_course_session(uuid, text) to authenticated;
+create or replace function public.record_course_heartbeat(
+  requested_session_id uuid,
+  requested_session_token uuid
+)
+returns integer
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  current_user_id uuid;
+  current_enrollment_id uuid;
+  previous_heartbeat timestamptz;
+  elapsed_seconds integer;
+  credited_seconds integer;
+begin
+  current_user_id := auth.uid();
+
+  if current_user_id is null then
+    raise exception 'Authentication required';
+  end if;
+
+  select
+    session.enrollment_id,
+    session.last_heartbeat_at
+  into
+    current_enrollment_id,
+    previous_heartbeat
+  from public.course_sessions session
+  join public.course_enrollments enrollment
+    on enrollment.id = session.enrollment_id
+  where session.id = requested_session_id
+    and session.session_token = requested_session_token
+    and session.is_active = true
+    and enrollment.user_id = current_user_id;
+
+  if current_enrollment_id is null then
+    raise exception 'Active course session not found';
+  end if;
+
+  if previous_heartbeat is null then
+    credited_seconds := 0;
+  else
+    elapsed_seconds := floor(
+      extract(
+        epoch from (now() - previous_heartbeat)
+      )
+    )::integer;
+
+    credited_seconds := least(
+      greatest(elapsed_seconds, 0),
+      45
+    );
+  end if;
+
+  update public.course_sessions
+  set last_heartbeat_at = now()
+  where id = requested_session_id;
+
+  if credited_seconds > 0 then
+    update public.course_enrollments
+    set
+      total_active_seconds =
+        total_active_seconds + credited_seconds,
+      updated_at = now()
+    where id = current_enrollment_id;
+
+    insert into public.engagement_events (
+      enrollment_id,
+      session_id,
+      event_type,
+      event_data
+    )
+    values (
+      current_enrollment_id,
+      requested_session_id,
+      'heartbeat',
+      jsonb_build_object(
+        'credited_seconds',
+        credited_seconds
+      )
+    );
+  end if;
+
+  return credited_seconds;
+end;
+$$;
+
+revoke all on function public.record_course_heartbeat(uuid, uuid) from public;
+grant execute on function public.record_course_heartbeat(uuid, uuid) to authenticated;
+create or replace function public.end_course_session(
+  requested_session_id uuid,
+  requested_session_token uuid
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  current_user_id uuid;
+  current_enrollment_id uuid;
+begin
+  current_user_id := auth.uid();
+
+  if current_user_id is null then
+    raise exception 'Authentication required';
+  end if;
+
+  select session.enrollment_id
+  into current_enrollment_id
+  from public.course_sessions session
+  join public.course_enrollments enrollment
+    on enrollment.id = session.enrollment_id
+  where session.id = requested_session_id
+    and session.session_token = requested_session_token
+    and enrollment.user_id = current_user_id;
+
+  if current_enrollment_id is null then
+    raise exception 'Course session not found';
+  end if;
+
+  update public.course_sessions
+  set
+    is_active = false,
+    ended_at = coalesce(ended_at, now())
+  where id = requested_session_id;
+
+  insert into public.engagement_events (
+    enrollment_id,
+    session_id,
+    event_type
+  )
+  values (
+    current_enrollment_id,
+    requested_session_id,
+    'course_session_ended'
+  );
+end;
+$$;
+
+revoke all on function public.end_course_session(uuid, uuid) from public;
+grant execute on function public.end_course_session(uuid, uuid) to authenticated;
