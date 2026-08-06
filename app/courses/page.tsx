@@ -28,7 +28,8 @@ export default function CoursesPage() {
 
           <p className="mt-4 max-w-3xl text-lg leading-8 text-zinc-300">
             Practical EMS education focused on assessment, treatment,
-            protocols, clinical reasoning, and real-world patient care.
+            protocols, clinical reasoning, and real-world patient care. Available
+            courses include active-engagement tracking and a final assessment.
           </p>
         </div>
       </section>
@@ -42,7 +43,7 @@ export default function CoursesPage() {
             title="Acute Pulmonary Edema"
             description="Assessment, CPAP, nitrates, respiratory support, and clinical decision-making."
             certification="EMT and Paramedic"
-            duration="30–45 minutes"
+            duration="30 minutes"
             href="/courses/acute-pulmonary-edema"
             available
           />
@@ -51,7 +52,7 @@ export default function CoursesPage() {
             title="Glucagon for Hypoglycemia"
             description="Recognition and treatment of hypoglycemia, glucagon administration, reassessment, and EMT-Basic skills."
             certification="EMT-Basic"
-            duration="30–45 minutes"
+            duration="30 minutes"
             href="/courses/glucagon-hypoglycemia"
             available
           />
@@ -60,7 +61,7 @@ export default function CoursesPage() {
             title="Adult & Pediatric Sepsis"
             description="Recognition of adult and pediatric septic shock, Massachusetts Protocols 2.17A & 2.17P, Sepsis Alert activation, fluid resuscitation, reassessment, Medical Control options, documentation, and clinical decision-making."
             certification="EMT, AEMT & Paramedic"
-            duration="45–60 minutes"
+            duration="30 minutes"
             href="/courses/sepsis"
             available
           />
@@ -69,7 +70,7 @@ export default function CoursesPage() {
             title="Stroke Recognition & Prehospital Management"
             description="Stroke recognition, FAST-ED assessment, Last Known Well, stroke mimics, Stroke Alert communication, oxygen guidance, destination decisions, and documentation."
             certification="EMT and Paramedic"
-            duration="45–60 minutes"
+            duration="30 minutes"
             href="/courses/stroke"
             available
           />
@@ -83,7 +84,7 @@ export default function CoursesPage() {
             title="Hyperthermia"
             description="Recognition of heat cramps, heat exhaustion, and heat stroke, including rapid cooling, fluid considerations, transport, and reassessment."
             certification="EMT and Paramedic"
-            duration="30–45 minutes"
+            duration="30 minutes"
             href="/courses/hyperthermia"
             available
           />
@@ -92,7 +93,7 @@ export default function CoursesPage() {
             title="Environmental Hypothermia"
             description="Adult and pediatric hypothermia recognition, prevention of further heat loss, prolonged pulse assessment, warmed oxygen and IV fluids, cardiac-arrest considerations, cautions, and documentation."
             certification="EMT, AEMT & Paramedic"
-            duration="45–60 minutes"
+            duration="30 minutes"
             href="/courses/hypothermia"
             available
           />
@@ -106,7 +107,7 @@ export default function CoursesPage() {
             title="TXA Administration"
             description="Recognition of significant hemorrhage, Massachusetts 2026.2 dosing, adult multisystem trauma, obstetrical emergencies, medication safety, monitoring, and documentation."
             certification="Paramedic"
-            duration="35–45 minutes"
+            duration="30 minutes"
             href="/courses/txa-administration"
             available
           />
@@ -115,7 +116,7 @@ export default function CoursesPage() {
             title="Multisystem Trauma"
             description="Adult and pediatric trauma assessment, catastrophic hemorrhage control, pelvic stabilization, vascular access, airway management, TXA administration, shock recognition, transport, and documentation."
             certification="EMT, AEMT & Paramedic"
-            duration="45–60 minutes"
+            duration="30 minutes"
             href="/courses/multisystem-trauma"
             available
           />
@@ -143,7 +144,7 @@ export default function CoursesPage() {
             title="BLS Airway & Capnography"
             description="EMT-level training covering supraglottic airway use, iGel sizing and insertion, waveform capnography, ventilation, and airway troubleshooting."
             certification="EMT"
-            duration="45–60 minutes"
+            duration="30 minutes"
             href="/courses/bls-airway-capnography"
             available
           />
@@ -159,7 +160,7 @@ export default function CoursesPage() {
             title="Bronchospasm / Respiratory Distress"
             description="Adult and pediatric respiratory assessment, bronchodilator therapy, epinephrine, CPAP/BiPAP, corticosteroids, magnesium, airway escalation, transport, reassessment, and documentation."
             certification="EMT, AEMT & Paramedic"
-            duration="45–60 minutes"
+            duration="30 minutes"
             href="/courses/bronchospasm-respiratory-distress"
             available
           />
@@ -194,7 +195,7 @@ export default function CoursesPage() {
             title="Adult & Pediatric Bradycardia"
             description="Recognition and treatment of symptomatic adult and pediatric bradycardia, including patient assessment, atropine, epinephrine, transcutaneous pacing, vasopressor infusions, Medical Control options, reassessment, and clinical decision-making."
             certification="EMT, AEMT & Paramedic"
-            duration="45–60 minutes"
+            duration="30 minutes"
             href="/courses/bradycardia"
             available
           />
@@ -215,7 +216,7 @@ export default function CoursesPage() {
             title="Mental Health Awareness"
             description="Behavioral emergencies, suicide awareness, crisis intervention, communication, and first-responder wellness."
             certification="All EMS Providers"
-            duration="20–30 minutes"
+            duration="30 minutes"
             href="/mental-health"
             available
           />
@@ -255,7 +256,7 @@ export default function CoursesPage() {
             title="Obstetrical Emergencies"
             description="Massachusetts Protocol 2.10 covering obstetrical assessment, prolapsed cord, postpartum hemorrhage, oxytocin, TXA, eclamptic seizures, and maternal cardiac-arrest considerations."
             certification="EMT, AEMT & Paramedic"
-            duration="30–45 minutes"
+            duration="30 minutes"
             href="/courses/obstetrical-emergencies"
             available
           />

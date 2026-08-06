@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "../../components/Navbar";
+import CourseEngagementTracker from "../CourseEngagementTracker";
 
 const objectives = [
   "Recognize environmental hypothermia in adult and pediatric patients.",
@@ -41,10 +42,14 @@ const cardiacArrestPriorities = [
 
 export default function HypothermiaCoursePage() {
   return (
-    <>
+    <main className="min-h-screen bg-black text-white">
       <Navbar />
 
-      <main className="min-h-screen bg-black text-white">
+      <CourseEngagementTracker
+        courseSlug="hypothermia"
+        courseTitle="Environmental Hypothermia"
+        requiredMinutes={60}
+      />
         <section className="border-b border-zinc-800 bg-gradient-to-b from-blue-950/40 to-black">
           <div className="mx-auto max-w-6xl px-6 py-16">
             <Link
@@ -412,8 +417,7 @@ export default function HypothermiaCoursePage() {
             </Link>
           </section>
         </section>
-      </main>
-    </>
+    </main>
   );
 }
 

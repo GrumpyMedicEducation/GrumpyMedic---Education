@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "../../components/Navbar";
+import CourseEngagementTracker from "../CourseEngagementTracker";
 
 const objectives = [
   "Recognize common stroke presentations and high-risk stroke mimics.",
@@ -66,10 +67,14 @@ const reportItems = [
 
 export default function StrokeCoursePage() {
   return (
-    <>
+    <main className="min-h-screen bg-black text-white">
       <Navbar />
 
-      <main className="min-h-screen bg-black text-white">
+      <CourseEngagementTracker
+        courseSlug="stroke"
+        courseTitle="Stroke Recognition & Prehospital Management"
+        requiredMinutes={60}
+      />
         <section className="border-b border-zinc-800 bg-gradient-to-b from-red-950/30 to-black">
           <div className="mx-auto max-w-6xl px-6 py-16">
             <Link
@@ -457,8 +462,7 @@ export default function StrokeCoursePage() {
             </Link>
           </section>
         </section>
-      </main>
-    </>
+    </main>
   );
 }
 

@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import Navbar from "../../components/Navbar";
+import CourseEngagementTracker from "../CourseEngagementTracker";
 
 const learningObjectives = [
   "Recognize major obstetrical emergencies and immediate life threats.",
@@ -18,6 +19,12 @@ export default function ObstetricalEmergenciesCoursePage() {
   return (
     <main className="min-h-screen bg-black text-white">
       <Navbar />
+
+      <CourseEngagementTracker
+        courseSlug="obstetrical-emergencies"
+        courseTitle="Obstetrical Emergencies"
+        requiredMinutes={60}
+      />
 
       <section className="border-b border-zinc-800 bg-gradient-to-b from-red-950/30 to-black">
         <div className="mx-auto max-w-6xl px-6 py-14">

@@ -1,5 +1,7 @@
 "use client";
 
+import CourseEngagementTracker from "../CourseEngagementTracker";
+
 import Link from "next/link";
 import { useState } from "react";
 import Navbar from "../../components/Navbar";
@@ -290,6 +292,12 @@ export default function AcutePulmonaryEdemaPage() {
       <main className="min-h-screen bg-black text-white">
         <Navbar />
 
+        <CourseEngagementTracker
+          courseSlug="acute-pulmonary-edema"
+          courseTitle="Acute Pulmonary Edema"
+          requiredMinutes={60}
+        />
+
         <section className="mx-auto max-w-5xl px-6 py-12">
           <CourseAccessGate
             accessLevel="login"
@@ -449,6 +457,12 @@ export default function AcutePulmonaryEdemaPage() {
   return (
     <main className="min-h-screen bg-black text-white">
       <Navbar />
+
+        <CourseEngagementTracker
+          courseSlug="acute-pulmonary-edema"
+          courseTitle="Acute Pulmonary Edema"
+          requiredMinutes={30}
+        />
 
       <section className="mx-auto max-w-5xl px-6 py-12">
         <Link

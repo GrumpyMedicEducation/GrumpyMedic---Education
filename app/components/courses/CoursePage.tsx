@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 import Navbar from "../Navbar";
+import CourseEngagementTracker from "../../courses/CourseEngagementTracker";
 import CourseAccessGate from "../CourseAccessGate";
 import {
   getCourseBySlug,
@@ -284,6 +285,12 @@ export default function CoursePage({
   return (
     <main className="min-h-screen bg-black text-white">
       <Navbar />
+
+      <CourseEngagementTracker
+        courseSlug={course?.slug ?? slug}
+        courseTitle={course?.title ?? "Course"}
+        requiredMinutes={60}
+      />
 
       <section className="mx-auto max-w-5xl px-6 py-10">
         <Link

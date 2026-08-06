@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "../../components/Navbar";
+import CourseEngagementTracker from "../CourseEngagementTracker";
 
 const objectives = [
   "Recognize adult and pediatric bronchospasm and respiratory distress.",
@@ -14,10 +15,14 @@ const objectives = [
 
 export default function BronchospasmRespiratoryCoursePage() {
   return (
-    <>
+    <main className="min-h-screen bg-black text-white">
       <Navbar />
 
-      <main className="min-h-screen bg-black text-white">
+      <CourseEngagementTracker
+        courseSlug="bronchospasm-respiratory-distress"
+        courseTitle="Bronchospasm / Respiratory Distress"
+        requiredMinutes={60}
+      />
         <section className="border-b border-zinc-800 bg-gradient-to-b from-blue-950/40 to-black">
           <div className="mx-auto max-w-6xl px-6 py-16">
             <Link href="/courses" className="font-semibold text-red-500 hover:text-red-400">
@@ -272,8 +277,7 @@ export default function BronchospasmRespiratoryCoursePage() {
             </Link>
           </section>
         </section>
-      </main>
-    </>
+    </main>
   );
 }
 

@@ -1,10 +1,17 @@
 import Link from "next/link";
 import Navbar from "../../components/Navbar";
+import CourseEngagementTracker from "../CourseEngagementTracker";
 
 export default function TXAAdministrationCoursePage() {
   return (
     <main className="min-h-screen bg-black text-white">
       <Navbar />
+
+      <CourseEngagementTracker
+        courseSlug="txa-administration"
+        courseTitle="TXA Administration"
+        requiredMinutes={60}
+      />
 
       {/* Hero */}
       <section className="border-b border-red-900 bg-gradient-to-b from-red-950/30 to-black">

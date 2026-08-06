@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import Navbar from "../../components/Navbar";
+import CourseEngagementTracker from "../CourseEngagementTracker";
 
 const objectives = [
   "Identify indications and contraindications for supraglottic airway placement.",
@@ -60,6 +61,12 @@ export default function BLSAirwayCapnographyCoursePage() {
   return (
     <main className="min-h-screen bg-black text-white">
       <Navbar />
+
+      <CourseEngagementTracker
+        courseSlug="bls-airway-capnography"
+        courseTitle="BLS Airway & Capnography"
+        requiredMinutes={60}
+      />
 
       <section className="border-b border-zinc-800 bg-gradient-to-b from-red-950/30 to-black">
         <div className="mx-auto max-w-6xl px-6 py-16">
