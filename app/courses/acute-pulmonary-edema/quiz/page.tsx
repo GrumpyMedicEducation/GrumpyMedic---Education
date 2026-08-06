@@ -39,11 +39,23 @@ type SubmitExamResult = {
   passed: boolean;
 };
 
-function groupQuestionRows(rows: ExamQuestionRow[]): ExamQuestion[] {
+type LatestAttempt = {
+  id: string;
+  score: number | string | null;
+  passed: boolean | null;
+  submitted_at: string | null;
+  started_at: string;
+};
+
+function groupQuestionRows(
+  rows: ExamQuestionRow[],
+): ExamQuestion[] {
   const questionMap = new Map<string, ExamQuestion>();
 
   for (const row of rows) {
-    const existingQuestion = questionMap.get(row.question_id);
+    const existingQuestion = questionMap.get(
+      row.question_id,
+    );
 
     if (existingQuestion) {
       existingQuestion.options.push({
@@ -70,35 +82,51 @@ function groupQuestionRows(rows: ExamQuestionRow[]): ExamQuestion[] {
   }
 
   return Array.from(questionMap.values())
-    .sort((a, b) => a.displayOrder - b.displayOrder)
+    .sort(
+      (firstQuestion, secondQuestion) =>
+        firstQuestion.displayOrder -
+        secondQuestion.displayOrder,
+    )
     .map((question) => ({
       ...question,
       options: [...question.options].sort(
-        (a, b) => a.order - b.order,
+        (firstOption, secondOption) =>
+          firstOption.order - secondOption.order,
       ),
     }));
 }
 
 export default function AcutePulmonaryEdemaQuizPage() {
-  const [enrollmentId, setEnrollmentId] = useState<string | null>(
-    null,
-  );
-  const [examAttemptId, setExamAttemptId] = useState<string | null>(
-    null,
-  );
-  const [questions, setQuestions] = useState<ExamQuestion[]>([]);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [enrollmentId, setEnrollmentId] = useState<
+    string | null
+  >(null);
+
+  const [examAttemptId, setExamAttemptId] = useState<
+    string | null
+  >(null);
+
+  const [questions, setQuestions] = useState<
+    ExamQuestion[]
+  >([]);
+
+  const [answers, setAnswers] = useState<
+    Record<string, string>
+  >({});
 
   const [loading, setLoading] = useState(true);
-  const [startingExam, setStartingExam] = useState(false);
+  const [startingExam, setStartingExam] =
+    useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const [submitted, setSubmitted] = useState(false);
-  const [score, setScore] = useState<number | null>(null);
+  const [score, setScore] = useState<number | null>(
+    null,
+  );
   const [passed, setPassed] = useState(false);
 
   const [message, setMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] =
+    useState("");
 
   const loadExamQuestions = useCallback(
     async (attemptId: string) => {
@@ -124,70 +152,104 @@ export default function AcutePulmonaryEdemaQuizPage() {
 
       setQuestions(groupedQuestions);
       setExamAttemptId(attemptId);
+      setSubmitted(false);
+      setScore(null);
+      setPassed(false);
     },
     [],
   );
 
-  const initializeAssessment = useCallback(async () => {
-    setLoading(true);
-    setErrorMessage("");
-    setMessage("");
+  const initializeAssessment = useCallback(
+    async () => {
+      setLoading(true);
+      setErrorMessage("");
+      setMessage("");
 
-    try {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
+      try {
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
 
-      if (userError || !user) {
-        throw new Error(
-          "You must be logged in to take this assessment.",
-        );
-      }
+        if (userError || !user) {
+          throw new Error(
+            "You must be logged in to take this assessment.",
+          );
+        }
 
-      const { data: enrollmentData, error: enrollmentError } =
-        await supabase.rpc("enroll_in_course", {
+        const {
+          data: enrollmentData,
+          error: enrollmentError,
+        } = await supabase.rpc("enroll_in_course", {
           requested_course_slug: COURSE_SLUG,
         });
 
-      if (enrollmentError) {
-        throw new Error(enrollmentError.message);
+        if (enrollmentError) {
+          throw new Error(enrollmentError.message);
+        }
+
+        const secureEnrollmentId =
+          enrollmentData as string;
+
+        setEnrollmentId(secureEnrollmentId);
+
+        const {
+          data: latestAttempts,
+          error: latestAttemptError,
+        } = await supabase.rpc(
+          "get_latest_exam_attempt",
+          {
+            requested_enrollment_id:
+              secureEnrollmentId,
+          },
+        );
+
+        if (latestAttemptError) {
+          throw new Error(latestAttemptError.message);
+        }
+
+        const latestAttempt = latestAttempts?.[0] as
+          | LatestAttempt
+          | undefined;
+
+        if (!latestAttempt) {
+          return;
+        }
+
+        if (latestAttempt.submitted_at) {
+          setExamAttemptId(latestAttempt.id);
+          setQuestions([]);
+          setAnswers({});
+          setScore(Number(latestAttempt.score ?? 0));
+          setPassed(Boolean(latestAttempt.passed));
+          setSubmitted(true);
+
+          setMessage(
+            latestAttempt.passed
+              ? "Your completed passing assessment result was restored."
+              : "Your most recent completed assessment result was restored.",
+          );
+
+          return;
+        }
+
+        await loadExamQuestions(latestAttempt.id);
+
+        setMessage(
+          "Your open assessment attempt was restored.",
+        );
+      } catch (error) {
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "The assessment could not be initialized.",
+        );
+      } finally {
+        setLoading(false);
       }
-
-      const secureEnrollmentId = enrollmentData as string;
-      setEnrollmentId(secureEnrollmentId);
-
-      const { data: openAttempts, error: openAttemptError } =
-        await supabase
-          .from("exam_attempts")
-          .select("id")
-          .eq("enrollment_id", secureEnrollmentId)
-          .is("submitted_at", null)
-          .order("started_at", { ascending: false })
-          .limit(1);
-
-      if (openAttemptError) {
-        throw new Error(openAttemptError.message);
-      }
-
-      const existingAttemptId = openAttempts?.[0]?.id as
-        | string
-        | undefined;
-
-      if (existingAttemptId) {
-        await loadExamQuestions(existingAttemptId);
-        setMessage("Your open assessment attempt was restored.");
-      }
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "The assessment could not be initialized.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [loadExamQuestions]);
+    },
+    [loadExamQuestions],
+  );
 
   useEffect(() => {
     void initializeAssessment();
@@ -219,12 +281,13 @@ export default function AcutePulmonaryEdemaQuizPage() {
 
       const newAttemptId = data as string;
 
-      await loadExamQuestions(newAttemptId);
-
       setAnswers({});
       setSubmitted(false);
       setScore(null);
       setPassed(false);
+
+      await loadExamQuestions(newAttemptId);
+
       setMessage(
         "Your assessment attempt has started. Answer every question before submitting.",
       );
@@ -239,7 +302,10 @@ export default function AcutePulmonaryEdemaQuizPage() {
     }
   }
 
-  function selectAnswer(questionId: string, optionId: string) {
+  function selectAnswer(
+    questionId: string,
+    optionId: string,
+  ) {
     if (submitted || submitting) {
       return;
     }
@@ -252,7 +318,9 @@ export default function AcutePulmonaryEdemaQuizPage() {
 
   async function submitAssessment() {
     if (!examAttemptId) {
-      setErrorMessage("No open assessment attempt was found.");
+      setErrorMessage(
+        "No open assessment attempt was found.",
+      );
       return;
     }
 
@@ -267,12 +335,11 @@ export default function AcutePulmonaryEdemaQuizPage() {
       return;
     }
 
-    const submittedAnswers: SubmittedAnswer[] = questions.map(
-      (question) => ({
+    const submittedAnswers: SubmittedAnswer[] =
+      questions.map((question) => ({
         question_id: question.id,
         option_id: answers[question.id],
-      }),
-    );
+      }));
 
     setSubmitting(true);
     setErrorMessage("");
@@ -307,6 +374,8 @@ export default function AcutePulmonaryEdemaQuizPage() {
       setScore(returnedScore);
       setPassed(returnedPassed);
       setSubmitted(true);
+      setQuestions([]);
+      setAnswers({});
 
       setMessage(
         returnedPassed
@@ -377,9 +446,9 @@ export default function AcutePulmonaryEdemaQuizPage() {
           </h1>
 
           <p className="mt-3 text-zinc-400">
-            Answer all five questions. The server securely
-            grades and retains the assessment. A score of 80%
-            or higher is required to pass.
+            Answer all five questions. The server
+            securely grades and retains the assessment.
+            A score of 80% or higher is required to pass.
           </p>
         </div>
 
@@ -405,9 +474,10 @@ export default function AcutePulmonaryEdemaQuizPage() {
             </h2>
 
             <p className="mx-auto mt-3 max-w-2xl leading-7 text-zinc-400">
-              Starting the assessment creates an official attempt.
-              Your questions, submitted answers, score, and result
-              will be retained with your course record.
+              Starting the assessment creates an
+              official attempt. Your questions,
+              submitted answers, score, and result will
+              be retained with your course record.
             </p>
 
             <button
@@ -442,7 +512,9 @@ export default function AcutePulmonaryEdemaQuizPage() {
                   style={{
                     width: `${
                       questions.length > 0
-                        ? (answeredCount / questions.length) * 100
+                        ? (answeredCount /
+                            questions.length) *
+                          100
                         : 0
                     }%`,
                   }}
@@ -451,50 +523,57 @@ export default function AcutePulmonaryEdemaQuizPage() {
             </div>
 
             <div className="mt-8 space-y-6">
-              {questions.map((question, questionIndex) => (
-                <article
-                  key={question.id}
-                  className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6"
-                >
-                  <p className="text-sm font-bold uppercase tracking-wide text-red-500">
-                    Question {questionIndex + 1}
-                  </p>
+              {questions.map(
+                (question, questionIndex) => (
+                  <article
+                    key={question.id}
+                    className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6"
+                  >
+                    <p className="text-sm font-bold uppercase tracking-wide text-red-500">
+                      Question {questionIndex + 1}
+                    </p>
 
-                  <h2 className="mt-3 text-xl font-bold">
-                    {question.prompt}
-                  </h2>
+                    <h2 className="mt-3 text-xl font-bold">
+                      {question.prompt}
+                    </h2>
 
-                  <div className="mt-5 space-y-3">
-                    {question.options.map((option) => {
-                      const selected =
-                        answers[question.id] === option.id;
+                    <div className="mt-5 space-y-3">
+                      {question.options.map((option) => {
+                        const selected =
+                          answers[question.id] ===
+                          option.id;
 
-                      return (
-                        <button
-                          key={option.id}
-                          type="button"
-                          onClick={() =>
-                            selectAnswer(question.id, option.id)
-                          }
-                          className={`w-full rounded-xl border px-4 py-3 text-left transition ${
-                            selected
-                              ? "border-red-500 bg-red-500/10 text-white"
-                              : "border-zinc-700 bg-black text-zinc-300 hover:border-red-500"
-                          }`}
-                        >
-                          <span className="mr-3 font-bold text-red-400">
-                            {String.fromCharCode(
-                              65 + option.order,
-                            )}.
-                          </span>
+                        return (
+                          <button
+                            key={option.id}
+                            type="button"
+                            onClick={() =>
+                              selectAnswer(
+                                question.id,
+                                option.id,
+                              )
+                            }
+                            className={`w-full rounded-xl border px-4 py-3 text-left transition ${
+                              selected
+                                ? "border-red-500 bg-red-500/10 text-white"
+                                : "border-zinc-700 bg-black text-zinc-300 hover:border-red-500"
+                            }`}
+                          >
+                            <span className="mr-3 font-bold text-red-400">
+                              {String.fromCharCode(
+                                65 + option.order,
+                              )}
+                              .
+                            </span>
 
-                          {option.text}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </article>
-              ))}
+                            {option.text}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </article>
+                ),
+              )}
             </div>
 
             <button
@@ -537,9 +616,10 @@ export default function AcutePulmonaryEdemaQuizPage() {
 
             {passed && (
               <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-zinc-400">
-                Passing the assessment does not by itself issue a
-                certificate. Required active course time and the
-                electronic attestation must also be completed.
+                Passing the assessment does not by
+                itself issue a certificate. Required
+                active course time and the electronic
+                attestation must also be completed.
               </p>
             )}
 
