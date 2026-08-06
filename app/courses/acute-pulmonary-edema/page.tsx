@@ -3,7 +3,7 @@
 import CourseEngagementTracker from "../CourseEngagementTracker";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import Navbar from "../../components/Navbar";
 import CourseAccessGate from "../../components/CourseAccessGate";
 
@@ -222,6 +222,15 @@ const scenarioSteps: ScenarioStep[] = [
 ];
 
 export default function AcutePulmonaryEdemaPage() {
+  const [engagementLoaded, setEngagementLoaded] =
+    useState(false);
+  const [timeRequirementMet, setTimeRequirementMet] =
+    useState(false);
+  const [officialActiveSeconds, setOfficialActiveSeconds] =
+    useState(0);
+  const [officialRequiredSeconds, setOfficialRequiredSeconds] =
+    useState(30 * 60);
+
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedOption, setSelectedOption] =
     useState<number | null>(null);
@@ -230,6 +239,20 @@ export default function AcutePulmonaryEdemaPage() {
   const [complete, setComplete] = useState(false);
 
   const step = scenarioSteps[currentStep];
+
+  const handleEligibilityChange = useCallback(
+    (result: {
+      activeSeconds: number;
+      requiredSeconds: number;
+      timeRequirementMet: boolean;
+    }) => {
+      setOfficialActiveSeconds(result.activeSeconds);
+      setOfficialRequiredSeconds(result.requiredSeconds);
+      setTimeRequirementMet(result.timeRequirementMet);
+      setEngagementLoaded(true);
+    },
+    [],
+  );
 
   function chooseOption(optionIndex: number) {
     if (answered) {
@@ -295,7 +318,8 @@ export default function AcutePulmonaryEdemaPage() {
         <CourseEngagementTracker
           courseSlug="acute-pulmonary-edema"
           courseTitle="Acute Pulmonary Edema"
-          requiredMinutes={60}
+          requiredMinutes={30}
+          onEligibilityChange={handleEligibilityChange}
         />
 
         <section className="mx-auto max-w-5xl px-6 py-12">
@@ -462,6 +486,7 @@ export default function AcutePulmonaryEdemaPage() {
           courseSlug="acute-pulmonary-edema"
           courseTitle="Acute Pulmonary Edema"
           requiredMinutes={30}
+          onEligibilityChange={handleEligibilityChange}
         />
 
       <section className="mx-auto max-w-5xl px-6 py-12">
@@ -552,7 +577,119 @@ export default function AcutePulmonaryEdemaPage() {
             title="Sign In to Begin the Course"
             description="Create a free GrumpyMedic Education account or log in to complete the interactive Acute Pulmonary Edema scenario, access your results, and qualify for a certificate."
           >
-            <div className="rounded-2xl border border-zinc-700 bg-zinc-900 p-5">
+            {!engagementLoaded ? (
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-8 text-center">
+                <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-red-500">
+                  Checking Course Progress
+                </p>
+
+                <h2 className="mt-3 text-2xl font-extrabold text-white">
+                  Loading Your Official Course Time
+                </h2>
+
+                <p className="mt-3 text-zinc-400">
+                  Your engagement record is being retrieved from your
+                  GrumpyMedic Education account.
+                </p>
+              </div>
+            ) : !timeRequirementMet ? (
+              <div className="rounded-3xl border border-amber-700 bg-amber-950/20 p-8 text-center">
+                <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-amber-400">
+                  Assessment Locked
+                </p>
+
+                <h2 className="mt-3 text-3xl font-extrabold text-white">
+                  Complete the Required Course Time
+                </h2>
+
+                <p className="mx-auto mt-4 max-w-2xl leading-7 text-zinc-300">
+                  Continue reviewing the course content on this page.
+                  The assessment will unlock automatically after your
+                  official credited engagement time reaches the required
+                  duration.
+                </p>
+
+                <div className="mx-auto mt-7 max-w-md rounded-2xl border border-zinc-700 bg-black p-6">
+                  <div className="flex items-center justify-between gap-4 text-sm">
+                    <span className="text-zinc-400">
+                      Official credited time
+                    </span>
+
+                    <span className="font-bold text-white">
+                      {Math.floor(officialActiveSeconds / 60)}:
+                      {(officialActiveSeconds % 60)
+                        .toString()
+                        .padStart(2, "0")}
+                    </span>
+                  </div>
+
+                  <div className="mt-4 flex items-center justify-between gap-4 text-sm">
+                    <span className="text-zinc-400">
+                      Required time
+                    </span>
+
+                    <span className="font-bold text-white">
+                      {Math.floor(officialRequiredSeconds / 60)}:
+                      {(officialRequiredSeconds % 60)
+                        .toString()
+                        .padStart(2, "0")}
+                    </span>
+                  </div>
+
+                  <div className="mt-4 flex items-center justify-between gap-4 text-sm">
+                    <span className="text-zinc-400">
+                      Remaining time
+                    </span>
+
+                    <span className="font-bold text-amber-300">
+                      {Math.floor(
+                        Math.max(
+                          0,
+                          officialRequiredSeconds -
+                            officialActiveSeconds,
+                        ) / 60,
+                      )}
+                      :
+                      {(
+                        Math.max(
+                          0,
+                          officialRequiredSeconds -
+                            officialActiveSeconds,
+                        ) % 60
+                      )
+                        .toString()
+                        .padStart(2, "0")}
+                    </span>
+                  </div>
+                </div>
+
+                <p className="mt-6 text-sm leading-6 text-zinc-500">
+                  The timer pauses when this browser tab is hidden or
+                  after three minutes without activity.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="rounded-2xl border border-emerald-700 bg-emerald-950/20 p-5">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-emerald-400">
+                        Required Time Completed
+                      </p>
+
+                      <p className="mt-2 text-zinc-300">
+                        Your official engagement requirement is complete.
+                        The assessment is now available.
+                      </p>
+                    </div>
+
+                    <span className="rounded-full bg-emerald-500/20 px-4 py-2 text-sm font-bold text-emerald-300">
+                      Assessment Unlocked
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-6 rounded-2xl border border-zinc-700 bg-zinc-900 p-5">
               <div className="flex items-center justify-between gap-4">
                 <span className="font-semibold text-zinc-300">
                   Decision {currentStep + 1} of{" "}
@@ -709,12 +846,14 @@ export default function AcutePulmonaryEdemaPage() {
               </div>
             </article>
 
-            <p className="mt-8 text-center text-sm leading-6 text-zinc-500">
-              Educational content only. Follow current
-              state and local protocols, medical-director
-              guidance, service policy, and manufacturer
-              instructions.
-            </p>
+                <p className="mt-8 text-center text-sm leading-6 text-zinc-500">
+                  Educational content only. Follow current
+                  state and local protocols, medical-director
+                  guidance, service policy, and manufacturer
+                  instructions.
+                </p>
+              </>
+            )}
           </CourseAccessGate>
         </div>
       </section>

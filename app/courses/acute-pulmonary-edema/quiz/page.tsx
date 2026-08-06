@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import Navbar from "../../../components/Navbar";
+import QuizAccessGate from "../../../components/courses/QuizAccessGate";
 import { supabase } from "../../../../lib/supabase/client";
 
 const COURSE_SLUG = "acute-pulmonary-edema";
@@ -97,6 +98,17 @@ function groupQuestionRows(
 }
 
 export default function AcutePulmonaryEdemaQuizPage() {
+  return (
+    <QuizAccessGate
+      courseSlug={COURSE_SLUG}
+      courseTitle="Acute Pulmonary Edema"
+    >
+      <AcutePulmonaryEdemaQuizContent />
+    </QuizAccessGate>
+  );
+}
+
+function AcutePulmonaryEdemaQuizContent() {
   const [enrollmentId, setEnrollmentId] = useState<
     string | null
   >(null);
