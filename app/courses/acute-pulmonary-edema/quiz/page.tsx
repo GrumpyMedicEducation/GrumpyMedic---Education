@@ -1,185 +1,359 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Navbar from "../../../components/Navbar";
 import { supabase } from "../../../../lib/supabase/client";
 
-type QuizQuestion = {
-  question: string;
-  answers: string[];
-  correctAnswer: number;
-  explanation: string;
+const COURSE_SLUG = "acute-pulmonary-edema";
+
+type ExamQuestionRow = {
+  question_id: string;
+  display_order: number;
+  prompt: string;
+  option_id: string;
+  option_order: number;
+  option_text: string;
 };
 
-const questions: QuizQuestion[] = [
-  {
-    question:
-      "Which finding is most consistent with acute pulmonary edema?",
-    answers: [
-      "Clear lung sounds with slow respirations",
-      "Crackles, severe dyspnea, and possible pink frothy sputum",
-      "Unilateral wheezing following exercise",
-      "Dry cough with normal oxygen saturation",
-    ],
-    correctAnswer: 1,
-    explanation:
-      "Acute pulmonary edema commonly causes severe respiratory distress, diffuse crackles, hypoxia, and sometimes pink frothy sputum.",
-  },
-  {
-    question:
-      "What is the primary benefit of CPAP in acute pulmonary edema?",
-    answers: [
-      "It lowers the patient’s blood glucose",
-      "It replaces the need for reassessment",
-      "It recruits alveoli and reduces the work of breathing",
-      "It directly removes fluid from the lungs",
-    ],
-    correctAnswer: 2,
-    explanation:
-      "CPAP helps recruit collapsed alveoli, improves oxygenation, reduces work of breathing, and may reduce cardiac preload and afterload.",
-  },
-  {
-    question:
-      "Before administering nitroglycerin, the EMS provider should pay particular attention to:",
-    answers: [
-      "Blood pressure and contraindications",
-      "The patient’s temperature only",
-      "The patient’s blood glucose only",
-      "Whether the patient has eaten recently",
-    ],
-    correctAnswer: 0,
-    explanation:
-      "Blood pressure, medication history, contraindications, and local protocol requirements must be reviewed before administering nitroglycerin.",
-  },
-  {
-    question:
-      "Which reassessment finding best suggests that treatment is helping?",
-    answers: [
-      "Increasing respiratory distress",
-      "Decreasing oxygen saturation",
-      "Improved breathing effort and oxygenation",
-      "New altered mental status",
-    ],
-    correctAnswer: 2,
-    explanation:
-      "Improved respiratory effort, oxygen saturation, mental status, and overall appearance suggest that treatment is effective.",
-  },
-  {
-    question:
-      "What is an appropriate EMS priority for a patient with acute pulmonary edema?",
-    answers: [
-      "Delay transport until all symptoms resolve",
-      "Provide airway and breathing support while arranging prompt transport",
-      "Encourage the patient to walk to the ambulance",
-      "Withhold oxygen regardless of oxygen saturation",
-    ],
-    correctAnswer: 1,
-    explanation:
-      "Airway and breathing support, protocol-based treatment, frequent reassessment, and prompt transport are key priorities.",
-  },
-];
+type ExamOption = {
+  id: string;
+  order: number;
+  text: string;
+};
+
+type ExamQuestion = {
+  id: string;
+  displayOrder: number;
+  prompt: string;
+  options: ExamOption[];
+};
+
+type SubmittedAnswer = {
+  question_id: string;
+  option_id: string;
+};
+
+type SubmitExamResult = {
+  score: number | string;
+  passed: boolean;
+};
+
+function groupQuestionRows(rows: ExamQuestionRow[]): ExamQuestion[] {
+  const questionMap = new Map<string, ExamQuestion>();
+
+  for (const row of rows) {
+    const existingQuestion = questionMap.get(row.question_id);
+
+    if (existingQuestion) {
+      existingQuestion.options.push({
+        id: row.option_id,
+        order: row.option_order,
+        text: row.option_text,
+      });
+
+      continue;
+    }
+
+    questionMap.set(row.question_id, {
+      id: row.question_id,
+      displayOrder: row.display_order,
+      prompt: row.prompt,
+      options: [
+        {
+          id: row.option_id,
+          order: row.option_order,
+          text: row.option_text,
+        },
+      ],
+    });
+  }
+
+  return Array.from(questionMap.values())
+    .sort((a, b) => a.displayOrder - b.displayOrder)
+    .map((question) => ({
+      ...question,
+      options: [...question.options].sort(
+        (a, b) => a.order - b.order,
+      ),
+    }));
+}
 
 export default function AcutePulmonaryEdemaQuizPage() {
-  const [answers, setAnswers] = useState<(number | null)[]>(
-    Array(questions.length).fill(null)
+  const [enrollmentId, setEnrollmentId] = useState<string | null>(
+    null,
   );
+  const [examAttemptId, setExamAttemptId] = useState<string | null>(
+    null,
+  );
+  const [questions, setQuestions] = useState<ExamQuestion[]>([]);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+
+  const [loading, setLoading] = useState(true);
+  const [startingExam, setStartingExam] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const [submitted, setSubmitted] = useState(false);
-  const [score, setScore] = useState(0);
-  const [saving, setSaving] = useState(false);
-  const [saveMessage, setSaveMessage] = useState("");
+  const [score, setScore] = useState<number | null>(null);
+  const [passed, setPassed] = useState(false);
 
-  function selectAnswer(questionIndex: number, answerIndex: number) {
-    if (submitted) {
-      return;
-    }
+  const [message, setMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
-    const updatedAnswers = [...answers];
-    updatedAnswers[questionIndex] = answerIndex;
-    setAnswers(updatedAnswers);
-  }
-
-  async function submitQuiz() {
-    if (answers.some((answer) => answer === null)) {
-      window.alert("Please answer every question before submitting.");
-      return;
-    }
-
-    const correctAnswers = answers.reduce<number>(
-      (total, answer, index) => {
-        return answer === questions[index].correctAnswer
-          ? total + 1
-          : total;
-      },
-      0
-    );
-
-    const calculatedScore = Math.round(
-      (correctAnswers / questions.length) * 100
-    );
-
-    setScore(calculatedScore);
-    setSubmitted(true);
-    setSaving(true);
-    setSaveMessage("");
-
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      setSaveMessage(
-        "Your score was calculated, but it was not saved because you are not logged in."
+  const loadExamQuestions = useCallback(
+    async (attemptId: string) => {
+      const { data, error } = await supabase.rpc(
+        "get_exam_attempt_questions",
+        {
+          requested_exam_attempt_id: attemptId,
+        },
       );
-      setSaving(false);
-      return;
-    }
 
-    const passed = calculatedScore >= 80;
-
-    const { error } = await supabase.from("course_progress").upsert(
-      {
-        user_id: user.id,
-        course_slug: "acute-pulmonary-edema",
-        course_title: "Acute Pulmonary Edema",
-        progress_percent: passed ? 100 : 80,
-        quiz_score: calculatedScore,
-        completed: passed,
-        certificate_earned: passed,
-        completed_at: passed ? new Date().toISOString() : null,
-      },
-      {
-        onConflict: "user_id,course_slug",
+      if (error) {
+        throw new Error(error.message);
       }
-    );
 
-    if (error) {
-      console.error("Course progress save error:", error);
-      setSaveMessage(`Your score could not be saved: ${error.message}`);
-      setSaving(false);
+      const rows = (data ?? []) as ExamQuestionRow[];
+      const groupedQuestions = groupQuestionRows(rows);
+
+      if (groupedQuestions.length === 0) {
+        throw new Error(
+          "No assessment questions were returned for this attempt.",
+        );
+      }
+
+      setQuestions(groupedQuestions);
+      setExamAttemptId(attemptId);
+    },
+    [],
+  );
+
+  const initializeAssessment = useCallback(async () => {
+    setLoading(true);
+    setErrorMessage("");
+    setMessage("");
+
+    try {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        throw new Error(
+          "You must be logged in to take this assessment.",
+        );
+      }
+
+      const { data: enrollmentData, error: enrollmentError } =
+        await supabase.rpc("enroll_in_course", {
+          requested_course_slug: COURSE_SLUG,
+        });
+
+      if (enrollmentError) {
+        throw new Error(enrollmentError.message);
+      }
+
+      const secureEnrollmentId = enrollmentData as string;
+      setEnrollmentId(secureEnrollmentId);
+
+      const { data: openAttempts, error: openAttemptError } =
+        await supabase
+          .from("exam_attempts")
+          .select("id")
+          .eq("enrollment_id", secureEnrollmentId)
+          .is("submitted_at", null)
+          .order("started_at", { ascending: false })
+          .limit(1);
+
+      if (openAttemptError) {
+        throw new Error(openAttemptError.message);
+      }
+
+      const existingAttemptId = openAttempts?.[0]?.id as
+        | string
+        | undefined;
+
+      if (existingAttemptId) {
+        await loadExamQuestions(existingAttemptId);
+        setMessage("Your open assessment attempt was restored.");
+      }
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "The assessment could not be initialized.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [loadExamQuestions]);
+
+  useEffect(() => {
+    void initializeAssessment();
+  }, [initializeAssessment]);
+
+  async function beginAssessment() {
+    if (!enrollmentId) {
+      setErrorMessage(
+        "Your course enrollment could not be confirmed.",
+      );
       return;
     }
 
-    setSaveMessage(
-      passed
-        ? "Passed! Your score, completion, and certificate were saved."
-        : "Your score was saved. A score of 80% or higher is required to earn the certificate."
+    setStartingExam(true);
+    setErrorMessage("");
+    setMessage("");
+
+    try {
+      const { data, error } = await supabase.rpc(
+        "begin_exam_attempt",
+        {
+          requested_enrollment_id: enrollmentId,
+        },
+      );
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      const newAttemptId = data as string;
+
+      await loadExamQuestions(newAttemptId);
+
+      setAnswers({});
+      setSubmitted(false);
+      setScore(null);
+      setPassed(false);
+      setMessage(
+        "Your assessment attempt has started. Answer every question before submitting.",
+      );
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "The assessment could not be started.",
+      );
+    } finally {
+      setStartingExam(false);
+    }
+  }
+
+  function selectAnswer(questionId: string, optionId: string) {
+    if (submitted || submitting) {
+      return;
+    }
+
+    setAnswers((currentAnswers) => ({
+      ...currentAnswers,
+      [questionId]: optionId,
+    }));
+  }
+
+  async function submitAssessment() {
+    if (!examAttemptId) {
+      setErrorMessage("No open assessment attempt was found.");
+      return;
+    }
+
+    const unansweredQuestions = questions.filter(
+      (question) => !answers[question.id],
     );
 
-    setSaving(false);
+    if (unansweredQuestions.length > 0) {
+      setErrorMessage(
+        "Please answer every question before submitting.",
+      );
+      return;
+    }
+
+    const submittedAnswers: SubmittedAnswer[] = questions.map(
+      (question) => ({
+        question_id: question.id,
+        option_id: answers[question.id],
+      }),
+    );
+
+    setSubmitting(true);
+    setErrorMessage("");
+    setMessage("");
+
+    try {
+      const { data, error } = await supabase.rpc(
+        "submit_exam_attempt",
+        {
+          requested_exam_attempt_id: examAttemptId,
+          submitted_answers: submittedAnswers,
+        },
+      );
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      const result = (data?.[0] ?? data) as
+        | SubmitExamResult
+        | undefined;
+
+      if (!result) {
+        throw new Error(
+          "The assessment was submitted, but no score was returned.",
+        );
+      }
+
+      const returnedScore = Number(result.score);
+      const returnedPassed = Boolean(result.passed);
+
+      setScore(returnedScore);
+      setPassed(returnedPassed);
+      setSubmitted(true);
+
+      setMessage(
+        returnedPassed
+          ? "You passed the secure course assessment. Your score and responses were saved."
+          : "Your score and responses were saved. You did not reach the required passing score.",
+      );
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "The assessment could not be submitted.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   }
 
-  function retakeQuiz() {
-    setAnswers(Array(questions.length).fill(null));
+  async function beginAnotherAttempt() {
+    setQuestions([]);
+    setAnswers({});
+    setExamAttemptId(null);
     setSubmitted(false);
-    setScore(0);
-    setSaveMessage("");
-    setSaving(false);
+    setScore(null);
+    setPassed(false);
+    setMessage("");
+    setErrorMessage("");
+
+    await beginAssessment();
   }
 
-  const passed = score >= 80;
+  const answeredCount = questions.filter(
+    (question) => Boolean(answers[question.id]),
+  ).length;
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-black text-white">
+        <Navbar />
+
+        <section className="mx-auto max-w-4xl px-6 py-16 text-center">
+          <p className="text-lg font-semibold text-zinc-300">
+            Loading secure assessment…
+          </p>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-black text-white">
@@ -195,7 +369,7 @@ export default function AcutePulmonaryEdemaQuizPage() {
 
         <div className="mt-8">
           <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-500">
-            Course Assessment
+            Secure Course Assessment
           </p>
 
           <h1 className="mt-3 text-4xl font-extrabold">
@@ -203,86 +377,143 @@ export default function AcutePulmonaryEdemaQuizPage() {
           </h1>
 
           <p className="mt-3 text-zinc-400">
-            Answer all five questions. A score of 80% or higher is required to
-            earn the certificate.
+            Answer all five questions. The server securely
+            grades and retains the assessment. A score of 80%
+            or higher is required to pass.
           </p>
         </div>
 
-        <div className="mt-8 space-y-6">
-          {questions.map((question, questionIndex) => (
-            <article
-              key={question.question}
-              className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6"
+        {errorMessage && (
+          <div
+            role="alert"
+            className="mt-8 rounded-xl border border-red-500 bg-red-500/10 p-4 text-red-200"
+          >
+            {errorMessage}
+          </div>
+        )}
+
+        {message && (
+          <div className="mt-8 rounded-xl border border-zinc-700 bg-zinc-900 p-4 text-zinc-300">
+            {message}
+          </div>
+        )}
+
+        {!examAttemptId && (
+          <section className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-900 p-8 text-center">
+            <h2 className="text-2xl font-extrabold">
+              Ready to Begin?
+            </h2>
+
+            <p className="mx-auto mt-3 max-w-2xl leading-7 text-zinc-400">
+              Starting the assessment creates an official attempt.
+              Your questions, submitted answers, score, and result
+              will be retained with your course record.
+            </p>
+
+            <button
+              type="button"
+              onClick={beginAssessment}
+              disabled={startingExam || !enrollmentId}
+              className="mt-6 rounded-xl bg-red-600 px-7 py-3 font-bold transition hover:bg-red-500 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400"
             >
-              <p className="text-sm font-bold uppercase tracking-wide text-red-500">
-                Question {questionIndex + 1}
-              </p>
+              {startingExam
+                ? "Starting Assessment…"
+                : "Begin Assessment"}
+            </button>
+          </section>
+        )}
 
-              <h2 className="mt-3 text-xl font-bold">
-                {question.question}
-              </h2>
+        {examAttemptId && !submitted && (
+          <>
+            <div className="mt-8 rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+              <div className="flex items-center justify-between gap-4">
+                <span className="font-semibold text-zinc-300">
+                  Questions answered
+                </span>
 
-              <div className="mt-5 space-y-3">
-                {question.answers.map((answer, answerIndex) => {
-                  const selected =
-                    answers[questionIndex] === answerIndex;
-
-                  const correct =
-                    submitted &&
-                    answerIndex === question.correctAnswer;
-
-                  const incorrect =
-                    submitted &&
-                    selected &&
-                    answerIndex !== question.correctAnswer;
-
-                  return (
-                    <button
-                      key={answer}
-                      type="button"
-                      onClick={() =>
-                        selectAnswer(questionIndex, answerIndex)
-                      }
-                      className={`w-full rounded-xl border px-4 py-3 text-left transition ${
-                        correct
-                          ? "border-emerald-500 bg-emerald-500/10 text-emerald-300"
-                          : incorrect
-                          ? "border-red-500 bg-red-500/10 text-red-300"
-                          : selected
-                          ? "border-red-500 bg-red-500/10 text-white"
-                          : "border-zinc-700 bg-black text-zinc-300 hover:border-red-500"
-                      }`}
-                    >
-                      {answer}
-                    </button>
-                  );
-                })}
+                <span className="font-bold text-red-400">
+                  {answeredCount} of {questions.length}
+                </span>
               </div>
 
-              {submitted && (
-                <div className="mt-5 rounded-xl border border-zinc-700 bg-black p-4">
-                  <p className="font-semibold text-zinc-200">
-                    Explanation
+              <div className="mt-3 h-3 overflow-hidden rounded-full bg-zinc-800">
+                <div
+                  className="h-full bg-red-600 transition-all"
+                  style={{
+                    width: `${
+                      questions.length > 0
+                        ? (answeredCount / questions.length) * 100
+                        : 0
+                    }%`,
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="mt-8 space-y-6">
+              {questions.map((question, questionIndex) => (
+                <article
+                  key={question.id}
+                  className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6"
+                >
+                  <p className="text-sm font-bold uppercase tracking-wide text-red-500">
+                    Question {questionIndex + 1}
                   </p>
 
-                  <p className="mt-2 text-sm leading-6 text-zinc-400">
-                    {question.explanation}
-                  </p>
-                </div>
-              )}
-            </article>
-          ))}
-        </div>
+                  <h2 className="mt-3 text-xl font-bold">
+                    {question.prompt}
+                  </h2>
 
-        {!submitted ? (
-          <button
-            type="button"
-            onClick={submitQuiz}
-            className="mt-8 w-full rounded-xl bg-red-600 px-6 py-4 text-lg font-bold transition hover:bg-red-500"
-          >
-            Submit Quiz
-          </button>
-        ) : (
+                  <div className="mt-5 space-y-3">
+                    {question.options.map((option) => {
+                      const selected =
+                        answers[question.id] === option.id;
+
+                      return (
+                        <button
+                          key={option.id}
+                          type="button"
+                          onClick={() =>
+                            selectAnswer(question.id, option.id)
+                          }
+                          className={`w-full rounded-xl border px-4 py-3 text-left transition ${
+                            selected
+                              ? "border-red-500 bg-red-500/10 text-white"
+                              : "border-zinc-700 bg-black text-zinc-300 hover:border-red-500"
+                          }`}
+                        >
+                          <span className="mr-3 font-bold text-red-400">
+                            {String.fromCharCode(
+                              65 + option.order,
+                            )}.
+                          </span>
+
+                          {option.text}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={submitAssessment}
+              disabled={
+                submitting ||
+                answeredCount !== questions.length
+              }
+              className="mt-8 w-full rounded-xl bg-red-600 px-6 py-4 text-lg font-bold transition hover:bg-red-500 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400"
+            >
+              {submitting
+                ? "Submitting Secure Assessment…"
+                : "Submit Assessment"}
+            </button>
+          </>
+        )}
+
+        {submitted && score !== null && (
           <section
             className={`mt-8 rounded-2xl border p-8 text-center ${
               passed
@@ -291,7 +522,7 @@ export default function AcutePulmonaryEdemaQuizPage() {
             }`}
           >
             <p className="text-sm font-bold uppercase tracking-[0.25em] text-zinc-300">
-              Quiz Complete
+              Assessment Complete
             </p>
 
             <h2 className="mt-3 text-5xl font-extrabold">
@@ -300,30 +531,38 @@ export default function AcutePulmonaryEdemaQuizPage() {
 
             <p className="mt-3 text-zinc-300">
               {passed
-                ? "You passed the course assessment."
+                ? "You passed the secure course assessment."
                 : "You did not reach the required passing score of 80%."}
             </p>
 
-            {saving && (
-              <p className="mt-4 text-sm text-zinc-400">
-                Saving your progress...
-              </p>
-            )}
-
-            {saveMessage && (
-              <p className="mt-4 text-sm text-zinc-300">
-                {saveMessage}
+            {passed && (
+              <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-zinc-400">
+                Passing the assessment does not by itself issue a
+                certificate. Required active course time and the
+                electronic attestation must also be completed.
               </p>
             )}
 
             <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-              <button
-                type="button"
-                onClick={retakeQuiz}
-                className="rounded-xl border border-zinc-600 px-6 py-3 font-bold transition hover:border-red-500 hover:text-red-400"
+              {!passed && (
+                <button
+                  type="button"
+                  onClick={beginAnotherAttempt}
+                  disabled={startingExam}
+                  className="rounded-xl border border-zinc-600 px-6 py-3 font-bold transition hover:border-red-500 hover:text-red-400 disabled:cursor-not-allowed"
+                >
+                  {startingExam
+                    ? "Starting…"
+                    : "Begin Another Attempt"}
+                </button>
+              )}
+
+              <Link
+                href="/courses/acute-pulmonary-edema"
+                className="rounded-xl bg-red-600 px-6 py-3 font-bold transition hover:bg-red-500"
               >
-                Retake Quiz
-              </button>
+                Return to Course
+              </Link>
 
               <Link
                 href="/dashboard"
@@ -331,15 +570,6 @@ export default function AcutePulmonaryEdemaQuizPage() {
               >
                 View Dashboard
               </Link>
-
-              {passed && (
-                <Link
-                  href={`/courses/acute-pulmonary-edema/certificate?score=${score}`}
-                  className="rounded-xl bg-red-600 px-6 py-3 font-bold transition hover:bg-red-500"
-                >
-                  View Certificate
-                </Link>
-              )}
             </div>
           </section>
         )}
