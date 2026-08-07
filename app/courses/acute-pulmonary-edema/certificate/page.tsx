@@ -311,7 +311,9 @@ export default function AcutePulmonaryEdemaCertificatePage() {
 
   return (
     <main className="min-h-screen bg-black text-white">
-      <Navbar />
+      <div className="print:hidden">
+        <Navbar />
+      </div>
 
       <section className="mx-auto max-w-6xl px-6 py-10 print:hidden">
         <Link
@@ -341,8 +343,8 @@ export default function AcutePulmonaryEdemaCertificatePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-6 pb-12 print:max-w-none print:p-0">
-        <div className="certificate relative overflow-hidden border-[12px] border-double border-red-700 bg-white px-10 py-12 text-center text-black shadow-2xl print:min-h-screen print:shadow-none">
+      <section className="certificate-print-area mx-auto max-w-6xl px-6 pb-12 print:max-w-none print:p-0">
+        <div className="certificate relative overflow-hidden border-[12px] border-double border-red-700 bg-white px-10 py-12 text-center text-black shadow-2xl print:shadow-none">
           <div className="absolute left-0 top-0 h-3 w-full bg-red-700" />
           <div className="absolute bottom-0 left-0 h-3 w-full bg-red-700" />
 
@@ -459,17 +461,69 @@ export default function AcutePulmonaryEdemaCertificatePage() {
       <style jsx global>{`
         @media print {
           @page {
-            size: landscape;
-            margin: 0.25in;
+            size: letter landscape;
+            margin: 0;
           }
 
           html,
           body {
+            margin: 0 !important;
+            padding: 0 !important;
             background: white !important;
+            width: 11in;
+            height: 8.5in;
+            overflow: hidden !important;
+          }
+
+          body * {
+            visibility: hidden !important;
+          }
+
+          .certificate-print-area,
+          .certificate-print-area * {
+            visibility: visible !important;
+          }
+
+          .certificate-print-area {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 11in !important;
+            height: 8.5in !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: hidden !important;
           }
 
           .certificate {
-            break-inside: avoid;
+            width: 11in !important;
+            height: 8.5in !important;
+            margin: 0 !important;
+            padding: 0.35in 0.45in !important;
+            box-sizing: border-box !important;
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+            box-shadow: none !important;
+          }
+
+          .certificate .mt-5 {
+            margin-top: 0.8rem !important;
+          }
+
+          .certificate .mt-7 {
+            margin-top: 1rem !important;
+          }
+
+          .certificate .mt-9 {
+            margin-top: 1.2rem !important;
+          }
+
+          .certificate .mt-10 {
+            margin-top: 1.2rem !important;
+          }
+
+          .certificate .mt-12 {
+            margin-top: 1.35rem !important;
           }
         }
       `}</style>
