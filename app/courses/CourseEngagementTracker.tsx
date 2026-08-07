@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "../lib/supabase/client";
 
 type CourseEngagementTrackerProps = {
@@ -39,63 +34,43 @@ export default function CourseEngagementTracker({
   onEligibilityChange,
 }: CourseEngagementTrackerProps) {
   const [activeSeconds, setActiveSeconds] = useState(0);
-
   const [requiredSeconds, setRequiredSeconds] = useState(
     requiredMinutes * 60,
   );
-
   const [isPaused, setIsPaused] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSignedIn, setIsSignedIn] = useState(false);
-
-  const [syncState, setSyncState] =
-    useState<SyncState>("idle");
-
+  const [syncState, setSyncState] = useState<SyncState>("idle");
   const [syncError, setSyncError] = useState("");
 
   const lastActivityRef = useRef(Date.now());
   const pausedRef = useRef(false);
   const signedInRef = useRef(false);
   const activeSecondsRef = useRef(0);
-
-  const requiredSecondsRef = useRef(
-    requiredMinutes * 60,
-  );
-
+  const requiredSecondsRef = useRef(requiredMinutes * 60);
   const heartbeatRunningRef = useRef(false);
+  const serverRequirementMetRef = useRef(false);
 
   const completedRequiredTime =
+    serverRequirementMetRef.current ||
     activeSeconds >= requiredSeconds;
 
-  const formatTime = useCallback(
-    (totalSeconds: number) => {
-      const safeSeconds = Math.max(
-        0,
-        Math.floor(totalSeconds),
-      );
+  const formatTime = useCallback((totalSeconds: number) => {
+    const safeSeconds = Math.max(0, Math.floor(totalSeconds));
+    const hours = Math.floor(safeSeconds / 3600);
+    const minutes = Math.floor((safeSeconds % 3600) / 60);
+    const seconds = safeSeconds % 60;
 
-      const hours = Math.floor(safeSeconds / 3600);
-
-      const minutes = Math.floor(
-        (safeSeconds % 3600) / 60,
-      );
-
-      const seconds = safeSeconds % 60;
-
-      if (hours > 0) {
-        return `${hours}:${minutes
-          .toString()
-          .padStart(2, "0")}:${seconds
-          .toString()
-          .padStart(2, "0")}`;
-      }
-
-      return `${minutes}:${seconds
+    if (hours > 0) {
+      return `${hours}:${minutes
+        .toString()
+        .padStart(2, "0")}:${seconds
         .toString()
         .padStart(2, "0")}`;
-    },
-    [],
-  );
+    }
+
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  }, []);
 
   const applyServerProgress = useCallback(
     (row: EngagementHeartbeatRow) => {
@@ -117,8 +92,9 @@ export default function CourseEngagementTracker({
         serverSeconds >= serverRequiredSeconds;
 
       activeSecondsRef.current = serverSeconds;
-      requiredSecondsRef.current =
-        serverRequiredSeconds;
+      requiredSecondsRef.current = serverRequiredSeconds;
+      serverRequirementMetRef.current =
+        timeRequirementMet;
 
       setActiveSeconds(serverSeconds);
       setRequiredSeconds(serverRequiredSeconds);
@@ -138,8 +114,7 @@ export default function CourseEngagementTracker({
       pausedRef.current ||
       document.hidden ||
       heartbeatRunningRef.current ||
-      activeSecondsRef.current >=
-        requiredSecondsRef.current
+      serverRequirementMetRef.current
     ) {
       return;
     }
@@ -191,10 +166,7 @@ export default function CourseEngagementTracker({
     } finally {
       heartbeatRunningRef.current = false;
     }
-  }, [
-    applyServerProgress,
-    courseSlug,
-  ]);
+  }, [applyServerProgress, courseSlug]);
 
   const resetHeartbeat = useCallback(async () => {
     if (!signedInRef.current) {
@@ -220,55 +192,55 @@ export default function CourseEngagementTracker({
     }
   }, [courseSlug]);
 
-  const initializeTracker =
-    useCallback(async () => {
-      setIsLoaded(false);
-      setSyncError("");
+  const initializeTracker = useCallback(async () => {
+    setIsLoaded(false);
+    setSyncError("");
 
-      try {
-        const {
-          data: { session },
-          error: sessionError,
-        } = await supabase.auth.getSession();
+    try {
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
 
-        if (sessionError) {
-          throw new Error(sessionError.message);
-        }
-
-        const signedIn = Boolean(session?.user);
-
-        signedInRef.current = signedIn;
-        setIsSignedIn(signedIn);
-
-        if (!signedIn) {
-          activeSecondsRef.current = 0;
-          setActiveSeconds(0);
-          setIsLoaded(true);
-          return;
-        }
-
-        await resetHeartbeat();
-        await recordHeartbeat();
-      } catch (error) {
-        console.error(
-          "Unable to initialize engagement tracking:",
-          error,
-        );
-
-        setSyncError(
-          error instanceof Error
-            ? error.message
-            : "Course engagement could not be initialized.",
-        );
-
-        setSyncState("error");
-      } finally {
-        setIsLoaded(true);
+      if (sessionError) {
+        throw new Error(sessionError.message);
       }
-    }, [
-      recordHeartbeat,
-      resetHeartbeat,
-    ]);
+
+      const signedIn = Boolean(session?.user);
+      signedInRef.current = signedIn;
+      setIsSignedIn(signedIn);
+
+      if (!signedIn) {
+        activeSecondsRef.current = 0;
+        setActiveSeconds(0);
+        setIsLoaded(true);
+        return;
+      }
+
+      /*
+        The first call establishes or refreshes the server heartbeat.
+        It does not grant the full course time; the database only
+        credits the small elapsed interval between valid heartbeats.
+      */
+      await resetHeartbeat();
+      await recordHeartbeat();
+    } catch (error) {
+      console.error(
+        "Unable to initialize engagement tracking:",
+        error,
+      );
+
+      setSyncError(
+        error instanceof Error
+          ? error.message
+          : "Course engagement could not be initialized.",
+      );
+
+      setSyncState("error");
+    } finally {
+      setIsLoaded(true);
+    }
+  }, [recordHeartbeat, resetHeartbeat]);
 
   const recordActivity = useCallback(() => {
     if (pausedRef.current) {
@@ -288,6 +260,10 @@ export default function CourseEngagementTracker({
     pausedRef.current = false;
     setIsPaused(false);
 
+    /*
+      Resetting the server timestamp prevents time spent on another
+      tab or away from the device from being credited.
+    */
     await resetHeartbeat();
   }, [resetHeartbeat]);
 
@@ -306,9 +282,7 @@ export default function CourseEngagementTracker({
   }, [initializeTracker]);
 
   useEffect(() => {
-    const activityEvents: Array<
-      keyof WindowEventMap
-    > = [
+    const activityEvents: Array<keyof WindowEventMap> = [
       "mousemove",
       "mousedown",
       "keydown",
@@ -318,13 +292,9 @@ export default function CourseEngagementTracker({
     ];
 
     activityEvents.forEach((eventName) => {
-      window.addEventListener(
-        eventName,
-        recordActivity,
-        {
-          passive: true,
-        },
-      );
+      window.addEventListener(eventName, recordActivity, {
+        passive: true,
+      });
     });
 
     return () => {
@@ -344,6 +314,10 @@ export default function CourseEngagementTracker({
         return;
       }
 
+      /*
+        The learner must deliberately resume after leaving the tab.
+        This avoids silently crediting inactive time.
+      */
       pausedRef.current = true;
       setIsPaused(true);
     };
@@ -366,75 +340,56 @@ export default function CourseEngagementTracker({
       return;
     }
 
-    const displayInterval =
-      window.setInterval(() => {
-        if (
-          pausedRef.current ||
-          document.hidden ||
-          !signedInRef.current ||
-          activeSecondsRef.current >=
-            requiredSecondsRef.current
-        ) {
-          return;
-        }
+    const displayInterval = window.setInterval(() => {
+      if (
+        pausedRef.current ||
+        document.hidden ||
+        !signedInRef.current ||
+        activeSecondsRef.current >= requiredSecondsRef.current
+      ) {
+        return;
+      }
 
-        const idleTime =
-          Date.now() -
-          lastActivityRef.current;
+      const idleTime =
+        Date.now() - lastActivityRef.current;
 
-        if (idleTime >= IDLE_LIMIT_MS) {
-          pauseCourse();
-          return;
-        }
+      if (idleTime >= IDLE_LIMIT_MS) {
+        pauseCourse();
+        return;
+      }
 
-        const nextSeconds = Math.min(
-          activeSecondsRef.current + 1,
-          requiredSecondsRef.current,
-        );
+      const nextSeconds = Math.min(
+        activeSecondsRef.current + 1,
+        requiredSecondsRef.current,
+      );
 
-        activeSecondsRef.current =
-          nextSeconds;
-
-        setActiveSeconds(nextSeconds);
-      }, LOCAL_DISPLAY_INTERVAL_MS);
+      activeSecondsRef.current = nextSeconds;
+      setActiveSeconds(nextSeconds);
+    }, LOCAL_DISPLAY_INTERVAL_MS);
 
     return () => {
-      window.clearInterval(
-        displayInterval,
-      );
+      window.clearInterval(displayInterval);
     };
-  }, [
-    isLoaded,
-    pauseCourse,
-  ]);
+  }, [isLoaded, pauseCourse]);
 
   useEffect(() => {
     if (!isLoaded || !isSignedIn) {
       return;
     }
 
-    const heartbeatInterval =
-      window.setInterval(() => {
-        void recordHeartbeat();
-      }, HEARTBEAT_INTERVAL_MS);
+    const heartbeatInterval = window.setInterval(() => {
+      void recordHeartbeat();
+    }, HEARTBEAT_INTERVAL_MS);
 
     return () => {
-      window.clearInterval(
-        heartbeatInterval,
-      );
+      window.clearInterval(heartbeatInterval);
     };
-  }, [
-    isLoaded,
-    isSignedIn,
-    recordHeartbeat,
-  ]);
+  }, [isLoaded, isSignedIn, recordHeartbeat]);
 
   const progressPercent = Math.min(
     100,
     Math.round(
-      (activeSeconds /
-        Math.max(1, requiredSeconds)) *
-        100,
+      (activeSeconds / Math.max(1, requiredSeconds)) * 100,
     ),
   );
 
@@ -462,10 +417,8 @@ export default function CourseEngagementTracker({
                   {formatTime(activeSeconds)}
                 </span>
                 {" / "}
-                {Math.ceil(
-                  requiredSeconds / 60,
-                )}{" "}
-                minutes required
+                {Math.ceil(requiredSeconds / 60)} minutes
+                required
               </p>
 
               <p className="mt-2 text-xs text-zinc-500">
@@ -505,21 +458,15 @@ export default function CourseEngagementTracker({
           <div className="mt-5 h-3 overflow-hidden rounded-full bg-zinc-800">
             <div
               className="h-full rounded-full bg-red-600 transition-all duration-500"
-              style={{
-                width: `${progressPercent}%`,
-              }}
+              style={{ width: `${progressPercent}%` }}
             />
           </div>
 
           <div className="mt-2 flex justify-between text-xs text-zinc-500">
-            <span>
-              {progressPercent}% complete
-            </span>
-
+            <span>{progressPercent}% complete</span>
             <span>
               Idle pause after{" "}
-              {IDLE_LIMIT_MS / 60_000}{" "}
-              minutes
+              {IDLE_LIMIT_MS / 60_000} minutes
             </span>
           </div>
         </div>
@@ -537,17 +484,14 @@ export default function CourseEngagementTracker({
             </h2>
 
             <p className="mt-4 leading-7 text-zinc-300">
-              Official active course time has
-              stopped. Select Resume Course
-              when you are ready to continue
+              Official active course time has stopped. Select
+              Resume Course when you are ready to continue
               reviewing the content.
             </p>
 
             <button
               type="button"
-              onClick={() =>
-                void resumeCourse()
-              }
+              onClick={() => void resumeCourse()}
               className="mt-7 rounded-xl bg-red-600 px-7 py-3 font-bold text-white transition hover:bg-red-500"
             >
               Resume Course
