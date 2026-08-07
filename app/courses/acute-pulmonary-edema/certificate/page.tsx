@@ -17,7 +17,6 @@ type CertificateRecord = {
   actual_course_hours: number | string;
   oems_approval_number: string | null;
   final_score: number | string;
-  certificate_path?: string | null;
 };
 
 type PageStatus =
@@ -111,7 +110,6 @@ export default function AcutePulmonaryEdemaCertificatePage() {
             "actual_course_hours",
             "oems_approval_number",
             "final_score",
-            "certificate_path",
           ].join(","),
         )
         .eq("enrollment_id", enrollmentId)
