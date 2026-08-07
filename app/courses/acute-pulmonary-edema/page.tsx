@@ -3,9 +3,11 @@
 import CourseEngagementTracker from "../CourseEngagementTracker";
 
 import Link from "next/link";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
 import CourseAccessGate from "../../components/CourseAccessGate";
+import CourseAttestationForm from "../../components/courses/CourseAttestationForm";
+import { supabase } from "../../../lib/supabase/client";
 
 type Option = {
   text: string;
@@ -238,6 +240,11 @@ export default function AcutePulmonaryEdemaPage() {
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [complete, setComplete] = useState(false);
 
+  const [secureAssessmentLoaded, setSecureAssessmentLoaded] =
+    useState(false);
+  const [secureAssessmentPassed, setSecureAssessmentPassed] =
+    useState(false);
+
   const step = scenarioSteps[currentStep];
 
   const handleEligibilityChange = useCallback(
@@ -253,6 +260,77 @@ export default function AcutePulmonaryEdemaPage() {
     },
     [],
   );
+
+  useEffect(() => {
+    if (!complete) {
+      return;
+    }
+
+    let active = true;
+
+    async function loadSecureAssessmentStatus() {
+      setSecureAssessmentLoaded(false);
+      setSecureAssessmentPassed(false);
+
+      try {
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError || !user) {
+          return;
+        }
+
+        const {
+          data: enrollmentId,
+          error: enrollmentError,
+        } = await supabase.rpc("enroll_in_course", {
+          requested_course_slug: "acute-pulmonary-edema",
+        });
+
+        if (
+          enrollmentError ||
+          !enrollmentId ||
+          typeof enrollmentId !== "string"
+        ) {
+          return;
+        }
+
+        const {
+          data: latestAttempts,
+          error: latestAttemptError,
+        } = await supabase.rpc("get_latest_exam_attempt", {
+          requested_enrollment_id: enrollmentId,
+        });
+
+        if (latestAttemptError) {
+          return;
+        }
+
+        const latestAttempt = latestAttempts?.[0];
+
+        if (active) {
+          setSecureAssessmentPassed(
+            Boolean(
+              latestAttempt?.passed &&
+                latestAttempt?.submitted_at,
+            ),
+          );
+        }
+      } finally {
+        if (active) {
+          setSecureAssessmentLoaded(true);
+        }
+      }
+    }
+
+    void loadSecureAssessmentStatus();
+
+    return () => {
+      active = false;
+    };
+  }, [complete]);
 
   function chooseOption(optionIndex: number) {
     if (answered) {
@@ -297,6 +375,8 @@ export default function AcutePulmonaryEdemaPage() {
     setAnswered(false);
     setCorrectAnswers(0);
     setComplete(false);
+    setSecureAssessmentLoaded(false);
+    setSecureAssessmentPassed(false);
 
     window.scrollTo({
       top: 0,
@@ -343,7 +423,7 @@ export default function AcutePulmonaryEdemaPage() {
                 }`}
               >
                 {passed
-                  ? "Course Passed"
+                  ? "Scenario Passed"
                   : "Additional Review Required"}
               </p>
 
@@ -355,7 +435,7 @@ export default function AcutePulmonaryEdemaPage() {
                 }`}
               >
                 {passed
-                  ? "🏅 Certificate Unlocked"
+                  ? "✓ Scenario Complete"
                   : "Retake Required"}
               </div>
 
@@ -407,9 +487,17 @@ export default function AcutePulmonaryEdemaPage() {
                   />
 
                   <ProgressItem
-                    title="Certificate"
-                    status={passed ? "Unlocked" : "Locked"}
-                    complete={passed}
+                    title="Secure Assessment"
+                    status={
+                      !passed
+                        ? "Scenario Pass Required"
+                        : !secureAssessmentLoaded
+                          ? "Checking"
+                          : secureAssessmentPassed
+                            ? "Passed"
+                            : "Required"
+                    }
+                    complete={passed && secureAssessmentPassed}
                   />
                 </div>
               </div>
@@ -440,35 +528,46 @@ export default function AcutePulmonaryEdemaPage() {
 
               {passed && (
                 <div className="mx-auto mt-8 max-w-3xl text-left">
-                  <CourseAccessGate
-                    accessLevel="profile"
-                    title="Complete Your Profile to Access the Certificate"
-                    description="Your full name, provider level, and department, service, school, or organization are required before your certificate can be issued."
-                  >
-                    <div className="rounded-2xl border border-emerald-700 bg-emerald-950/20 p-6 text-center">
-                      <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-emerald-400">
-                        Certificate Available
+                  {!secureAssessmentLoaded ? (
+                    <div className="rounded-2xl border border-zinc-700 bg-black p-6 text-center">
+                      <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-zinc-400">
+                        Checking Secure Assessment
+                      </p>
+
+                      <p className="mt-3 leading-7 text-zinc-300">
+                        Verifying your official assessment result.
+                      </p>
+                    </div>
+                  ) : !secureAssessmentPassed ? (
+                    <div className="rounded-2xl border border-amber-700 bg-amber-950/20 p-6 text-center">
+                      <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-amber-400">
+                        Secure Assessment Required
                       </p>
 
                       <h2 className="mt-3 text-2xl font-extrabold">
-                        Your Certificate Is Ready
+                        Complete the Official Course Assessment
                       </h2>
 
                       <p className="mt-3 leading-7 text-zinc-300">
-                        Your completed profile will be used
-                        for the name and education
-                        information associated with this
-                        course record.
+                        Your scenario is complete, but the secure
+                        assessment must be passed before the electronic
+                        attestation and certificate can be completed.
                       </p>
 
                       <Link
-                        href={`/courses/acute-pulmonary-edema/certificate?score=${percentage}`}
-                        className="mt-6 inline-block rounded-xl bg-emerald-600 px-7 py-3 font-bold text-white transition hover:bg-emerald-500"
+                        href="/courses/acute-pulmonary-edema/quiz"
+                        className="mt-6 inline-block rounded-xl bg-red-600 px-7 py-3 font-bold text-white transition hover:bg-red-500"
                       >
-                        View / Download Certificate
+                        Go to Secure Assessment
                       </Link>
                     </div>
-                  </CourseAccessGate>
+                  ) : (
+                    <CourseAttestationForm
+                      courseSlug="acute-pulmonary-edema"
+                      courseTitle="Acute Pulmonary Edema"
+                      certificateHref="/courses/acute-pulmonary-edema/certificate"
+                    />
+                  )}
                 </div>
               )}
             </div>
