@@ -338,7 +338,7 @@ export default function AcutePulmonaryEdemaCertificatePage() {
             onClick={printCertificate}
             className="mt-6 rounded-xl border border-red-500 px-6 py-3 font-bold text-red-400 transition hover:bg-red-500 hover:text-white"
           >
-            Print / Save PDF
+            Print Certificate
           </button>
         </div>
       </section>
