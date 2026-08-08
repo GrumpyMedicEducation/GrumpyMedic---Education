@@ -3,8 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
+import CourseAttestationForm from "../../components/courses/CourseAttestationForm";
 import CourseEngagementTracker from "../CourseEngagementTracker";
+import { supabase } from "../../../lib/supabase/client";
 
 const learningObjectives = [
   "Recognize symptomatic adult and pediatric bradycardia.",
@@ -16,6 +19,78 @@ const learningObjectives = [
 ];
 
 export default function BradycardiaCoursePage() {
+  const [secureAssessmentLoaded, setSecureAssessmentLoaded] =
+    useState(false);
+  const [secureAssessmentPassed, setSecureAssessmentPassed] =
+    useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadSecureAssessmentStatus() {
+      setSecureAssessmentLoaded(false);
+      setSecureAssessmentPassed(false);
+
+      try {
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError || !user) {
+          return;
+        }
+
+        const {
+          data: enrollmentId,
+          error: enrollmentError,
+        } = await supabase.rpc("enroll_in_course", {
+          requested_course_slug: "bradycardia",
+        });
+
+        if (
+          enrollmentError ||
+          !enrollmentId ||
+          typeof enrollmentId !== "string"
+        ) {
+          return;
+        }
+
+        const {
+          data: latestAttempts,
+          error: latestAttemptError,
+        } = await supabase.rpc("get_latest_exam_attempt", {
+          requested_enrollment_id: enrollmentId,
+        });
+
+        if (latestAttemptError) {
+          return;
+        }
+
+        const latestAttempt = latestAttempts?.[0];
+
+        if (active) {
+          setSecureAssessmentPassed(
+            Boolean(
+              latestAttempt?.passed &&
+                latestAttempt?.submitted_at,
+            ),
+          );
+        }
+      } finally {
+        if (active) {
+          setSecureAssessmentLoaded(true);
+        }
+      }
+    }
+
+    void loadSecureAssessmentStatus();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <main className="min-h-screen bg-black text-white">
       <Navbar />
@@ -276,14 +351,63 @@ export default function BradycardiaCoursePage() {
         </CourseSection>
 
         <section className="mt-14 rounded-2xl border border-red-700 bg-gradient-to-br from-red-950/30 to-zinc-900 p-8 text-center">
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-red-500">Final Knowledge Check</p>
-          <h2 className="mt-3 text-3xl font-extrabold">Ready to Take the Quiz?</h2>
-          <p className="mx-auto mt-4 max-w-2xl leading-7 text-zinc-300">
-            Answer all 25 questions. A score of 80% or higher—20 correct answers—is required to pass.
+          <p className="text-sm font-bold uppercase tracking-[0.2em] text-red-500">
+            Final Knowledge Check
           </p>
-          <Link href="/courses/bradycardia/quiz" className="mt-6 inline-block rounded-xl bg-red-600 px-8 py-4 font-bold transition hover:bg-red-500">
-            Start Final Quiz
-          </Link>
+
+          {!secureAssessmentLoaded ? (
+            <>
+              <h2 className="mt-3 text-3xl font-extrabold">
+                Checking Secure Assessment
+              </h2>
+
+              <p className="mx-auto mt-4 max-w-2xl leading-7 text-zinc-300">
+                Verifying your official Adult &amp; Pediatric Bradycardia assessment status.
+              </p>
+            </>
+          ) : !secureAssessmentPassed ? (
+            <>
+              <h2 className="mt-3 text-3xl font-extrabold">
+                Ready to Take the Quiz?
+              </h2>
+
+              <p className="mx-auto mt-4 max-w-2xl leading-7 text-zinc-300">
+                Answer all 25 questions. A score of 80% or higher—20 correct answers—is required to pass.
+              </p>
+
+              <Link
+                href="/courses/bradycardia/quiz"
+                className="mt-6 inline-block rounded-xl bg-red-600 px-8 py-4 font-bold transition hover:bg-red-500"
+              >
+                Start Final Quiz
+              </Link>
+            </>
+          ) : (
+            <>
+              <div className="mx-auto mb-8 max-w-3xl rounded-2xl border border-emerald-700 bg-emerald-950/20 p-6">
+                <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-emerald-400">
+                  Secure Assessment Passed
+                </p>
+
+                <h2 className="mt-3 text-3xl font-extrabold">
+                  Complete Your Electronic Attestation
+                </h2>
+
+                <p className="mt-4 leading-7 text-zinc-300">
+                  Your passing assessment result has been verified. Complete the
+                  electronic attestation below before your certificate can be issued.
+                </p>
+              </div>
+
+              <div className="mx-auto max-w-3xl text-left">
+                <CourseAttestationForm
+                  courseSlug="bradycardia"
+                  courseTitle="Adult & Pediatric Bradycardia"
+                  certificateHref="/courses/bradycardia/certificate"
+                />
+              </div>
+            </>
+          )}
         </section>
 
         <p className="mt-10 text-center text-sm leading-6 text-zinc-500">
