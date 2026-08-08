@@ -130,6 +130,14 @@ async function ensureProgressRow(
     .single();
 
   if (error) {
+    if (error.code === "23505") {
+      const racedExisting = await getProgressRow(userId, courseSlug);
+
+      if (racedExisting) {
+        return racedExisting;
+      }
+    }
+
     throw new Error(`Unable to create course progress: ${error.message}`);
   }
 
