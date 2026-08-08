@@ -1,7 +1,12 @@
+"use client";
+
 import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Navbar from "../../components/Navbar";
+import CourseAttestationForm from "../../components/courses/CourseAttestationForm";
 import CourseEngagementTracker from "../CourseEngagementTracker";
+import { supabase } from "../../../lib/supabase/client";
 
 const objectives = [
   "Identify indications and contraindications for supraglottic airway placement.",
@@ -58,6 +63,78 @@ const iGelSizes = [
 ];
 
 export default function BLSAirwayCapnographyCoursePage() {
+  const [secureAssessmentLoaded, setSecureAssessmentLoaded] =
+    useState(false);
+  const [secureAssessmentPassed, setSecureAssessmentPassed] =
+    useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadSecureAssessmentStatus() {
+      setSecureAssessmentLoaded(false);
+      setSecureAssessmentPassed(false);
+
+      try {
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError || !user) {
+          return;
+        }
+
+        const {
+          data: enrollmentId,
+          error: enrollmentError,
+        } = await supabase.rpc("enroll_in_course", {
+          requested_course_slug: "bls-airway-capnography",
+        });
+
+        if (
+          enrollmentError ||
+          !enrollmentId ||
+          typeof enrollmentId !== "string"
+        ) {
+          return;
+        }
+
+        const {
+          data: latestAttempts,
+          error: latestAttemptError,
+        } = await supabase.rpc("get_latest_exam_attempt", {
+          requested_enrollment_id: enrollmentId,
+        });
+
+        if (latestAttemptError) {
+          return;
+        }
+
+        const latestAttempt = latestAttempts?.[0];
+
+        if (active) {
+          setSecureAssessmentPassed(
+            Boolean(
+              latestAttempt?.passed &&
+                latestAttempt?.submitted_at,
+            ),
+          );
+        }
+      } finally {
+        if (active) {
+          setSecureAssessmentLoaded(true);
+        }
+      }
+    }
+
+    void loadSecureAssessmentStatus();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <main className="min-h-screen bg-black text-white">
       <Navbar />
@@ -641,31 +718,72 @@ export default function BLSAirwayCapnographyCoursePage() {
             Course Complete
           </p>
 
-          <h2 className="mt-3 text-3xl font-extrabold">
-            Test Your Knowledge
-          </h2>
+          {!secureAssessmentLoaded ? (
+            <>
+              <h2 className="mt-3 text-3xl font-extrabold">
+                Checking Secure Assessment
+              </h2>
 
-          <p className="mx-auto mt-4 max-w-3xl leading-7 text-zinc-300">
-            Complete the BLS Airway &amp; Capnography quiz to review
-            indications, iGel placement, ventilation, waveform interpretation,
-            troubleshooting, and CPR priorities.
-          </p>
+              <p className="mx-auto mt-4 max-w-3xl leading-7 text-zinc-300">
+                Verifying your official BLS Airway &amp; Capnography assessment
+                status.
+              </p>
+            </>
+          ) : !secureAssessmentPassed ? (
+            <>
+              <h2 className="mt-3 text-3xl font-extrabold">
+                Test Your Knowledge
+              </h2>
 
-          <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
-            <Link
-              href="/courses/bls-airway-capnography/quiz"
-              className="rounded-xl bg-red-600 px-8 py-4 font-bold transition hover:bg-red-500"
-            >
-              Start Quiz
-            </Link>
+              <p className="mx-auto mt-4 max-w-3xl leading-7 text-zinc-300">
+                Complete the BLS Airway &amp; Capnography quiz to review
+                indications, iGel placement, ventilation, waveform interpretation,
+                troubleshooting, and CPR priorities.
+              </p>
 
-            <a
-              href="#course-content"
-              className="rounded-xl border border-zinc-600 px-8 py-4 font-bold transition hover:border-red-500 hover:text-red-400"
-            >
-              Review Course
-            </a>
-          </div>
+              <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
+                <Link
+                  href="/courses/bls-airway-capnography/quiz"
+                  className="rounded-xl bg-red-600 px-8 py-4 font-bold transition hover:bg-red-500"
+                >
+                  Start Quiz
+                </Link>
+
+                <a
+                  href="#course-content"
+                  className="rounded-xl border border-zinc-600 px-8 py-4 font-bold transition hover:border-red-500 hover:text-red-400"
+                >
+                  Review Course
+                </a>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="mx-auto mb-8 max-w-3xl rounded-2xl border border-emerald-700 bg-emerald-950/20 p-6">
+                <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-emerald-400">
+                  Secure Assessment Passed
+                </p>
+
+                <h2 className="mt-3 text-3xl font-extrabold">
+                  Complete Your Electronic Attestation
+                </h2>
+
+                <p className="mt-4 leading-7 text-zinc-300">
+                  Your passing assessment result has been verified. Complete the
+                  electronic attestation below before your certificate can be
+                  issued.
+                </p>
+              </div>
+
+              <div className="mx-auto max-w-3xl text-left">
+                <CourseAttestationForm
+                  courseSlug="bls-airway-capnography"
+                  courseTitle="BLS Airway & Capnography"
+                  certificateHref="/courses/bls-airway-capnography/certificate"
+                />
+              </div>
+            </>
+          )}
         </section>
 
         <div className="mt-8 rounded-xl border border-zinc-800 bg-zinc-950 p-5 text-sm leading-6 text-zinc-500">
