@@ -142,7 +142,7 @@ export default function BLSAirwayCapnographyCoursePage() {
       <CourseEngagementTracker
         courseSlug="bls-airway-capnography"
         courseTitle="BLS Airway & Capnography"
-        requiredMinutes={60}
+        requiredMinutes={45}
       />
 
       <section className="border-b border-zinc-800 bg-gradient-to-b from-red-950/30 to-black">

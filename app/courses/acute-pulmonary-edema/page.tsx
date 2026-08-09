@@ -231,7 +231,7 @@ export default function AcutePulmonaryEdemaPage() {
   const [officialActiveSeconds, setOfficialActiveSeconds] =
     useState(0);
   const [officialRequiredSeconds, setOfficialRequiredSeconds] =
-    useState(30 * 60);
+    useState(45 * 60);
 
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedOption, setSelectedOption] =
@@ -584,7 +584,7 @@ export default function AcutePulmonaryEdemaPage() {
         <CourseEngagementTracker
           courseSlug="acute-pulmonary-edema"
           courseTitle="Acute Pulmonary Edema"
-          requiredMinutes={30}
+          requiredMinutes={45}
           onEligibilityChange={handleEligibilityChange}
         />
 
