@@ -1,475 +1,616 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Navbar from "../../../components/Navbar";
-import CourseAccessGate from "../../../components/CourseAccessGate";
+import QuizAccessGate from "../../../components/courses/QuizAccessGate";
+import { supabase } from "../../../../lib/supabase/client";
 
-type QuizQuestion = {
-  question: string;
-  options: string[];
-  correctAnswer: number;
-  explanation: string;
+const COURSE_SLUG = "bronchospasm-respiratory-distress";
+
+type ExamQuestionRow = {
+  question_id: string;
+  display_order: number;
+  prompt: string;
+  option_id: string;
+  option_order: number;
+  option_text: string;
 };
 
-const questions: QuizQuestion[] = [
-  {
-    "question": "Which assessment finding best reflects airflow severity?",
-    "options": [
-      "Presence of any wheeze only",
-      "Quality of air movement",
-      "Patient age only",
-      "Skin temperature only"
-    ],
-    "correctAnswer": 1,
-    "explanation": "Air movement may be severely reduced even when wheezing becomes quieter."
-  },
-  {
-    "question": "A silent chest in a distressed patient suggests:",
-    "options": [
-      "Improvement",
-      "Severe airflow obstruction",
-      "Normal lungs",
-      "Only anxiety"
-    ],
-    "correctAnswer": 1,
-    "explanation": "A silent chest may indicate critically poor air movement."
-  },
-  {
-    "question": "Which finding suggests impending respiratory failure?",
-    "options": [
-      "Improved speech",
-      "Decreasing mental status",
-      "Normal air movement",
-      "Normal interaction"
-    ],
-    "correctAnswer": 1,
-    "explanation": "Altered mental status is a high-risk sign."
-  },
-  {
-    "question": "Which condition can produce cardiac wheeze?",
-    "options": [
-      "Pulmonary edema",
-      "Ankle sprain",
-      "Migraine",
-      "Simple rash"
-    ],
-    "correctAnswer": 0,
-    "explanation": "Pulmonary edema may present with wheezing."
-  },
-  {
-    "question": "The first medication class used for bronchospasm is typically:",
-    "options": [
-      "Bronchodilator",
-      "Antibiotic",
-      "Anticoagulant",
-      "Diuretic in every patient"
-    ],
-    "correctAnswer": 0,
-    "explanation": "Bronchodilators are commonly used for bronchospasm."
-  },
-  {
-    "question": "Ipratropium is best described as:",
-    "options": [
-      "An adjunct bronchodilator",
-      "A sedative",
-      "A vasopressor",
-      "An anticoagulant"
-    ],
-    "correctAnswer": 0,
-    "explanation": "Ipratropium is an adjunct bronchodilator."
-  },
-  {
-    "question": "After each respiratory treatment, EMS should:",
-    "options": [
-      "Avoid reassessment",
-      "Reassess the patient",
-      "Wait until hospital arrival",
-      "Document only the medication"
-    ],
-    "correctAnswer": 1,
-    "explanation": "Reassessment is required after every intervention."
-  },
-  {
-    "question": "Which patient is most appropriate for CPAP or BiPAP?",
-    "options": [
-      "Awake and cooperative with airway protection",
-      "Vomiting and unresponsive",
-      "Respiratory arrest",
-      "Unable to tolerate a mask"
-    ],
-    "correctAnswer": 0,
-    "explanation": "Noninvasive ventilation requires cooperation and airway protection."
-  },
-  {
-    "question": "Which finding is a contraindication to noninvasive ventilation?",
-    "options": [
-      "Cooperation",
-      "Adequate respiratory effort",
-      "Active vomiting",
-      "Ability to protect the airway"
-    ],
-    "correctAnswer": 2,
-    "explanation": "Vomiting creates aspiration risk."
-  },
-  {
-    "question": "If a patient becomes drowsy on CPAP, EMS should:",
-    "options": [
-      "Increase pressure without assessment",
-      "Remove CPAP and support ventilation",
-      "Leave the patient alone",
-      "Give oral fluids"
-    ],
-    "correctAnswer": 1,
-    "explanation": "Deteriorating mental status requires airway reassessment."
-  },
-  {
-    "question": "Epinephrine may be considered for:",
-    "options": [
-      "Severe bronchospasm when criteria are met",
-      "Every mild cough",
-      "Routine chest pain",
-      "Simple fever"
-    ],
-    "correctAnswer": 0,
-    "explanation": "Epinephrine may be used in severe bronchospasm or allergic presentations."
-  },
-  {
-    "question": "Before giving epinephrine, EMS should confirm:",
-    "options": [
-      "Only age",
-      "Patient, concentration, dose, route, and indication",
-      "Only route",
-      "Only dose"
-    ],
-    "correctAnswer": 1,
-    "explanation": "Medication safety requires all of these checks."
-  },
-  {
-    "question": "Corticosteroids are used primarily to:",
-    "options": [
-      "Reduce airway inflammation",
-      "Immediately stop every wheeze",
-      "Cause sedation",
-      "Increase secretions"
-    ],
-    "correctAnswer": 0,
-    "explanation": "Corticosteroids reduce inflammation."
-  },
-  {
-    "question": "Magnesium sulfate may be considered in:",
-    "options": [
-      "Severe bronchospasm",
-      "Minor cough",
-      "Simple congestion",
-      "Every fever"
-    ],
-    "correctAnswer": 0,
-    "explanation": "Magnesium may be an adjunct in severe bronchospasm."
-  },
-  {
-    "question": "Which pediatric finding is concerning?",
-    "options": [
-      "Retractions",
-      "Normal interaction",
-      "Normal color",
-      "Normal air movement"
-    ],
-    "correctAnswer": 0,
-    "explanation": "Retractions indicate increased work of breathing."
-  },
-  {
-    "question": "A child becoming quieter and lethargic may indicate:",
-    "options": [
-      "Improvement only",
-      "Respiratory fatigue",
-      "Normal sleepiness",
-      "Resolved bronchospasm"
-    ],
-    "correctAnswer": 1,
-    "explanation": "A quieter child may be tiring."
-  },
-  {
-    "question": "Bradycardia in a child with respiratory distress is:",
-    "options": [
-      "A reassuring sign",
-      "A late ominous sign",
-      "Always normal",
-      "Unrelated to oxygenation"
-    ],
-    "correctAnswer": 1,
-    "explanation": "Bradycardia may occur late in pediatric hypoxia."
-  },
-  {
-    "question": "Which is a common respiratory reassessment item?",
-    "options": [
-      "Lung sounds",
-      "Hair color",
-      "Shoe size",
-      "Dominant hand"
-    ],
-    "correctAnswer": 0,
-    "explanation": "Lung sounds are a core reassessment finding."
-  },
-  {
-    "question": "ETCO₂ may help assess:",
-    "options": [
-      "Ventilation",
-      "Bone injury",
-      "Blood type",
-      "Skin temperature only"
-    ],
-    "correctAnswer": 0,
-    "explanation": "ETCO₂ provides information about ventilation."
-  },
-  {
-    "question": "Which history is especially important?",
-    "options": [
-      "Previous intubation for asthma",
-      "Favorite food",
-      "Handedness",
-      "Eye color"
-    ],
-    "correctAnswer": 0,
-    "explanation": "Previous intubation suggests severe disease."
-  },
-  {
-    "question": "ALS should be requested:",
-    "options": [
-      "Early in severe or worsening distress",
-      "Only after arrival",
-      "Never for pediatrics",
-      "Only if the patient asks"
-    ],
-    "correctAnswer": 0,
-    "explanation": "Early ALS is appropriate for severe distress."
-  },
-  {
-    "question": "Transport should be delayed for repeated noncritical procedures:",
-    "options": [
-      "True",
-      "False"
-    ],
-    "correctAnswer": 1,
-    "explanation": "Do not delay transport."
-  },
-  {
-    "question": "Which finding may suggest pulmonary edema instead of isolated asthma?",
-    "options": [
-      "Crackles and leg edema",
-      "Isolated wheeze only",
-      "Normal blood pressure",
-      "No cardiac history"
-    ],
-    "correctAnswer": 0,
-    "explanation": "Crackles and edema support a cardiac cause."
-  },
-  {
-    "question": "Poor air movement and worsening mental status require:",
-    "options": [
-      "Airway and ventilation escalation",
-      "Less monitoring",
-      "Oral fluids",
-      "Delayed transport"
-    ],
-    "correctAnswer": 0,
-    "explanation": "These are signs of respiratory failure."
-  },
-  {
-    "question": "What score is required to pass this quiz?",
-    "options": [
-      "60%",
-      "70%",
-      "75%",
-      "80%"
-    ],
-    "correctAnswer": 3,
-    "explanation": "The passing score is 80%."
+type ExamOption = {
+  id: string;
+  order: number;
+  text: string;
+};
+
+type ExamQuestion = {
+  id: string;
+  displayOrder: number;
+  prompt: string;
+  options: ExamOption[];
+};
+
+type SubmittedAnswer = {
+  question_id: string;
+  option_id: string;
+};
+
+type SubmitExamResult = {
+  score: number | string;
+  passed: boolean;
+};
+
+type LatestAttempt = {
+  id: string;
+  score: number | string | null;
+  passed: boolean | null;
+  submitted_at: string | null;
+  started_at: string;
+};
+
+function groupQuestionRows(rows: ExamQuestionRow[]): ExamQuestion[] {
+  const questionMap = new Map<string, ExamQuestion>();
+
+  for (const row of rows) {
+    const existingQuestion = questionMap.get(row.question_id);
+
+    if (existingQuestion) {
+      existingQuestion.options.push({
+        id: row.option_id,
+        order: row.option_order,
+        text: row.option_text,
+      });
+      continue;
+    }
+
+    questionMap.set(row.question_id, {
+      id: row.question_id,
+      displayOrder: row.display_order,
+      prompt: row.prompt,
+      options: [
+        {
+          id: row.option_id,
+          order: row.option_order,
+          text: row.option_text,
+        },
+      ],
+    });
   }
-];
+
+  return Array.from(questionMap.values())
+    .sort(
+      (firstQuestion, secondQuestion) =>
+        firstQuestion.displayOrder - secondQuestion.displayOrder,
+    )
+    .map((question) => ({
+      ...question,
+      options: [...question.options].sort(
+        (firstOption, secondOption) =>
+          firstOption.order - secondOption.order,
+      ),
+    }));
+}
 
 export default function BronchospasmRespiratoryQuizPage() {
-  const [answers, setAnswers] = useState<Record<number, number>>({});
-  const [submitted, setSubmitted] = useState(false);
-
-  const answeredCount = Object.keys(answers).length;
-  const score = questions.reduce(
-    (total, question, index) =>
-      total + (answers[index] === question.correctAnswer ? 1 : 0),
-    0,
+  return (
+    <QuizAccessGate
+      courseSlug={COURSE_SLUG}
+      courseTitle="Bronchospasm / Respiratory Distress"
+    >
+      <BronchospasmRespiratoryQuizContent />
+    </QuizAccessGate>
   );
-  const percentage = Math.round((score / questions.length) * 100);
-  const passed = percentage >= 80;
+}
 
-  function selectAnswer(questionIndex: number, optionIndex: number) {
-    if (submitted) return;
-    setAnswers((current) => ({ ...current, [questionIndex]: optionIndex }));
-  }
+function BronchospasmRespiratoryQuizContent() {
+  const [enrollmentId, setEnrollmentId] = useState<string | null>(null);
+  const [examAttemptId, setExamAttemptId] = useState<string | null>(null);
+  const [questions, setQuestions] = useState<ExamQuestion[]>([]);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+  const [startingExam, setStartingExam] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [score, setScore] = useState<number | null>(null);
+  const [passed, setPassed] = useState(false);
+  const [message, setMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
-  function submitQuiz() {
-    if (answeredCount !== questions.length) {
-      window.alert("Please answer every question before submitting the quiz.");
+  const loadExamQuestions = useCallback(async (attemptId: string) => {
+    const { data, error } = await supabase.rpc(
+      "get_exam_attempt_questions",
+      {
+        requested_exam_attempt_id: attemptId,
+      },
+    );
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const rows = (data ?? []) as ExamQuestionRow[];
+    const groupedQuestions = groupQuestionRows(rows);
+
+    if (groupedQuestions.length === 0) {
+      throw new Error(
+        "No assessment questions were returned for this attempt.",
+      );
+    }
+
+    setQuestions(groupedQuestions);
+    setExamAttemptId(attemptId);
+    setSubmitted(false);
+    setScore(null);
+    setPassed(false);
+  }, []);
+
+  const initializeAssessment = useCallback(async () => {
+    setLoading(true);
+    setErrorMessage("");
+    setMessage("");
+
+    try {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        throw new Error(
+          "You must be logged in to take this assessment.",
+        );
+      }
+
+      const {
+        data: enrollmentData,
+        error: enrollmentError,
+      } = await supabase.rpc("enroll_in_course", {
+        requested_course_slug: COURSE_SLUG,
+      });
+
+      if (enrollmentError) {
+        throw new Error(enrollmentError.message);
+      }
+
+      const secureEnrollmentId = enrollmentData as string;
+      setEnrollmentId(secureEnrollmentId);
+
+      const {
+        data: latestAttempts,
+        error: latestAttemptError,
+      } = await supabase.rpc("get_latest_exam_attempt", {
+        requested_enrollment_id: secureEnrollmentId,
+      });
+
+      if (latestAttemptError) {
+        throw new Error(latestAttemptError.message);
+      }
+
+      const latestAttempt = latestAttempts?.[0] as
+        | LatestAttempt
+        | undefined;
+
+      if (!latestAttempt) {
+        return;
+      }
+
+      if (latestAttempt.submitted_at) {
+        setExamAttemptId(latestAttempt.id);
+        setQuestions([]);
+        setAnswers({});
+        setScore(Number(latestAttempt.score ?? 0));
+        setPassed(Boolean(latestAttempt.passed));
+        setSubmitted(true);
+
+        setMessage(
+          latestAttempt.passed
+            ? "Your completed passing assessment result was restored."
+            : "Your most recent completed assessment result was restored.",
+        );
+
+        return;
+      }
+
+      await loadExamQuestions(latestAttempt.id);
+
+      setMessage("Your open assessment attempt was restored.");
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "The assessment could not be initialized.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [loadExamQuestions]);
+
+  useEffect(() => {
+    void initializeAssessment();
+  }, [initializeAssessment]);
+
+  async function beginAssessment() {
+    if (!enrollmentId) {
+      setErrorMessage(
+        "Your course enrollment could not be confirmed.",
+      );
       return;
     }
-    setSubmitted(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    setStartingExam(true);
+    setErrorMessage("");
+    setMessage("");
+
+    try {
+      const { data, error } = await supabase.rpc(
+        "begin_exam_attempt",
+        {
+          requested_enrollment_id: enrollmentId,
+        },
+      );
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      const newAttemptId = data as string;
+
+      setAnswers({});
+      setSubmitted(false);
+      setScore(null);
+      setPassed(false);
+
+      await loadExamQuestions(newAttemptId);
+
+      setMessage(
+        "Your assessment attempt has started. Answer every question before submitting.",
+      );
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "The assessment could not be started.",
+      );
+    } finally {
+      setStartingExam(false);
+    }
   }
 
-  function resetQuiz() {
+  function selectAnswer(questionId: string, optionId: string) {
+    if (submitted || submitting) {
+      return;
+    }
+
+    setAnswers((currentAnswers) => ({
+      ...currentAnswers,
+      [questionId]: optionId,
+    }));
+  }
+
+  async function submitAssessment() {
+    if (!examAttemptId) {
+      setErrorMessage(
+        "No open assessment attempt was found.",
+      );
+      return;
+    }
+
+    const unansweredQuestions = questions.filter(
+      (question) => !answers[question.id],
+    );
+
+    if (unansweredQuestions.length > 0) {
+      setErrorMessage(
+        "Please answer every question before submitting.",
+      );
+      return;
+    }
+
+    const submittedAnswers: SubmittedAnswer[] = questions.map(
+      (question) => ({
+        question_id: question.id,
+        option_id: answers[question.id],
+      }),
+    );
+
+    setSubmitting(true);
+    setErrorMessage("");
+    setMessage("");
+
+    try {
+      const { data, error } = await supabase.rpc(
+        "submit_exam_attempt",
+        {
+          requested_exam_attempt_id: examAttemptId,
+          submitted_answers: submittedAnswers,
+        },
+      );
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      const result = (data?.[0] ?? data) as
+        | SubmitExamResult
+        | undefined;
+
+      if (!result) {
+        throw new Error(
+          "The assessment was submitted, but no score was returned.",
+        );
+      }
+
+      const returnedScore = Number(result.score);
+      const returnedPassed = Boolean(result.passed);
+
+      setScore(returnedScore);
+      setPassed(returnedPassed);
+      setSubmitted(true);
+      setQuestions([]);
+      setAnswers({});
+
+      setMessage(
+        returnedPassed
+          ? "You passed the secure course assessment. Your score and responses were saved."
+          : "Your score and responses were saved. You did not reach the required passing score.",
+      );
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "The assessment could not be submitted.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function beginAnotherAttempt() {
+    setQuestions([]);
     setAnswers({});
+    setExamAttemptId(null);
     setSubmitted(false);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setScore(null);
+    setPassed(false);
+    setMessage("");
+    setErrorMessage("");
+
+    await beginAssessment();
+  }
+
+  const answeredCount = questions.filter(
+    (question) => Boolean(answers[question.id]),
+  ).length;
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-black text-white">
+        <Navbar />
+
+        <section className="mx-auto max-w-4xl px-6 py-16 text-center">
+          <p className="text-lg font-semibold text-zinc-300">
+            Loading secure assessment…
+          </p>
+        </section>
+      </main>
+    );
   }
 
   return (
-    <>
+    <main className="min-h-screen bg-black text-white">
       <Navbar />
 
-      <main className="min-h-screen bg-black text-white">
-        <CourseAccessGate>
-          <section className="mx-auto max-w-5xl px-6 py-12">
-            <Link
-              href="/courses/bronchospasm-respiratory-distress"
-              className="font-semibold text-red-500 hover:text-red-400"
+      <section className="mx-auto max-w-4xl px-6 py-10">
+        <Link
+          href="/courses/bronchospasm-respiratory-distress"
+          className="font-semibold text-red-500 transition hover:text-red-400"
+        >
+          ← Back to Course
+        </Link>
+
+        <div className="mt-8">
+          <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-500">
+            Secure Course Assessment
+          </p>
+
+          <h1 className="mt-3 text-4xl font-extrabold">
+            Bronchospasm / Respiratory Distress
+          </h1>
+
+          <p className="mt-3 text-zinc-400">
+            Answer all 25 questions. The server securely grades and retains the
+            assessment. A score of 80% or higher is required to pass.
+          </p>
+        </div>
+
+        {errorMessage && (
+          <div
+            role="alert"
+            className="mt-8 rounded-xl border border-red-500 bg-red-500/10 p-4 text-red-200"
+          >
+            {errorMessage}
+          </div>
+        )}
+
+        {message && (
+          <div className="mt-8 rounded-xl border border-zinc-700 bg-zinc-900 p-4 text-zinc-300">
+            {message}
+          </div>
+        )}
+
+        {!examAttemptId && (
+          <section className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-900 p-8 text-center">
+            <h2 className="text-2xl font-extrabold">
+              Ready to Begin?
+            </h2>
+
+            <p className="mx-auto mt-3 max-w-2xl leading-7 text-zinc-400">
+              Starting the assessment creates an official attempt. Your questions,
+              submitted answers, score, and result will be retained with your course record.
+            </p>
+
+            <button
+              type="button"
+              onClick={beginAssessment}
+              disabled={startingExam || !enrollmentId}
+              className="mt-6 rounded-xl bg-red-600 px-7 py-3 font-bold transition hover:bg-red-500 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400"
             >
-              ← Back to Course
-            </Link>
+              {startingExam
+                ? "Starting Assessment…"
+                : "Begin Assessment"}
+            </button>
+          </section>
+        )}
 
-            <div className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-950 p-7 md:p-10">
-              <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-red-500">
-                Final Assessment
-              </p>
-              <h1 className="mt-3 text-4xl font-extrabold md:text-5xl">
-                Bronchospasm / Respiratory Distress
-              </h1>
-              <p className="mt-4 text-lg leading-8 text-zinc-300">
-                Answer all 25 questions. A score of 80% or higher unlocks the completion certificate.
-              </p>
+        {examAttemptId && !submitted && (
+          <>
+            <div className="mt-8 rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+              <div className="flex items-center justify-between gap-4">
+                <span className="font-semibold text-zinc-300">
+                  Questions answered
+                </span>
 
-              <div className="mt-7">
-                <div className="flex justify-between text-sm font-bold text-zinc-400">
-                  <span>Quiz Progress</span>
-                  <span>{answeredCount} / {questions.length} answered</span>
-                </div>
-                <div className="mt-3 h-3 overflow-hidden rounded-full bg-zinc-800">
-                  <div
-                    className="h-full bg-red-600 transition-all"
-                    style={{ width: `${(answeredCount / questions.length) * 100}%` }}
-                  />
-                </div>
+                <span className="font-bold text-red-400">
+                  {answeredCount} of {questions.length}
+                </span>
+              </div>
+
+              <div className="mt-3 h-3 overflow-hidden rounded-full bg-zinc-800">
+                <div
+                  className="h-full bg-red-600 transition-all"
+                  style={{
+                    width: `${
+                      questions.length > 0
+                        ? (answeredCount / questions.length) * 100
+                        : 0
+                    }%`,
+                  }}
+                />
               </div>
             </div>
 
-            {submitted && (
-              <section className={`mt-8 rounded-2xl border p-6 ${
-                passed
-                  ? "border-emerald-500 bg-emerald-500/10"
-                  : "border-red-500 bg-red-500/10"
-              }`}>
-                <p className="text-sm font-bold uppercase tracking-wide text-zinc-300">
-                  Quiz Result
-                </p>
-                <div className="mt-3 flex flex-wrap items-end gap-4">
-                  <span className="text-6xl font-extrabold">{percentage}%</span>
-                  <span className="pb-2 text-xl font-bold">{score} of {questions.length} correct</span>
-                </div>
-                <h2 className={`mt-5 text-2xl font-bold ${
-                  passed ? "text-emerald-400" : "text-red-400"
-                }`}>
-                  {passed ? "Passed" : "Additional review required"}
-                </h2>
-              </section>
+            <div className="mt-8 space-y-6">
+              {questions.map((question, questionIndex) => (
+                <article
+                  key={question.id}
+                  className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6"
+                >
+                  <p className="text-sm font-bold uppercase tracking-wide text-red-500">
+                    Question {questionIndex + 1}
+                  </p>
+
+                  <h2 className="mt-3 text-xl font-bold">
+                    {question.prompt}
+                  </h2>
+
+                  <div className="mt-5 space-y-3">
+                    {question.options.map((option) => {
+                      const selected =
+                        answers[question.id] === option.id;
+
+                      return (
+                        <button
+                          key={option.id}
+                          type="button"
+                          onClick={() =>
+                            selectAnswer(question.id, option.id)
+                          }
+                          className={`w-full rounded-xl border px-4 py-3 text-left transition ${
+                            selected
+                              ? "border-red-500 bg-red-500/10 text-white"
+                              : "border-zinc-700 bg-black text-zinc-300 hover:border-red-500"
+                          }`}
+                        >
+                          <span className="mr-3 font-bold text-red-400">
+                            {String.fromCharCode(65 + option.order)}.
+                          </span>
+
+                          {option.text}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={submitAssessment}
+              disabled={
+                submitting ||
+                answeredCount !== questions.length
+              }
+              className="mt-8 w-full rounded-xl bg-red-600 px-6 py-4 text-lg font-bold transition hover:bg-red-500 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400"
+            >
+              {submitting
+                ? "Submitting Secure Assessment…"
+                : "Submit Assessment"}
+            </button>
+          </>
+        )}
+
+        {submitted && score !== null && (
+          <section
+            className={`mt-8 rounded-2xl border p-8 text-center ${
+              passed
+                ? "border-emerald-500 bg-emerald-500/10"
+                : "border-red-500 bg-red-500/10"
+            }`}
+          >
+            <p className="text-sm font-bold uppercase tracking-[0.25em] text-zinc-300">
+              Assessment Complete
+            </p>
+
+            <h2 className="mt-3 text-5xl font-extrabold">
+              {score}%
+            </h2>
+
+            <p className="mt-3 text-zinc-300">
+              {passed
+                ? "You passed the secure course assessment."
+                : "You did not reach the required passing score of 80%."}
+            </p>
+
+            {passed && (
+              <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-zinc-400">
+                Passing the assessment does not by itself issue a certificate.
+                Required active course time and the electronic attestation must
+                also be completed.
+              </p>
             )}
 
-            <div className="mt-10 space-y-8">
-              {questions.map((question, questionIndex) => {
-                const selectedAnswer = answers[questionIndex];
-
-                return (
-                  <section
-                    key={question.question}
-                    className="rounded-2xl border border-zinc-700 bg-zinc-900 p-6"
-                  >
-                    <div className="flex gap-4">
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-600 font-extrabold">
-                        {questionIndex + 1}
-                      </span>
-                      <h2 className="text-xl font-bold leading-8">{question.question}</h2>
-                    </div>
-
-                    <div className="mt-6 space-y-3">
-                      {question.options.map((option, optionIndex) => {
-                        const selected = selectedAnswer === optionIndex;
-                        const correct = submitted && optionIndex === question.correctAnswer;
-                        const incorrect = submitted && selected && !correct;
-
-                        return (
-                          <button
-                            key={option}
-                            type="button"
-                            disabled={submitted}
-                            onClick={() => selectAnswer(questionIndex, optionIndex)}
-                            className={`flex w-full items-start gap-4 rounded-xl border p-4 text-left transition ${
-                              correct
-                                ? "border-emerald-500 bg-emerald-500/10"
-                                : incorrect
-                                  ? "border-red-500 bg-red-500/10"
-                                  : selected
-                                    ? "border-red-500 bg-red-950/30"
-                                    : "border-zinc-700 bg-black hover:border-zinc-500"
-                            }`}
-                          >
-                            <span className="font-bold text-zinc-400">
-                              {String.fromCharCode(65 + optionIndex)}.
-                            </span>
-                            <span>{option}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {submitted && (
-                      <div className="mt-5 rounded-xl border border-zinc-700 bg-black p-4 leading-7 text-zinc-300">
-                        <strong className="text-red-400">Explanation:</strong>{" "}
-                        {question.explanation}
-                      </div>
-                    )}
-                  </section>
-                );
-              })}
-            </div>
-
-            <div className="mt-10 flex flex-wrap justify-center gap-4">
-              {!submitted ? (
+            <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+              {!passed && (
                 <button
                   type="button"
-                  onClick={submitQuiz}
-                  className="rounded-xl bg-red-600 px-8 py-4 font-bold hover:bg-red-500"
+                  onClick={beginAnotherAttempt}
+                  disabled={startingExam}
+                  className="rounded-xl border border-zinc-600 px-6 py-3 font-bold transition hover:border-red-500 hover:text-red-400 disabled:cursor-not-allowed"
                 >
-                  Submit Quiz
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={resetQuiz}
-                  className="rounded-xl border border-zinc-600 px-8 py-4 font-bold hover:border-red-500"
-                >
-                  Retake Quiz
+                  {startingExam
+                    ? "Starting…"
+                    : "Begin Another Attempt"}
                 </button>
               )}
 
-              {passed && (
-                <Link
-                  href={`/courses/bronchospasm-respiratory-distress/certificate?score=${percentage}`}
-                  className="rounded-xl bg-emerald-600 px-8 py-4 font-bold hover:bg-emerald-500"
-                >
-                  View / Download Certificate
-                </Link>
-              )}
+              <Link
+                href="/courses/bronchospasm-respiratory-distress"
+                className="rounded-xl bg-red-600 px-6 py-3 font-bold transition hover:bg-red-500"
+              >
+                Return to Course
+              </Link>
+
+              <Link
+                href="/dashboard"
+                className="rounded-xl border border-red-500 px-6 py-3 font-bold text-red-400 transition hover:bg-red-500 hover:text-white"
+              >
+                View Dashboard
+              </Link>
             </div>
           </section>
-        </CourseAccessGate>
-      </main>
-    </>
+        )}
+      </section>
+    </main>
   );
 }
