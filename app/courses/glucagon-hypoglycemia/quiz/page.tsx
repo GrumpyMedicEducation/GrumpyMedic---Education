@@ -1,512 +1,446 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Navbar from "../../../components/Navbar";
-import CourseAccessGate from "../../../components/CourseAccessGate";
+import QuizAccessGate from "../../../components/courses/QuizAccessGate";
 import { supabase } from "../../../../lib/supabase/client";
 
 const COURSE_SLUG = "glucagon-hypoglycemia";
-const COURSE_TITLE = "Glucagon for Hypoglycemia";
-const PASSING_SCORE = 80;
 
-type QuizQuestion = {
-  question: string;
-  details?: string[];
-  options: string[];
-  correctAnswer: number;
-  explanation: string;
+type ExamQuestionRow = {
+  question_id: string;
+  display_order: number;
+  prompt: string;
+  option_id: string;
+  option_order: number;
+  option_text: string;
 };
 
-type ExistingCompletion = {
-  best_score: number;
-  completed_at: string;
-  verified: boolean;
+type ExamOption = {
+  id: string;
+  order: number;
+  text: string;
 };
 
-const questions: QuizQuestion[] = [
-  {
-    question:
-      "Which condition must be present before administering glucagon?",
-    options: [
-      "Blood glucose below 100 mg/dL",
-      "Altered mental status with suspected hypoglycemia",
-      "Any diabetic patient requesting glucagon",
-      "Blood glucose below 80 mg/dL with normal mental status",
-    ],
-    correctAnswer: 1,
-    explanation:
-      "Glucagon is appropriate when hypoglycemia is suspected or confirmed, the patient has altered mental status, and the patient cannot safely swallow oral glucose.",
-  },
-  {
-    question: "What is the adult dose of glucagon?",
-    options: [
-      "0.5 mg IM only",
-      "1 mg IM or IN",
-      "2 mg IM only",
-      "1 mg IV only",
-    ],
-    correctAnswer: 1,
-    explanation:
-      "The adult dose presented in this course is 1 mg administered intramuscularly or intranasally.",
-  },
-  {
-    question:
-      "When should blood glucose be rechecked after glucagon administration?",
-    options: [
-      "5 minutes",
-      "10 minutes",
-      "15 minutes",
-      "30 minutes",
-    ],
-    correctAnswer: 2,
-    explanation:
-      "Blood glucose and mental status should be reassessed after 15 minutes.",
-  },
-  {
-    question:
-      "A pediatric patient weighs 18 kg. What is the correct glucagon dose?",
-    options: [
-      "0.25 mg IM or IN",
-      "0.5 mg IM or IN",
-      "1 mg IM or IN",
-      "2 mg IM or IN",
-    ],
-    correctAnswer: 1,
-    explanation:
-      "A pediatric patient weighing less than 20 kg receives 0.5 mg IM or IN.",
-  },
-  {
-    question:
-      "A pediatric patient weighs 25 kg. What is the correct glucagon dose?",
-    options: [
-      "0.5 mg IM or IN",
-      "0.75 mg IM only",
-      "1 mg IM or IN",
-      "2 mg IM or IN",
-    ],
-    correctAnswer: 2,
-    explanation:
-      "A pediatric patient weighing 20 kg or greater receives 1 mg IM or IN.",
-  },
-  {
-    question:
-      "Which combination correctly describes participation requirements for EMT-Basic glucagon administration?",
-    options: [
-      "AHMD approval only",
-      "Annual mandatory retraining only",
-      "Initial training only, with no competency documentation",
-      "AHMD approval, initial training and oversight, demonstrated hands-on competency, and service-maintained training records",
-    ],
-    correctAnswer: 3,
-    explanation:
-      "Participation requires Affiliate Hospital Medical Director approval, initial training and oversight, documented hands-on competency, and service-maintained training records.",
-  },
-  {
-    question:
-      "Which routes are approved for glucagon administration in this course?",
-    options: [
-      "IV only",
-      "IM only",
-      "IN only",
-      "IM or IN",
-    ],
-    correctAnswer: 3,
-    explanation:
-      "The routes presented in this course are intramuscular and intranasal.",
-  },
-  {
-    question:
-      "You arrive to find a 54-year-old diabetic patient unconscious. What is the next appropriate step?",
-    details: [
-      "Blood glucose: 42 mg/dL",
-      "The patient cannot swallow.",
-    ],
-    options: [
-      "Give oral glucose",
-      "Administer 1 mg glucagon IM or IN",
-      "Wait for ALS without providing treatment",
-      "Start IV dextrose as an EMT-Basic",
-    ],
-    correctAnswer: 1,
-    explanation:
-      "The patient is hypoglycemic, has altered mental status, and cannot swallow. Administer 1 mg glucagon IM or IN while protecting the airway and preparing for transport.",
-  },
-  {
-    question:
-      "You administer glucagon to an adult patient. After 15 minutes, what should you do?",
-    details: [
-      "Blood glucose: 62 mg/dL",
-      "The patient remains confused.",
-    ],
-    options: [
-      "Transport without further reassessment",
-      "Give oral glucose immediately despite the confusion",
-      "Repeat glucagon 1 mg IM or IN according to protocol",
-      "Wait another 30 minutes before reassessing",
-    ],
-    correctAnswer: 2,
-    explanation:
-      "The glucose remains below 70 mg/dL and the patient still has altered mental status. Repeat glucagon according to protocol while continuing airway monitoring and transport.",
-  },
-  {
-    question:
-      "After glucagon administration, the patient becomes alert and can swallow safely. What is the appropriate next step?",
-    options: [
-      "Withhold all food and drink",
-      "Provide oral glucose or carbohydrates",
-      "Repeat glucagon immediately",
-      "Cancel transport",
-    ],
-    correctAnswer: 1,
-    explanation:
-      "Once the patient can swallow safely, provide oral glucose or carbohydrates and continue monitoring and transport.",
-  },
-  {
-    question:
-      "What blood glucose level defines hypoglycemia in this course?",
-    options: [
-      "Below 60 mg/dL",
-      "Below 70 mg/dL",
-      "Below 80 mg/dL",
-      "Below 100 mg/dL",
-    ],
-    correctAnswer: 1,
-    explanation:
-      "Hypoglycemia is defined in this course as a blood glucose level below 70 mg/dL.",
-  },
-  {
-    question:
-      "Which complication should EMTs commonly anticipate after glucagon administration?",
-    options: [
-      "Respiratory depression",
-      "Vomiting",
-      "Severe bradycardia",
-      "Profound hypothermia",
-    ],
-    correctAnswer: 1,
-    explanation:
-      "Nausea and vomiting are common. Position the patient appropriately, prepare suction, and continue airway monitoring.",
-  },
-];
+type ExamQuestion = {
+  id: string;
+  displayOrder: number;
+  prompt: string;
+  options: ExamOption[];
+};
 
-export default function GlucagonQuizPage() {
+type SubmittedAnswer = {
+  question_id: string;
+  option_id: string;
+};
+
+type SubmitExamResult = {
+  score: number | string;
+  passed: boolean;
+};
+
+type LatestAttempt = {
+  id: string;
+  score: number | string | null;
+  passed: boolean | null;
+  submitted_at: string | null;
+  started_at: string;
+};
+
+function groupQuestionRows(
+  rows: ExamQuestionRow[],
+): ExamQuestion[] {
+  const questionMap = new Map<string, ExamQuestion>();
+
+  for (const row of rows) {
+    const existingQuestion = questionMap.get(
+      row.question_id,
+    );
+
+    if (existingQuestion) {
+      existingQuestion.options.push({
+        id: row.option_id,
+        order: row.option_order,
+        text: row.option_text,
+      });
+
+      continue;
+    }
+
+    questionMap.set(row.question_id, {
+      id: row.question_id,
+      displayOrder: row.display_order,
+      prompt: row.prompt,
+      options: [
+        {
+          id: row.option_id,
+          order: row.option_order,
+          text: row.option_text,
+        },
+      ],
+    });
+  }
+
+  return Array.from(questionMap.values())
+    .sort(
+      (firstQuestion, secondQuestion) =>
+        firstQuestion.displayOrder -
+        secondQuestion.displayOrder,
+    )
+    .map((question) => ({
+      ...question,
+      options: [...question.options].sort(
+        (firstOption, secondOption) =>
+          firstOption.order - secondOption.order,
+      ),
+    }));
+}
+
+export default function GlucagonHypoglycemiaQuizPage() {
+  return (
+    <QuizAccessGate
+      courseSlug={COURSE_SLUG}
+      courseTitle="Glucagon for Hypoglycemia"
+    >
+      <GlucagonHypoglycemiaQuizContent />
+    </QuizAccessGate>
+  );
+}
+
+function GlucagonHypoglycemiaQuizContent() {
+  const [enrollmentId, setEnrollmentId] = useState<
+    string | null
+  >(null);
+
+  const [examAttemptId, setExamAttemptId] = useState<
+    string | null
+  >(null);
+
+  const [questions, setQuestions] = useState<
+    ExamQuestion[]
+  >([]);
+
   const [answers, setAnswers] = useState<
-    Record<number, number>
+    Record<string, string>
   >({});
 
+  const [loading, setLoading] = useState(true);
+  const [startingExam, setStartingExam] =
+    useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
   const [submitted, setSubmitted] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [recordSaved, setRecordSaved] = useState(false);
-  const [saveError, setSaveError] = useState("");
-  const [bestScore, setBestScore] = useState<number | null>(
+  const [score, setScore] = useState<number | null>(
     null,
   );
+  const [passed, setPassed] = useState(false);
 
-  const answeredCount = Object.keys(answers).length;
+  const [message, setMessage] = useState("");
+  const [errorMessage, setErrorMessage] =
+    useState("");
 
-  const score = questions.reduce(
-    (total, question, index) => {
-      return (
-        total +
-        (answers[index] === question.correctAnswer ? 1 : 0)
+  const loadExamQuestions = useCallback(
+    async (attemptId: string) => {
+      const { data, error } = await supabase.rpc(
+        "get_exam_attempt_questions",
+        {
+          requested_exam_attempt_id: attemptId,
+        },
       );
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      const rows = (data ?? []) as ExamQuestionRow[];
+      const groupedQuestions = groupQuestionRows(rows);
+
+      if (groupedQuestions.length === 0) {
+        throw new Error(
+          "No assessment questions were returned for this attempt.",
+        );
+      }
+
+      setQuestions(groupedQuestions);
+      setExamAttemptId(attemptId);
+      setSubmitted(false);
+      setScore(null);
+      setPassed(false);
     },
-    0,
+    [],
   );
 
-  const percentage = Math.round(
-    (score / questions.length) * 100,
-  );
+  const initializeAssessment = useCallback(
+    async () => {
+      setLoading(true);
+      setErrorMessage("");
+      setMessage("");
 
-  const passed = percentage >= PASSING_SCORE;
+      try {
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError || !user) {
+          throw new Error(
+            "You must be logged in to take this assessment.",
+          );
+        }
+
+        const {
+          data: enrollmentData,
+          error: enrollmentError,
+        } = await supabase.rpc("enroll_in_course", {
+          requested_course_slug: COURSE_SLUG,
+        });
+
+        if (enrollmentError) {
+          throw new Error(enrollmentError.message);
+        }
+
+        const secureEnrollmentId =
+          enrollmentData as string;
+
+        setEnrollmentId(secureEnrollmentId);
+
+        const {
+          data: latestAttempts,
+          error: latestAttemptError,
+        } = await supabase.rpc(
+          "get_latest_exam_attempt",
+          {
+            requested_enrollment_id:
+              secureEnrollmentId,
+          },
+        );
+
+        if (latestAttemptError) {
+          throw new Error(latestAttemptError.message);
+        }
+
+        const latestAttempt = latestAttempts?.[0] as
+          | LatestAttempt
+          | undefined;
+
+        if (!latestAttempt) {
+          return;
+        }
+
+        if (latestAttempt.submitted_at) {
+          setExamAttemptId(latestAttempt.id);
+          setQuestions([]);
+          setAnswers({});
+          setScore(Number(latestAttempt.score ?? 0));
+          setPassed(Boolean(latestAttempt.passed));
+          setSubmitted(true);
+
+          setMessage(
+            latestAttempt.passed
+              ? "Your completed passing assessment result was restored."
+              : "Your most recent completed assessment result was restored.",
+          );
+
+          return;
+        }
+
+        await loadExamQuestions(latestAttempt.id);
+
+        setMessage(
+          "Your open assessment attempt was restored.",
+        );
+      } catch (error) {
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "The assessment could not be initialized.",
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+    [loadExamQuestions],
+  );
 
   useEffect(() => {
-    markQuizStarted();
-  }, []);
+    void initializeAssessment();
+  }, [initializeAssessment]);
 
-  async function markQuizStarted() {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    const user = session?.user;
-
-    if (!user) {
+  async function beginAssessment() {
+    if (!enrollmentId) {
+      setErrorMessage(
+        "Your course enrollment could not be confirmed.",
+      );
       return;
     }
 
-    const { error } = await supabase
-      .from("course_progress")
-      .upsert(
+    setStartingExam(true);
+    setErrorMessage("");
+    setMessage("");
+
+    try {
+      const { data, error } = await supabase.rpc(
+        "begin_exam_attempt",
         {
-          user_id: user.id,
-          course_slug: COURSE_SLUG,
-          course_title: COURSE_TITLE,
-          lesson_started: true,
-          lesson_completed: true,
-          quiz_started: true,
-          last_section: "quiz-started",
-          progress_percentage: 75,
-        },
-        {
-          onConflict: "user_id,course_slug",
+          requested_enrollment_id: enrollmentId,
         },
       );
 
-    if (error) {
-      console.error(
-        "Unable to mark quiz as started:",
-        error,
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      const newAttemptId = data as string;
+
+      setAnswers({});
+      setSubmitted(false);
+      setScore(null);
+      setPassed(false);
+
+      await loadExamQuestions(newAttemptId);
+
+      setMessage(
+        "Your assessment attempt has started. Answer every question before submitting.",
       );
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "The assessment could not be started.",
+      );
+    } finally {
+      setStartingExam(false);
     }
   }
 
   function selectAnswer(
-    questionIndex: number,
-    optionIndex: number,
+    questionId: string,
+    optionId: string,
   ) {
-    if (submitted || saving) {
+    if (submitted || submitting) {
       return;
     }
 
     setAnswers((currentAnswers) => ({
       ...currentAnswers,
-      [questionIndex]: optionIndex,
+      [questionId]: optionId,
     }));
   }
 
-  async function submitQuiz() {
-    if (answeredCount !== questions.length) {
-      window.alert(
-        "Please answer every question before submitting the quiz.",
+  async function submitAssessment() {
+    if (!examAttemptId) {
+      setErrorMessage(
+        "No open assessment attempt was found.",
       );
       return;
     }
 
-    setSaving(true);
-    setSaveError("");
-    setRecordSaved(false);
+    const unansweredQuestions = questions.filter(
+      (question) => !answers[question.id],
+    );
 
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession();
-
-    if (sessionError) {
-      console.error(
-        "Unable to verify quiz session:",
-        sessionError,
+    if (unansweredQuestions.length > 0) {
+      setErrorMessage(
+        "Please answer every question before submitting.",
       );
-
-      setSaveError(
-        sessionError.message ||
-          "Your quiz submission could not be verified.",
-      );
-
-      setSaving(false);
       return;
     }
 
-    const user = session?.user;
+    const submittedAnswers: SubmittedAnswer[] =
+      questions.map((question) => ({
+        question_id: question.id,
+        option_id: answers[question.id],
+      }));
 
-    if (!user) {
-      setSaveError(
-        "Please log in before submitting the quiz.",
-      );
+    setSubmitting(true);
+    setErrorMessage("");
+    setMessage("");
 
-      setSaving(false);
-      return;
-    }
-
-    const { error: attemptError } = await supabase
-      .from("quiz_attempts")
-      .insert({
-        user_id: user.id,
-        course_slug: COURSE_SLUG,
-        course_title: COURSE_TITLE,
-        score: percentage,
-        correct_answers: score,
-        total_questions: questions.length,
-        passing_score: PASSING_SCORE,
-        passed,
-        verified: false,
-      });
-
-    if (attemptError) {
-      console.error(
-        "Unable to save quiz attempt:",
-        attemptError,
-      );
-
-      setSaveError(
-        attemptError.message ||
-          "Your quiz attempt could not be saved.",
-      );
-
-      setSaving(false);
-      return;
-    }
-
-    const { error: progressError } = await supabase
-      .from("course_progress")
-      .upsert(
+    try {
+      const { data, error } = await supabase.rpc(
+        "submit_exam_attempt",
         {
-          user_id: user.id,
-          course_slug: COURSE_SLUG,
-          course_title: COURSE_TITLE,
-          lesson_started: true,
-          lesson_completed: true,
-          quiz_started: true,
-          last_section: passed
-            ? "quiz-passed"
-            : "quiz-completed",
-          progress_percentage: passed ? 100 : 75,
-        },
-        {
-          onConflict: "user_id,course_slug",
+          requested_exam_attempt_id: examAttemptId,
+          submitted_answers: submittedAnswers,
         },
       );
 
-    if (progressError) {
-      console.error(
-        "Unable to update course progress:",
-        progressError,
-      );
+      if (error) {
+        throw new Error(error.message);
+      }
 
-      setSaveError(
-        progressError.message ||
-          "Your quiz was saved, but course progress could not be updated.",
-      );
+      const result = (data?.[0] ?? data) as
+        | SubmitExamResult
+        | undefined;
 
+      if (!result) {
+        throw new Error(
+          "The assessment was submitted, but no score was returned.",
+        );
+      }
+
+      const returnedScore = Number(result.score);
+      const returnedPassed = Boolean(result.passed);
+
+      setScore(returnedScore);
+      setPassed(returnedPassed);
       setSubmitted(true);
-      setSaving(false);
+      setQuestions([]);
+      setAnswers({});
 
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-
-      return;
-    }
-
-    if (passed) {
-      const { data: existingData, error: existingError } =
-        await supabase
-          .from("course_completions")
-          .select(
-            `
-              best_score,
-              completed_at,
-              verified
-            `,
-          )
-          .eq("user_id", user.id)
-          .eq("course_slug", COURSE_SLUG)
-          .maybeSingle();
-
-      if (existingError) {
-        console.error(
-          "Unable to check existing completion:",
-          existingError,
-        );
-
-        setSaveError(
-          existingError.message ||
-            "Your attempt was saved, but the completion record could not be checked.",
-        );
-
-        setSubmitted(true);
-        setSaving(false);
-
-        window.scrollTo({
-          top: 0,
-          behavior: "smooth",
-        });
-
-        return;
-      }
-
-      const existingCompletion =
-        (existingData ?? null) as ExistingCompletion | null;
-
-      const newBestScore = Math.max(
-        existingCompletion?.best_score ?? 0,
-        percentage,
+      setMessage(
+        returnedPassed
+          ? "You passed the secure course assessment. Your score and responses were saved."
+          : "Your score and responses were saved. You did not reach the required passing score.",
       );
-
-      const completionPayload = {
-        user_id: user.id,
-        course_slug: COURSE_SLUG,
-        course_title: COURSE_TITLE,
-        best_score: newBestScore,
-        passing_score: PASSING_SCORE,
-        verified: false,
-        completed_at:
-          existingCompletion?.completed_at ??
-          new Date().toISOString(),
-      };
-
-      const { error: completionError } = await supabase
-        .from("course_completions")
-        .upsert(completionPayload, {
-          onConflict: "user_id,course_slug",
-        });
-
-      if (completionError) {
-        console.error(
-          "Unable to save course completion:",
-          completionError,
-        );
-
-        setSaveError(
-          completionError.message ||
-            "Your quiz attempt was saved, but the course completion record could not be created.",
-        );
-
-        setSubmitted(true);
-        setSaving(false);
-
-        window.scrollTo({
-          top: 0,
-          behavior: "smooth",
-        });
-
-        return;
-      }
-
-      setBestScore(newBestScore);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "The assessment could not be submitted.",
+      );
+    } finally {
+      setSubmitting(false);
     }
-
-    setSubmitted(true);
-    setRecordSaved(true);
-    setSaving(false);
-
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
   }
 
-  function resetQuiz() {
+  async function beginAnotherAttempt() {
+    setQuestions([]);
     setAnswers({});
+    setExamAttemptId(null);
     setSubmitted(false);
-    setSaving(false);
-    setRecordSaved(false);
-    setSaveError("");
-    setBestScore(null);
+    setScore(null);
+    setPassed(false);
+    setMessage("");
+    setErrorMessage("");
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+    await beginAssessment();
+  }
+
+  const answeredCount = questions.filter(
+    (question) => Boolean(answers[question.id]),
+  ).length;
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-black text-white">
+        <Navbar />
+
+        <section className="mx-auto max-w-4xl px-6 py-16 text-center">
+          <p className="text-lg font-semibold text-zinc-300">
+            Loading secure assessment…
+          </p>
+        </section>
+      </main>
+    );
   }
 
   return (
     <main className="min-h-screen bg-black text-white">
       <Navbar />
 
-      <section className="mx-auto max-w-5xl px-6 py-12">
+      <section className="mx-auto max-w-4xl px-6 py-10">
         <Link
           href="/courses/glucagon-hypoglycemia"
           className="font-semibold text-red-500 transition hover:text-red-400"
@@ -515,357 +449,222 @@ export default function GlucagonQuizPage() {
         </Link>
 
         <div className="mt-8">
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-red-500">
-            Final Knowledge Check
+          <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-500">
+            Secure Course Assessment
           </p>
 
-          <h1 className="mt-3 text-4xl font-extrabold md:text-5xl">
+          <h1 className="mt-3 text-4xl font-extrabold">
             Glucagon for Hypoglycemia Quiz
           </h1>
 
-          <p className="mt-4 max-w-3xl leading-7 text-zinc-400">
-            Answer all 12 questions. A score of 80% or
-            higher is required to pass and create a course
-            completion record.
+          <p className="mt-3 text-zinc-400">
+            Answer all 10 questions. The server
+            securely grades and retains the assessment.
+            A score of 80% or higher is required to pass.
           </p>
-
-          <div className="mt-6 grid gap-4 sm:grid-cols-3">
-            <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
-              <p className="text-xs font-bold uppercase tracking-wide text-zinc-500">
-                Questions
-              </p>
-
-              <p className="mt-2 font-bold text-white">
-                12 Questions
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
-              <p className="text-xs font-bold uppercase tracking-wide text-zinc-500">
-                Passing Score
-              </p>
-
-              <p className="mt-2 font-bold text-white">
-                80%
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
-              <p className="text-xs font-bold uppercase tracking-wide text-zinc-500">
-                Progress
-              </p>
-
-              <p className="mt-2 font-bold text-white">
-                Saved to Account
-              </p>
-            </div>
-          </div>
         </div>
 
-        <div className="mt-8">
-          <CourseAccessGate
-            accessLevel="login"
-            title="Sign In to Take the Quiz"
-            description="Create a free GrumpyMedic Education account or log in to take the Glucagon for Hypoglycemia quiz and save the result to your student record."
+        {errorMessage && (
+          <div
+            role="alert"
+            className="mt-8 rounded-xl border border-red-500 bg-red-500/10 p-4 text-red-200"
           >
-            {!submitted && (
-              <div className="rounded-2xl border border-zinc-700 bg-zinc-900 p-5">
-                <div className="flex items-center justify-between gap-4">
-                  <span className="font-semibold text-zinc-300">
-                    Progress
-                  </span>
+            {errorMessage}
+          </div>
+        )}
 
-                  <span className="font-bold text-red-400">
-                    {answeredCount} of {questions.length}{" "}
-                    answered
-                  </span>
-                </div>
+        {message && (
+          <div className="mt-8 rounded-xl border border-zinc-700 bg-zinc-900 p-4 text-zinc-300">
+            {message}
+          </div>
+        )}
 
-                <div className="mt-3 h-3 overflow-hidden rounded-full bg-zinc-800">
-                  <div
-                    className="h-full bg-red-600 transition-all"
-                    style={{
-                      width: `${
-                        (answeredCount / questions.length) *
-                        100
-                      }%`,
-                    }}
-                  />
-                </div>
+        {!examAttemptId && (
+          <section className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-900 p-8 text-center">
+            <h2 className="text-2xl font-extrabold">
+              Ready to Begin?
+            </h2>
+
+            <p className="mx-auto mt-3 max-w-2xl leading-7 text-zinc-400">
+              Starting the assessment creates an
+              official attempt. Your questions,
+              submitted answers, score, and result will
+              be retained with your course record.
+            </p>
+
+            <button
+              type="button"
+              onClick={beginAssessment}
+              disabled={startingExam || !enrollmentId}
+              className="mt-6 rounded-xl bg-red-600 px-7 py-3 font-bold transition hover:bg-red-500 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400"
+            >
+              {startingExam
+                ? "Starting Assessment…"
+                : "Begin Assessment"}
+            </button>
+          </section>
+        )}
+
+        {examAttemptId && !submitted && (
+          <>
+            <div className="mt-8 rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+              <div className="flex items-center justify-between gap-4">
+                <span className="font-semibold text-zinc-300">
+                  Questions answered
+                </span>
+
+                <span className="font-bold text-red-400">
+                  {answeredCount} of {questions.length}
+                </span>
               </div>
-            )}
 
-            {submitted && (
-              <section
-                className={`rounded-2xl border p-6 ${
-                  passed
-                    ? "border-emerald-500 bg-emerald-500/10"
-                    : "border-red-500 bg-red-500/10"
-                }`}
-              >
-                <p className="text-sm font-bold uppercase tracking-wide text-zinc-300">
-                  Quiz Result
-                </p>
-
-                <div className="mt-3 flex flex-wrap items-end gap-4">
-                  <span className="text-6xl font-extrabold">
-                    {percentage}%
-                  </span>
-
-                  <span className="pb-2 text-xl font-bold">
-                    {score} of {questions.length} correct
-                  </span>
-                </div>
-
-                <h2
-                  className={`mt-5 text-2xl font-bold ${
-                    passed
-                      ? "text-emerald-400"
-                      : "text-red-400"
-                  }`}
-                >
-                  {passed
-                    ? "Course Passed"
-                    : "Additional Review Required"}
-                </h2>
-
-                <p className="mt-2 text-zinc-300">
-                  {passed
-                    ? "You achieved the passing score. Your course completion has been saved."
-                    : "Your attempt has been saved. Review the explanations and retake the quiz."}
-                </p>
-
-                {bestScore !== null && (
-                  <p className="mt-3 font-semibold text-emerald-300">
-                    Saved best score: {bestScore}%
-                  </p>
-                )}
-              </section>
-            )}
-
-            {recordSaved && (
-              <div className="mt-6 rounded-xl border border-green-800 bg-green-950/20 p-5">
-                <p className="font-bold text-green-400">
-                  Student Record Updated
-                </p>
-
-                <p className="mt-2 leading-6 text-zinc-300">
-                  This quiz attempt and your current course
-                  progress were successfully saved.
-                </p>
+              <div className="mt-3 h-3 overflow-hidden rounded-full bg-zinc-800">
+                <div
+                  className="h-full bg-red-600 transition-all"
+                  style={{
+                    width: `${
+                      questions.length > 0
+                        ? (answeredCount /
+                            questions.length) *
+                          100
+                        : 0
+                    }%`,
+                  }}
+                />
               </div>
-            )}
+            </div>
 
-            {saveError && (
-              <div className="mt-6 rounded-xl border border-red-700 bg-red-950/20 p-5">
-                <p className="font-bold text-red-400">
-                  Record-Saving Error
-                </p>
-
-                <p className="mt-2 leading-6 text-zinc-300">
-                  {saveError}
-                </p>
-              </div>
-            )}
-
-            <div className="mt-10 space-y-8">
+            <div className="mt-8 space-y-6">
               {questions.map(
-                (question, questionIndex) => {
-                  const selectedAnswer =
-                    answers[questionIndex];
-
-                  const isCorrect =
-                    selectedAnswer ===
-                    question.correctAnswer;
-
-                  return (
-                    <section
-                      key={question.question}
-                      className="rounded-2xl border border-zinc-700 bg-zinc-900 p-6"
-                    >
-                      <div className="flex gap-4">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-600 font-extrabold">
-                          {questionIndex + 1}
-                        </span>
-
-                        <div>
-                          <h2 className="text-xl font-bold leading-8">
-                            {question.question}
-                          </h2>
-
-                          {question.details && (
-                            <ul className="mt-3 space-y-1 text-zinc-400">
-                              {question.details.map(
-                                (detail) => (
-                                  <li key={detail}>
-                                    • {detail}
-                                  </li>
-                                ),
-                              )}
-                            </ul>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="mt-6 space-y-3">
-                        {question.options.map(
-                          (option, optionIndex) => {
-                            const selected =
-                              selectedAnswer === optionIndex;
-
-                            const correct =
-                              submitted &&
-                              optionIndex ===
-                                question.correctAnswer;
-
-                            const incorrect =
-                              submitted &&
-                              selected &&
-                              !correct;
-
-                            return (
-                              <button
-                                key={option}
-                                type="button"
-                                disabled={submitted || saving}
-                                onClick={() =>
-                                  selectAnswer(
-                                    questionIndex,
-                                    optionIndex,
-                                  )
-                                }
-                                className={`flex w-full items-start gap-4 rounded-xl border p-4 text-left transition ${
-                                  correct
-                                    ? "border-emerald-500 bg-emerald-500/10"
-                                    : incorrect
-                                      ? "border-red-500 bg-red-500/10"
-                                      : selected
-                                        ? "border-red-500 bg-red-500/10"
-                                        : "border-zinc-700 bg-black hover:border-zinc-500"
-                                }`}
-                              >
-                                <span
-                                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg font-bold ${
-                                    selected
-                                      ? "bg-red-600 text-white"
-                                      : "bg-zinc-800 text-zinc-300"
-                                  }`}
-                                >
-                                  {String.fromCharCode(
-                                    65 + optionIndex,
-                                  )}
-                                </span>
-
-                                <span className="pt-1 text-zinc-200">
-                                  {option}
-                                </span>
-                              </button>
-                            );
-                          },
-                        )}
-                      </div>
-
-                      {submitted && (
-                        <div
-                          className={`mt-5 rounded-xl border p-4 ${
-                            isCorrect
-                              ? "border-emerald-500/60 bg-emerald-500/10"
-                              : "border-amber-500/60 bg-amber-500/10"
-                          }`}
-                        >
-                          <p className="font-bold">
-                            {isCorrect
-                              ? "Correct"
-                              : "Review this question"}
-                          </p>
-
-                          <p className="mt-2 text-sm leading-6 text-zinc-300">
-                            {question.explanation}
-                          </p>
-                        </div>
-                      )}
-                    </section>
-                  );
-                },
-              )}
-            </div>
-
-            <div className="mt-10 flex flex-wrap justify-center gap-4">
-              {!submitted ? (
-                <button
-                  type="button"
-                  onClick={submitQuiz}
-                  disabled={saving}
-                  className={`rounded-xl px-8 py-4 font-bold transition ${
-                    saving
-                      ? "cursor-not-allowed bg-zinc-700 text-zinc-400"
-                      : "bg-red-600 text-white hover:bg-red-500"
-                  }`}
-                >
-                  {saving
-                    ? "Saving Quiz..."
-                    : "Submit Quiz"}
-                </button>
-              ) : (
-                <>
-                  <button
-                    type="button"
-                    onClick={resetQuiz}
-                    className="rounded-xl border border-red-500 px-8 py-4 font-bold text-red-400 transition hover:bg-red-500 hover:text-white"
+                (question, questionIndex) => (
+                  <article
+                    key={question.id}
+                    className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6"
                   >
-                    Retake Quiz
-                  </button>
-
-                  <Link
-                    href="/courses"
-                    className="rounded-xl border border-zinc-600 px-8 py-4 font-bold text-zinc-300 transition hover:border-zinc-400 hover:text-white"
-                  >
-                    Return to Courses
-                  </Link>
-                </>
-              )}
-            </div>
-
-            {submitted && passed && recordSaved && (
-              <div className="mt-10">
-                <CourseAccessGate
-                  accessLevel="profile"
-                  title="Complete Your Profile to Access the Certificate"
-                  description="Your full name, provider level, and organization are required before your course certificate can be issued."
-                >
-                  <section className="rounded-2xl border border-emerald-700 bg-emerald-950/20 p-8 text-center">
-                    <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-400">
-                      Course Completion Saved
+                    <p className="text-sm font-bold uppercase tracking-wide text-red-500">
+                      Question {questionIndex + 1}
                     </p>
 
-                    <h2 className="mt-3 text-3xl font-extrabold">
-                      Your Certificate Is Available
+                    <h2 className="mt-3 text-xl font-bold">
+                      {question.prompt}
                     </h2>
 
-                    <p className="mx-auto mt-4 max-w-2xl leading-7 text-zinc-300">
-                      Your passing result is now stored in
-                      your GrumpyMedic Education account.
-                    </p>
+                    <div className="mt-5 space-y-3">
+                      {question.options.map((option) => {
+                        const selected =
+                          answers[question.id] ===
+                          option.id;
 
-                    <Link
-                      href="/courses/glucagon-hypoglycemia/certificate"
-                      className="mt-6 inline-block rounded-xl bg-emerald-600 px-8 py-4 font-bold text-white transition hover:bg-emerald-500"
-                    >
-                      View Certificate
-                    </Link>
-                  </section>
-                </CourseAccessGate>
-              </div>
+                        return (
+                          <button
+                            key={option.id}
+                            type="button"
+                            onClick={() =>
+                              selectAnswer(
+                                question.id,
+                                option.id,
+                              )
+                            }
+                            className={`w-full rounded-xl border px-4 py-3 text-left transition ${
+                              selected
+                                ? "border-red-500 bg-red-500/10 text-white"
+                                : "border-zinc-700 bg-black text-zinc-300 hover:border-red-500"
+                            }`}
+                          >
+                            <span className="mr-3 font-bold text-red-400">
+                              {String.fromCharCode(
+                                64 + option.order,
+                              )}
+                              .
+                            </span>
+
+                            {option.text}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </article>
+                ),
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={submitAssessment}
+              disabled={
+                submitting ||
+                answeredCount !== questions.length
+              }
+              className="mt-8 w-full rounded-xl bg-red-600 px-6 py-4 text-lg font-bold transition hover:bg-red-500 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400"
+            >
+              {submitting
+                ? "Submitting Secure Assessment…"
+                : "Submit Assessment"}
+            </button>
+          </>
+        )}
+
+        {submitted && score !== null && (
+          <section
+            className={`mt-8 rounded-2xl border p-8 text-center ${
+              passed
+                ? "border-emerald-500 bg-emerald-500/10"
+                : "border-red-500 bg-red-500/10"
+            }`}
+          >
+            <p className="text-sm font-bold uppercase tracking-[0.25em] text-zinc-300">
+              Assessment Complete
+            </p>
+
+            <h2 className="mt-3 text-5xl font-extrabold">
+              {score}%
+            </h2>
+
+            <p className="mt-3 text-zinc-300">
+              {passed
+                ? "You passed the secure course assessment."
+                : "You did not reach the required passing score of 80%."}
+            </p>
+
+            {passed && (
+              <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-zinc-400">
+                Passing the assessment does not by
+                itself issue a certificate. Required
+                active course time and the electronic
+                attestation must also be completed.
+              </p>
             )}
 
-            <p className="mt-10 text-center text-sm leading-6 text-zinc-500">
-              Educational content only. Follow current
-              state and local protocols, medical-director
-              authorization, service requirements, and
-              manufacturer instructions.
-            </p>
-          </CourseAccessGate>
-        </div>
+            <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+              {!passed && (
+                <button
+                  type="button"
+                  onClick={beginAnotherAttempt}
+                  disabled={startingExam}
+                  className="rounded-xl border border-zinc-600 px-6 py-3 font-bold transition hover:border-red-500 hover:text-red-400 disabled:cursor-not-allowed"
+                >
+                  {startingExam
+                    ? "Starting…"
+                    : "Begin Another Attempt"}
+                </button>
+              )}
+
+              <Link
+                href="/courses/glucagon-hypoglycemia"
+                className="rounded-xl bg-red-600 px-6 py-3 font-bold transition hover:bg-red-500"
+              >
+                Return to Course
+              </Link>
+
+              <Link
+                href="/dashboard"
+                className="rounded-xl border border-red-500 px-6 py-3 font-bold text-red-400 transition hover:bg-red-500 hover:text-white"
+              >
+                View Dashboard
+              </Link>
+            </div>
+          </section>
+        )}
       </section>
     </main>
   );
