@@ -43,7 +43,7 @@ export default function CoursesPage() {
             title="Acute Pulmonary Edema"
             description="Assessment, CPAP, nitrates, respiratory support, and clinical decision-making."
             certification="EMT and Paramedic"
-            duration="30 minutes"
+            duration="45 minutes + 15 min quiz"
             href="/courses/acute-pulmonary-edema"
             available
           />
@@ -144,7 +144,7 @@ export default function CoursesPage() {
             title="BLS Airway & Capnography"
             description="EMT-level training covering supraglottic airway use, iGel sizing and insertion, waveform capnography, ventilation, and airway troubleshooting."
             certification="EMT"
-            duration="30 minutes"
+            duration="45 minutes + 15 min quiz"
             href="/courses/bls-airway-capnography"
             available
           />
@@ -160,7 +160,7 @@ export default function CoursesPage() {
             title="Bronchospasm / Respiratory Distress"
             description="Adult and pediatric respiratory assessment, bronchodilator therapy, epinephrine, CPAP/BiPAP, corticosteroids, magnesium, airway escalation, transport, reassessment, and documentation."
             certification="EMT, AEMT & Paramedic"
-            duration="30 minutes"
+            duration="45 minutes + 15 min quiz"
             href="/courses/bronchospasm-respiratory-distress"
             available
           />
@@ -195,7 +195,7 @@ export default function CoursesPage() {
             title="Adult & Pediatric Bradycardia"
             description="Recognition and treatment of symptomatic adult and pediatric bradycardia, including patient assessment, atropine, epinephrine, transcutaneous pacing, vasopressor infusions, Medical Control options, reassessment, and clinical decision-making."
             certification="EMT, AEMT & Paramedic"
-            duration="30 minutes"
+            duration="45 minutes + 15 min quiz"
             href="/courses/bradycardia"
             available
           />
