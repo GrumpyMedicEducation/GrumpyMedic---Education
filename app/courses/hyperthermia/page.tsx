@@ -151,7 +151,7 @@ export default function HyperthermiaCoursePage() {
       <CourseEngagementTracker
         courseSlug="hyperthermia"
         courseTitle="Hyperthermia"
-        requiredMinutes={60}
+        requiredMinutes={45}
       />
 
       <section className="border-b border-zinc-800 bg-gradient-to-b from-red-950/30 to-black">

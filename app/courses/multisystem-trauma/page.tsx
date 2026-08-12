@@ -45,7 +45,7 @@ export default function MultisystemTraumaCoursePage() {
       <CourseEngagementTracker
         courseSlug="multisystem-trauma"
         courseTitle="Multisystem Trauma"
-        requiredMinutes={60}
+        requiredMinutes={45}
       />
         <section className="border-b border-zinc-800 bg-gradient-to-b from-red-950/40 to-black">
           <div className="mx-auto max-w-6xl px-6 py-16">

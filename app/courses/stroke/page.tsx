@@ -73,7 +73,7 @@ export default function StrokeCoursePage() {
       <CourseEngagementTracker
         courseSlug="stroke"
         courseTitle="Stroke Recognition & Prehospital Management"
-        requiredMinutes={60}
+        requiredMinutes={45}
       />
         <section className="border-b border-zinc-800 bg-gradient-to-b from-red-950/30 to-black">
           <div className="mx-auto max-w-6xl px-6 py-16">

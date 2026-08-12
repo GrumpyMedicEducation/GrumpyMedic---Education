@@ -10,7 +10,7 @@ export default function TXAAdministrationCoursePage() {
       <CourseEngagementTracker
         courseSlug="txa-administration"
         courseTitle="TXA Administration"
-        requiredMinutes={60}
+        requiredMinutes={45}
       />
 
       {/* Hero */}

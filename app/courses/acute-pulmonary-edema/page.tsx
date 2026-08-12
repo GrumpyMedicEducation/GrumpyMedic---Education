@@ -398,7 +398,7 @@ export default function AcutePulmonaryEdemaPage() {
         <CourseEngagementTracker
           courseSlug="acute-pulmonary-edema"
           courseTitle="Acute Pulmonary Edema"
-          requiredMinutes={30}
+          requiredMinutes={45}
           onEligibilityChange={handleEligibilityChange}
         />
 
