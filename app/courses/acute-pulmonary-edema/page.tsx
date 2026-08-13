@@ -262,10 +262,6 @@ export default function AcutePulmonaryEdemaPage() {
   );
 
   useEffect(() => {
-    if (!complete) {
-      return;
-    }
-
     let active = true;
 
     async function loadSecureAssessmentStatus() {
@@ -330,7 +326,7 @@ export default function AcutePulmonaryEdemaPage() {
     return () => {
       active = false;
     };
-  }, [complete]);
+  }, []);
 
   function chooseOption(optionIndex: number) {
     if (answered) {
@@ -382,6 +378,114 @@ export default function AcutePulmonaryEdemaPage() {
       top: 0,
       behavior: "smooth",
     });
+  }
+
+
+  if (
+    secureAssessmentLoaded &&
+    secureAssessmentPassed &&
+    !complete
+  ) {
+    return (
+      <main className="min-h-screen bg-black text-white">
+        <Navbar />
+
+        <CourseEngagementTracker
+          courseSlug="acute-pulmonary-edema"
+          courseTitle="Acute Pulmonary Edema"
+          requiredMinutes={45}
+          onEligibilityChange={handleEligibilityChange}
+        />
+
+        <section className="mx-auto max-w-5xl px-6 py-12">
+          <CourseAccessGate
+            accessLevel="login"
+            title="Sign In to Complete the Course"
+            description="Log in to complete your Acute Pulmonary Edema attestation and access your certificate."
+          >
+            <div className="rounded-3xl border-2 border-emerald-500 bg-zinc-900 p-8 text-center shadow-2xl md:p-12">
+              <p className="text-sm font-extrabold uppercase tracking-[0.25em] text-emerald-400">
+                Secure Assessment Passed
+              </p>
+
+              <div className="mx-auto mt-5 inline-flex rounded-full border border-emerald-500 bg-emerald-500/10 px-5 py-2 text-sm font-extrabold uppercase tracking-wide text-emerald-300">
+                ✓ Assessment Complete
+              </div>
+
+              <h1 className="mt-6 text-4xl font-extrabold md:text-6xl">
+                Acute Pulmonary Edema
+              </h1>
+
+              <p className="mx-auto mt-6 max-w-3xl text-lg leading-8 text-zinc-300">
+                Your official course assessment has already been
+                completed successfully. You do not need to repeat the
+                Patient Update scenario questions. Complete the
+                electronic attestation below to continue to your
+                certificate.
+              </p>
+
+              <div className="mx-auto mt-8 max-w-3xl rounded-2xl border border-zinc-700 bg-black p-6">
+                <h2 className="text-left text-xl font-extrabold">
+                  Course Progress
+                </h2>
+
+                <div className="mt-5 grid gap-4 text-left sm:grid-cols-3">
+                  <ProgressItem
+                    title="Course Time"
+                    status={
+                      engagementLoaded
+                        ? timeRequirementMet
+                          ? "Complete"
+                          : "In Progress"
+                        : "Checking"
+                    }
+                    complete={
+                      engagementLoaded && timeRequirementMet
+                    }
+                  />
+
+                  <ProgressItem
+                    title="Secure Assessment"
+                    status="Passed"
+                    complete
+                  />
+
+                  <ProgressItem
+                    title="Attestation"
+                    status="Required"
+                    complete={false}
+                  />
+                </div>
+              </div>
+
+              <div className="mx-auto mt-8 max-w-3xl text-left">
+                <CourseAttestationForm
+                  courseSlug="acute-pulmonary-edema"
+                  courseTitle="Acute Pulmonary Edema"
+                  certificateHref="/courses/acute-pulmonary-edema/certificate"
+                />
+              </div>
+
+              <div className="mt-8 flex flex-wrap justify-center gap-4">
+                <Link
+                  href="/courses"
+                  className="rounded-xl border border-zinc-600 px-6 py-3 font-bold text-zinc-200 transition hover:border-zinc-400 hover:bg-zinc-800"
+                >
+                  Return to Courses
+                </Link>
+
+                <Link
+                  href="/dashboard"
+                  className="rounded-xl border border-red-500 px-6 py-3 font-bold text-red-400 transition hover:bg-red-500 hover:text-white"
+                >
+                  View Dashboard
+                </Link>
+              </div>
+            </div>
+          </CourseAccessGate>
+        </section>
+      </main>
+    );
   }
 
   if (complete) {
@@ -667,6 +771,611 @@ export default function AcutePulmonaryEdemaPage() {
             The course overview remains public. A free
             GrumpyMedic Education account is required to
             begin the interactive scenario.
+          </p>
+        </div>
+
+        {/* EXPANDED COURSE CONTENT */}
+
+        <div className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-950 p-6 md:p-8">
+          <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-red-500">
+            Learning Objectives
+          </p>
+
+          <h2 className="mt-3 text-3xl font-extrabold">
+            What You Should Be Able to Do
+          </h2>
+
+          <p className="mt-4 max-w-3xl leading-7 text-zinc-300">
+            By the end of this course, you should be able to recognize acute
+            pulmonary edema, explain the underlying pathophysiology, perform a
+            focused EMS assessment, understand the role of CPAP and
+            nitroglycerin, identify important contraindications, and reassess
+            the patient&apos;s response to treatment.
+          </p>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            {[
+              "Define acute pulmonary edema and describe why it causes severe respiratory distress.",
+              "Explain how acute left ventricular failure can increase pulmonary capillary pressure.",
+              "Recognize common symptoms and prehospital assessment findings.",
+              "Identify immediate airway, oxygenation, ventilation, monitoring, and transport priorities.",
+              "Explain how CPAP can improve oxygenation and reduce work of breathing.",
+              "Explain why nitroglycerin may benefit selected patients with hypertensive pulmonary edema.",
+              "Review the Massachusetts Protocol 6.10 Medical Director Option pathway presented in this course.",
+              "Recognize improvement, treatment failure, and signs of impending respiratory failure.",
+            ].map((objective) => (
+              <div
+                key={objective}
+                className="rounded-2xl border border-zinc-800 bg-black p-5"
+              >
+                <p className="leading-7 text-zinc-300">✓ {objective}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <section className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-950 p-6 md:p-8">
+          <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-red-500">
+            Section 1
+          </p>
+
+          <h2 className="mt-3 text-3xl font-extrabold">
+            What Is Acute Pulmonary Edema?
+          </h2>
+
+          <div className="mt-5 space-y-5 leading-8 text-zinc-300">
+            <p>
+              Acute pulmonary edema is a rapid accumulation of fluid within
+              the pulmonary interstitium and alveoli. In cardiogenic pulmonary
+              edema, the problem commonly begins when the left ventricle is
+              unable to effectively move blood forward.
+            </p>
+
+            <p>
+              When left ventricular function deteriorates, pressure can back
+              up into the left atrium and pulmonary veins. As pulmonary
+              capillary hydrostatic pressure rises, fluid is forced from the
+              vascular space into the lung interstitium and eventually the
+              alveoli.
+            </p>
+
+            <p>
+              Fluid occupying alveolar spaces interferes with normal gas
+              exchange. The patient may rapidly develop hypoxia, tachypnea,
+              increased work of breathing, anxiety, diaphoresis, and severe
+              respiratory distress.
+            </p>
+          </div>
+
+          <div className="mt-7 rounded-2xl border border-red-900/60 bg-red-950/20 p-6">
+            <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-red-400">
+              Think Through the Physiology
+            </p>
+
+            <div className="mt-5 grid gap-3 text-center font-bold text-zinc-200">
+              <div className="rounded-xl bg-black p-4">
+                Left ventricular dysfunction
+              </div>
+              <div className="text-red-500">↓</div>
+              <div className="rounded-xl bg-black p-4">
+                Pressure backs up into the left atrium and pulmonary veins
+              </div>
+              <div className="text-red-500">↓</div>
+              <div className="rounded-xl bg-black p-4">
+                Pulmonary capillary hydrostatic pressure increases
+              </div>
+              <div className="text-red-500">↓</div>
+              <div className="rounded-xl bg-black p-4">
+                Fluid enters the interstitial and alveolar spaces
+              </div>
+              <div className="text-red-500">↓</div>
+              <div className="rounded-xl bg-black p-4">
+                Gas exchange worsens → hypoxia and respiratory distress
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-950 p-6 md:p-8">
+          <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-red-500">
+            Section 2
+          </p>
+
+          <h2 className="mt-3 text-3xl font-extrabold">
+            Clinical Presentation
+          </h2>
+
+          <p className="mt-4 max-w-3xl leading-7 text-zinc-300">
+            Pulmonary edema should be recognized from the overall clinical
+            picture rather than a single finding. The presentation may evolve
+            rapidly, and the patient may not have every classic sign.
+          </p>
+
+          <div className="mt-7 grid gap-6 md:grid-cols-2">
+            <div className="rounded-2xl border border-zinc-800 bg-black p-6">
+              <h3 className="text-xl font-extrabold text-white">
+                Common Symptoms and Presentation
+              </h3>
+
+              <ul className="mt-4 space-y-3 text-zinc-300">
+                <li>• Sudden or severe dyspnea</li>
+                <li>• Orthopnea or inability to tolerate lying flat</li>
+                <li>• Tachypnea</li>
+                <li>• Anxiety and a sense of air hunger</li>
+                <li>• Diaphoresis</li>
+                <li>• Hypoxia or cyanosis</li>
+                <li>• Possible pink, frothy sputum</li>
+              </ul>
+            </div>
+
+            <div className="rounded-2xl border border-zinc-800 bg-black p-6">
+              <h3 className="text-xl font-extrabold text-white">
+                Focused EMS Assessment Findings
+              </h3>
+
+              <ul className="mt-4 space-y-3 text-zinc-300">
+                <li>• Patent airway with markedly labored breathing</li>
+                <li>• Accessory muscle use and increased work of breathing</li>
+                <li>• SpO₂ may be below 94%</li>
+                <li>• Diffuse crackles may be present</li>
+                <li>• Elevated blood pressure is common in hypertensive APE</li>
+                <li>• JVD or peripheral edema may be present</li>
+                <li>• Cardiac monitoring may reveal ischemia or dysrhythmia</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-7 rounded-2xl border border-amber-700 bg-amber-950/20 p-6">
+            <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-amber-400">
+              GrumpyMedic Pearl
+            </p>
+
+            <p className="mt-3 leading-7 text-zinc-200">
+              Do not wait for pink frothy sputum before considering pulmonary
+              edema. Severe dyspnea, orthopnea, hypoxia, crackles, marked
+              hypertension, and increased work of breathing may already
+              provide a strong clinical picture.
+            </p>
+          </div>
+        </section>
+
+        <section className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-950 p-6 md:p-8">
+          <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-red-500">
+            Section 3
+          </p>
+
+          <h2 className="mt-3 text-3xl font-extrabold">
+            Initial Prehospital Management
+          </h2>
+
+          <p className="mt-4 max-w-3xl leading-7 text-zinc-300">
+            Management should occur while the assessment continues. The
+            patient&apos;s airway, breathing, oxygenation, blood pressure, and
+            mental status can change quickly.
+          </p>
+
+          <div className="mt-7 grid gap-4 md:grid-cols-2">
+            {[
+              {
+                title: "1. Positioning",
+                text: "Allow the patient to remain upright when tolerated. Patients with orthopnea may become significantly more distressed when placed flat.",
+              },
+              {
+                title: "2. Airway and Oxygenation",
+                text: "Assess airway patency, respiratory effort, oxygen saturation, and the patient&apos;s ability to speak. Provide oxygen and ventilatory support according to clinical need and protocol.",
+              },
+              {
+                title: "3. Positive Pressure",
+                text: "Consider CPAP/BiPAP early in an appropriate patient who is still able to maintain the airway and tolerate the interface.",
+              },
+              {
+                title: "4. Cardiac and BP Monitoring",
+                text: "Obtain frequent blood-pressure measurements and continuous cardiac monitoring. Consider a 12-lead ECG when indicated and feasible.",
+              },
+              {
+                title: "5. Vascular Access",
+                text: "Establish IV or IO access when appropriate without delaying critical airway and respiratory interventions.",
+              },
+              {
+                title: "6. Medication and Reassessment",
+                text: "Use protocol-directed medications, reassess frequently, and transport promptly while continuing effective treatment.",
+              },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="rounded-2xl border border-zinc-800 bg-black p-5"
+              >
+                <h3 className="text-lg font-extrabold text-white">
+                  {item.title}
+                </h3>
+                <p
+                  className="mt-3 leading-7 text-zinc-300"
+                  dangerouslySetInnerHTML={{ __html: item.text }}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-950 p-6 md:p-8">
+          <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-red-500">
+            Section 4
+          </p>
+
+          <h2 className="mt-3 text-3xl font-extrabold">
+            CPAP: Why It Matters
+          </h2>
+
+          <div className="mt-5 space-y-5 leading-8 text-zinc-300">
+            <p>
+              CPAP provides continuous positive airway pressure throughout the
+              respiratory cycle. In an appropriate patient with acute
+              pulmonary edema, this can improve oxygenation and reduce the
+              work required to breathe.
+            </p>
+
+            <p>
+              Positive pressure can help recruit poorly ventilated alveoli,
+              improve ventilation and oxygenation, and reduce venous return to
+              the heart. That reduction in preload may be beneficial when
+              pulmonary vascular pressure is contributing to pulmonary edema.
+            </p>
+          </div>
+
+          <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              "Provides positive airway pressure",
+              "Recruits poorly ventilated or collapsed alveoli",
+              "Improves oxygenation and ventilation",
+              "Reduces work of breathing",
+              "Can reduce preload",
+              "May prevent progression to respiratory failure when used appropriately",
+            ].map((benefit) => (
+              <div
+                key={benefit}
+                className="rounded-2xl border border-zinc-800 bg-black p-5 font-semibold text-zinc-200"
+              >
+                {benefit}
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-7 rounded-2xl border border-zinc-700 bg-black p-6">
+            <h3 className="text-xl font-extrabold">
+              Reassess After CPAP
+            </h3>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-4">
+              {[
+                "Respiratory rate",
+                "SpO₂",
+                "Work of breathing",
+                "Ability to speak",
+                "Mental status",
+                "Blood pressure",
+                "Lung sounds",
+                "Patient tolerance",
+              ].map((item) => (
+                <div
+                  key={item}
+                  className="rounded-xl bg-zinc-900 p-4 text-center text-sm font-bold text-zinc-300"
+                >
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-950 p-6 md:p-8">
+          <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-red-500">
+            Section 5
+          </p>
+
+          <h2 className="mt-3 text-3xl font-extrabold">
+            Nitroglycerin in Acute Pulmonary Edema
+          </h2>
+
+          <div className="mt-5 space-y-5 leading-8 text-zinc-300">
+            <p>
+              Nitroglycerin produces vasodilation. In selected patients with
+              hypertensive pulmonary edema, reducing venous return can lower
+              preload and pulmonary capillary pressure. At greater
+              vasodilatory effect, afterload and cardiac workload may also be
+              reduced.
+            </p>
+
+            <p>
+              Nitroglycerin does not directly remove fluid from the body.
+              Instead, its hemodynamic effects can reduce the pressure driving
+              fluid into the lungs and improve symptoms of pulmonary
+              congestion while other supportive care continues.
+            </p>
+
+            <p>
+              Because blood pressure can change rapidly, frequent
+              reassessment is essential. Medication use must follow the
+              current protocol, service policy, medical direction, and
+              patient-specific contraindications.
+            </p>
+          </div>
+
+          <div className="mt-7 grid gap-4 md:grid-cols-2">
+            <div className="rounded-2xl border border-emerald-800 bg-emerald-950/20 p-6">
+              <h3 className="text-xl font-extrabold text-emerald-300">
+                Why It May Help
+              </h3>
+              <ul className="mt-4 space-y-3 text-zinc-300">
+                <li>• Vasodilation can decrease preload</li>
+                <li>• Pulmonary capillary pressure may decrease</li>
+                <li>• Cardiac workload may decrease</li>
+                <li>• Pulmonary congestion symptoms may improve</li>
+              </ul>
+            </div>
+
+            <div className="rounded-2xl border border-amber-800 bg-amber-950/20 p-6">
+              <h3 className="text-xl font-extrabold text-amber-300">
+                What Must Be Watched
+              </h3>
+              <ul className="mt-4 space-y-3 text-zinc-300">
+                <li>• Blood pressure trend</li>
+                <li>• Mental status and perfusion</li>
+                <li>• Respiratory response</li>
+                <li>• Contraindications and medication history</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-8 rounded-3xl border border-red-900/60 bg-red-950/10 p-6 md:p-8">
+          <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-red-400">
+            Section 6 — Massachusetts Protocol Focus
+          </p>
+
+          <h2 className="mt-3 text-3xl font-extrabold">
+            Protocol 6.10 Medical Director Option
+          </h2>
+
+          <p className="mt-4 max-w-4xl leading-7 text-zinc-300">
+            The course source material reviews the June 1, 2026 Massachusetts
+            Protocol 6.10 Medical Director Option for IV/IO nitroglycerin and
+            infusion in acute pulmonary edema. This section is
+            protocol-specific and should be used only by appropriately
+            authorized providers operating under the current protocol and
+            service medical direction.
+          </p>
+
+          <div className="mt-7 rounded-2xl border border-zinc-800 bg-black p-6">
+            <h3 className="text-xl font-extrabold">
+              Patient Profile Presented in the Course Material
+            </h3>
+
+            <ul className="mt-4 space-y-3 leading-7 text-zinc-300">
+              <li>• Acute pulmonary edema treated with CPAP/BiPAP</li>
+              <li>• CHF history with respiratory distress may be present</li>
+              <li>• Findings may include edema, rales/crackles, and dyspnea</li>
+              <li>• Room-air SpO₂ may be below 94%</li>
+            </ul>
+          </div>
+
+          <div className="mt-6 rounded-2xl border border-amber-700 bg-amber-950/20 p-6">
+            <h3 className="text-xl font-extrabold text-amber-300">
+              Contraindication / Consultation Points in the Source Material
+            </h3>
+
+            <ul className="mt-4 space-y-3 leading-7 text-zinc-300">
+              <li>
+                • SBP below 160 mmHg is presented as requiring medical-control
+                consultation for this option.
+              </li>
+              <li>
+                • Phosphodiesterase inhibitor use within 48 hours is listed as
+                a contraindication.
+              </li>
+            </ul>
+          </div>
+
+          <div className="mt-6 grid gap-6 lg:grid-cols-3">
+            <div className="rounded-2xl border border-zinc-800 bg-black p-6">
+              <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-red-400">
+                Prior Nitroglycerin Given
+              </p>
+
+              <ul className="mt-4 space-y-3 text-zinc-300">
+                <li>• SBP ≥160 mmHg</li>
+                <li>• Start infusion at 100 mcg/min</li>
+                <li>• Titrate by 25 mcg/min every 3–5 minutes</li>
+                <li>• Maximum 300 mcg/min</li>
+                <li>• Maintain SBP ≥120 mmHg</li>
+              </ul>
+            </div>
+
+            <div className="rounded-2xl border border-zinc-800 bg-black p-6">
+              <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-red-400">
+                No Prior Nitroglycerin
+              </p>
+
+              <ul className="mt-4 space-y-3 text-zinc-300">
+                <li>• SBP ≥160 mmHg</li>
+                <li>• Give 400 mcg IV bolus</li>
+                <li>• Start infusion at 100 mcg/min</li>
+                <li>• Titrate by 25 mcg/min every 3–5 minutes</li>
+                <li>• Maximum 300 mcg/min</li>
+              </ul>
+            </div>
+
+            <div className="rounded-2xl border border-zinc-800 bg-black p-6">
+              <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-red-400">
+                Medical-Control Pathway
+              </p>
+
+              <ul className="mt-4 space-y-3 text-zinc-300">
+                <li>• SBP 120–159 mmHg</li>
+                <li>• Start infusion at 50 mcg/min</li>
+                <li>• Titrate by 25 mcg/min every 3–5 minutes</li>
+                <li>• Maximum 300 mcg/min</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-7 rounded-2xl border-2 border-red-700 bg-black p-6">
+            <p className="font-extrabold text-red-400">
+              Protocol Safety Notice
+            </p>
+
+            <p className="mt-3 leading-7 text-zinc-300">
+              Verify the current Massachusetts EMS protocol before clinical
+              use. Providers must follow current state and local protocols,
+              medical-director authorization, medical control, service policy,
+              and manufacturer instructions. This educational course does not
+              replace the official protocol.
+            </p>
+          </div>
+        </section>
+
+        <section className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-950 p-6 md:p-8">
+          <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-red-500">
+            Section 7
+          </p>
+
+          <h2 className="mt-3 text-3xl font-extrabold">
+            Reassessment: Is the Patient Improving?
+          </h2>
+
+          <p className="mt-4 max-w-3xl leading-7 text-zinc-300">
+            Treatment is not complete when CPAP is applied or medication is
+            given. Reassessment determines whether the patient is responding,
+            remaining stable, or progressing toward respiratory failure.
+          </p>
+
+          <div className="mt-7 grid gap-6 md:grid-cols-2">
+            <div className="rounded-2xl border border-emerald-800 bg-emerald-950/20 p-6">
+              <h3 className="text-xl font-extrabold text-emerald-300">
+                Signs of Improvement
+              </h3>
+              <ul className="mt-4 space-y-3 text-zinc-300">
+                <li>• SpO₂ improves</li>
+                <li>• Respiratory rate trends downward</li>
+                <li>• Accessory muscle use decreases</li>
+                <li>• Patient can speak in longer sentences</li>
+                <li>• Anxiety and visible distress decrease</li>
+                <li>• Blood pressure improves without hypotension</li>
+              </ul>
+            </div>
+
+            <div className="rounded-2xl border border-red-800 bg-red-950/20 p-6">
+              <h3 className="text-xl font-extrabold text-red-300">
+                Signs of Deterioration
+              </h3>
+              <ul className="mt-4 space-y-3 text-zinc-300">
+                <li>• Altered mental status</li>
+                <li>• Increasing fatigue</li>
+                <li>• Persistent or worsening hypoxia</li>
+                <li>• Decreasing respiratory effort despite severe distress</li>
+                <li>• Inability to tolerate or protect the airway with CPAP</li>
+                <li>• Falling blood pressure or worsening perfusion</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-7 rounded-2xl border border-zinc-700 bg-black p-6">
+            <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-red-400">
+              Clinical Summary
+            </p>
+
+            <p className="mt-3 text-xl font-bold text-white">
+              Recognize early. Treat rapidly. Reassess continuously.
+            </p>
+
+            <p className="mt-3 leading-7 text-zinc-300">
+              Severe dyspnea, diffuse crackles, hypoxia, and hypertension
+              should raise concern for acute pulmonary edema. Support
+              oxygenation and ventilation, consider CPAP and protocol-directed
+              nitroglycerin when appropriate, and continually reassess blood
+              pressure, SpO₂, respiratory effort, and mental status.
+            </p>
+          </div>
+        </section>
+
+        <section className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-950 p-6 md:p-8">
+          <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-red-500">
+            Formative Review
+          </p>
+
+          <h2 className="mt-3 text-3xl font-extrabold">
+            Stop &amp; Think
+          </h2>
+
+          <p className="mt-4 max-w-3xl leading-7 text-zinc-300">
+            These questions are for learning and do not replace the secure
+            end-of-course assessment. Think through each answer before opening
+            the explanation.
+          </p>
+
+          <div className="mt-7 space-y-5">
+            <details className="rounded-2xl border border-zinc-800 bg-black p-6">
+              <summary className="cursor-pointer font-extrabold text-white">
+                1. A 74-year-old patient is sitting upright, RR 34, SpO₂ 84%,
+                BP 202/116, with diffuse crackles and severe work of breathing.
+                What findings make early CPAP particularly important to
+                consider?
+              </summary>
+
+              <div className="mt-5 border-t border-zinc-800 pt-5 leading-7 text-zinc-300">
+                The patient has severe respiratory distress with hypoxia,
+                tachypnea, diffuse crackles, and marked work of breathing while
+                still presenting with a blood pressure that may support
+                positive-pressure therapy. CPAP should be considered according
+                to the applicable protocol and patient-specific
+                contraindications.
+              </div>
+            </details>
+
+            <details className="rounded-2xl border border-zinc-800 bg-black p-6">
+              <summary className="cursor-pointer font-extrabold text-white">
+                2. Why can nitroglycerin improve pulmonary edema even though
+                it does not directly remove fluid from the body?
+              </summary>
+
+              <div className="mt-5 border-t border-zinc-800 pt-5 leading-7 text-zinc-300">
+                Vasodilation can reduce preload and pulmonary capillary
+                pressure. In selected hypertensive patients, this can reduce
+                the pressure contributing to pulmonary congestion and may
+                reduce cardiac workload.
+              </div>
+            </details>
+
+            <details className="rounded-2xl border border-zinc-800 bg-black p-6">
+              <summary className="cursor-pointer font-extrabold text-white">
+                3. A patient&apos;s SpO₂ rises after CPAP, but the patient
+                becomes drowsy and respiratory effort decreases. Is this
+                automatically an improvement?
+              </summary>
+
+              <div className="mt-5 border-t border-zinc-800 pt-5 leading-7 text-zinc-300">
+                No. Decreasing respiratory effort accompanied by altered mental
+                status may represent fatigue or impending respiratory failure.
+                Reassess the entire patient rather than relying on a single
+                number.
+              </div>
+            </details>
+          </div>
+        </section>
+
+        <div className="mt-8 rounded-3xl border border-red-900/60 bg-zinc-950 p-6 md:p-8">
+          <p className="text-sm font-extrabold uppercase tracking-[0.2em] text-red-500">
+            Next: Clinical Application
+          </p>
+
+          <h2 className="mt-3 text-3xl font-extrabold">
+            Apply What You Learned
+          </h2>
+
+          <p className="mt-4 max-w-3xl leading-7 text-zinc-300">
+            The five-decision scenario below applies the course material to a
+            deteriorating patient with severe respiratory distress. Your
+            official course timer must reach the required duration before the
+            scenario and assessment pathway unlock.
           </p>
         </div>
 
