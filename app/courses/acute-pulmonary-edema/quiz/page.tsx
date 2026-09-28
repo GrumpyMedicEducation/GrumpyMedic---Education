@@ -6,7 +6,7 @@ import Navbar from "../../../components/Navbar";
 import QuizAccessGate from "../../../components/courses/QuizAccessGate";
 import { supabase } from "../../../../lib/supabase/client";
 
-const COURSE_SLUG = "glucagon-hypoglycemia";
+const COURSE_SLUG = "acute-pulmonary-edema";
 
 type ExamQuestionRow = {
   question_id: string;
@@ -97,18 +97,18 @@ function groupQuestionRows(
     }));
 }
 
-export default function GlucagonHypoglycemiaQuizPage() {
+export default function AcutePulmonaryEdemaQuizPage() {
   return (
     <QuizAccessGate
       courseSlug={COURSE_SLUG}
-      courseTitle="Glucagon for Hypoglycemia"
+      courseTitle="Acute Pulmonary Edema"
     >
-      <GlucagonHypoglycemiaQuizContent />
+      <AcutePulmonaryEdemaQuizContent />
     </QuizAccessGate>
   );
 }
 
-function GlucagonHypoglycemiaQuizContent() {
+function AcutePulmonaryEdemaQuizContent() {
   const [enrollmentId, setEnrollmentId] = useState<
     string | null
   >(null);
@@ -442,7 +442,7 @@ function GlucagonHypoglycemiaQuizContent() {
 
       <section className="mx-auto max-w-4xl px-6 py-10">
         <Link
-          href="/courses/glucagon-hypoglycemia"
+          href="/courses/acute-pulmonary-edema"
           className="font-semibold text-red-500 transition hover:text-red-400"
         >
           ← Back to Course
@@ -454,13 +454,13 @@ function GlucagonHypoglycemiaQuizContent() {
           </p>
 
           <h1 className="mt-3 text-4xl font-extrabold">
-            Glucagon for Hypoglycemia Quiz
+            Acute Pulmonary Edema Quiz
           </h1>
 
           <p className="mt-3 text-zinc-400">
-            Answer all 10 questions. The server
-            securely grades and retains the assessment.
-            A score of 80% or higher is required to pass.
+            Answer every question. The server securely
+            grades and retains the assessment. A score of
+            80% or higher is required to pass.
           </p>
         </div>
 
@@ -573,7 +573,7 @@ function GlucagonHypoglycemiaQuizContent() {
                           >
                             <span className="mr-3 font-bold text-red-400">
                               {String.fromCharCode(
-                                64 + option.order,
+                                65 + option.order,
                               )}
                               .
                             </span>
@@ -650,7 +650,7 @@ function GlucagonHypoglycemiaQuizContent() {
               )}
 
               <Link
-                href="/courses/glucagon-hypoglycemia"
+                href="/courses/acute-pulmonary-edema"
                 className="rounded-xl bg-red-600 px-6 py-3 font-bold transition hover:bg-red-500"
               >
                 Return to Course

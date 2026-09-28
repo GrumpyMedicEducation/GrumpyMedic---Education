@@ -3,7 +3,7 @@
 import { getCourseBySlug } from "../../lib/courses/catalog";
 import { supabase } from "../../lib/supabase/client";
 
-const DEFAULT_REQUIRED_SECONDS = 60 * 60;
+const DEFAULT_REQUIRED_SECONDS = 45 * 60;
 
 type CourseProgressRow = {
   user_id: string;
